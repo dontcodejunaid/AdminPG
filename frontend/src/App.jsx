@@ -34,12 +34,7 @@ export function App() {
 
   // If user is not signed in, show the Universal Login Page
   if (!isAuthenticated) {
-    return (
-      <>
-        <LoginPage />
-        <ToastContainer />
-      </>
-    );
+    return <LoginPage />;
   }
 
   // If user role is Customer / Seeker / User, open the dedicated Seeker Portal

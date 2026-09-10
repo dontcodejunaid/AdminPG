@@ -112,6 +112,7 @@ export const api = {
 
   // Admin Users & RBAC & Auth
   login: (credentials) => request('/users/login', { method: 'POST', body: credentials }),
+  register: (userData) => request('/users/register', { method: 'POST', body: userData }),
   getUsers: () => request('/users'),
   createUser: (data) => request('/users', { method: 'POST', body: data }),
   updateUser: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),

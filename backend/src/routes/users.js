@@ -74,6 +74,53 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /api/users/register (User / Seeker Registration)
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, phone, password } = req.body;
+    if (!name || (!email && !phone)) {
+      return res.status(400).json({ success: false, error: 'Name and email or phone number are required' });
+    }
+
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const cleanPhone = phone ? phone.trim() : '';
+
+    const customers = await store.findAll('customers');
+    const existing = customers.find(c => 
+      (cleanEmail && c.email?.toLowerCase() === cleanEmail) || 
+      (cleanPhone && c.phone === cleanPhone)
+    );
+
+    if (existing) {
+      return res.status(400).json({ success: false, error: 'An account with this email/phone already exists. Please sign in.' });
+    }
+
+    const newCustomer = {
+      id: `cust_${uuidv4().substring(0, 6)}`,
+      name: name.trim(),
+      email: cleanEmail || `${cleanPhone.replace(/[^0-9]/g, '')}@keralapg.com`,
+      phone: cleanPhone || '+91 98470 00000',
+      city: req.body.city || 'Kochi',
+      dateJoined: new Date().toISOString().split('T')[0],
+      savedPgs: [],
+      totalEnquiries: 0,
+      totalPaid: 0,
+      role: 'Customer'
+    };
+
+    const created = await store.create('customers', newCustomer);
+    res.status(201).json({
+      success: true,
+      message: `Account created successfully! Welcome to KeralaPG, ${name}!`,
+      token: `keralapg_user_jwt_${created.id}_${Date.now()}`,
+      roleType: 'customer',
+      data: created
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /api/users
 router.post('/', async (req, res) => {
   try {

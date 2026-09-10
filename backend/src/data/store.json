@@ -1087,7 +1087,7 @@
       "role": "Super Admin",
       "phone": "+91 98470 11111",
       "status": "Active",
-      "lastLogin": "2026-09-10T07:05:33.252Z",
+      "lastLogin": "2026-09-10T11:47:51.716Z",
       "permissions": {
         "canAddPG": true,
         "canEditPG": true,
@@ -1103,7 +1103,7 @@
         "canManageBanners": true,
         "canManageUsers": true
       },
-      "updatedAt": "2026-09-10T07:05:33.252Z"
+      "updatedAt": "2026-09-10T11:47:51.717Z"
     },
     {
       "id": "usr_2",
