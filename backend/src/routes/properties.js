@@ -61,9 +61,7 @@ router.post('/', async (req, res) => {
       description: payload.description || '',
       contactNumber: payload.contactNumber || '',
       whatsappNumber: payload.whatsappNumber || payload.contactNumber || '',
-      photos: Array.isArray(payload.photos) && payload.photos.length > 0 ? payload.photos : [
-        "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000&q=80"
-      ],
+      photos: Array.isArray(payload.photos) ? payload.photos : [],
       videoUrl: payload.videoUrl || '',
       status: payload.status || 'Active', // Active, Inactive
       availabilityStatus: payload.availabilityStatus || 'Available', // Available, Limited, Full
@@ -80,7 +78,7 @@ router.post('/', async (req, res) => {
         otherCharges: payload.charges?.otherCharges || 'None'
       },
       rooms: Array.isArray(payload.rooms) ? payload.rooms : [
-        { id: `r_${uuidv4().substring(0, 8)}`, type: '2 Sharing', rent: 8000, deposit: 5000, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
+        { id: `r_${uuidv4().substring(0, 8)}`, type: '2 Sharing', rent: 8000, deposit: 5001, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
       ],
       facilities: Array.isArray(payload.facilities) ? payload.facilities : [],
       createdAt: new Date().toISOString(),
