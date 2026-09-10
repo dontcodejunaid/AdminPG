@@ -66,20 +66,29 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
   return (
     <div className="space-y-6">
       
-      {/* Top Welcome Banner */}
+      {/* Top Welcome Banner with Official Logo */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-brand-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl border border-brand-900/40">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-bold border border-brand-500/30">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Live Operations System Active
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white p-2 flex items-center justify-center shadow-xl border border-white/20 flex-shrink-0">
+              <img
+                src="/logo.png"
+                alt="KeralaPG Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              KeralaPG.com Master Dashboard
-            </h1>
-            <p className="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
-              Complete administrative control over all PGs, room sharings, dynamic locations, amenities, customer leads, and platform safety.
-            </p>
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-brand-500/20 text-brand-300 text-[11px] font-bold border border-brand-500/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Live Operations System Active
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+                Kerala<span className="text-amber-400">PG</span>.com Admin Dashboard
+              </h1>
+              <p className="text-slate-300 text-xs sm:text-sm max-w-xl leading-relaxed">
+                Complete administrative control over all PGs, room sharings, dynamic locations, amenities, customer leads, and platform safety.
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

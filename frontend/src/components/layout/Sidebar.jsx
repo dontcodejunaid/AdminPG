@@ -63,18 +63,22 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
       {/* Sidebar Container */}
       <aside className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
-        {/* Brand Header */}
-        <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+        {/* Brand Header with Official Logo */}
+        <div className="h-20 px-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/20">
-              K
+            <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md border border-slate-200 dark:border-slate-700 flex-shrink-0">
+              <img
+                src="/logo.png"
+                alt="KeralaPG Logo"
+                className="h-full w-full object-contain"
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                  Kerala<span className="text-brand-600 dark:text-brand-400">PG</span>
+                  Kerala<span className="text-amber-500">PG</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                   Admin
                 </span>
               </div>
