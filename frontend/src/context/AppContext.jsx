@@ -4,26 +4,21 @@ import { api } from '../services/api';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Active role can be toggled in real-time by the user to test RBAC!
-  const [currentUser, setCurrentUser] = useState({
-    id: 'usr_1',
-    name: 'Junaid (Super Admin)',
-    role: 'Super Admin', // 'Super Admin' | 'Admin' | 'Staff'
-    email: 'superadmin@keralapg.com',
-    permissions: {
-      canAddPG: true,
-      canEditPG: true,
-      canDeletePG: true,
-      canVerifyPG: true,
-      canManageLocations: true,
-      canManageFacilities: true,
-      canManageEnquiries: true,
-      canManageCustomers: true,
-      canModerateReports: true,
-      canManagePayments: true,
-      canManageCMS: true,
-      canManageBanners: true,
-      canManageUsers: true
+  // Check localStorage for persisted user login
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('keralapg_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem('keralapg_auth_user'));
+    } catch {
+      return false;
     }
   });
 
@@ -54,6 +49,32 @@ export const AppProvider = ({ children }) => {
 
   const removeToast = (id) => {
     setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  // Login Handler
+  const login = (userData, token) => {
+    setCurrentUser(userData);
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem('keralapg_auth_user', JSON.stringify(userData));
+      if (token) localStorage.setItem('keralapg_auth_token', token);
+    } catch (e) {
+      console.error('Storage error:', e);
+    }
+    showToast(`Welcome back, ${userData.name}!`, 'success');
+  };
+
+  // Logout Handler
+  const logout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    try {
+      localStorage.removeItem('keralapg_auth_user');
+      localStorage.removeItem('keralapg_auth_token');
+    } catch (e) {
+      console.error('Storage error:', e);
+    }
+    showToast('Logged out successfully', 'info');
   };
 
   // Switch Role Helper for Testing RBAC
@@ -112,13 +133,20 @@ export const AppProvider = ({ children }) => {
       'Staff': 'Staff Executive'
     };
 
-    setCurrentUser({
+    const updatedUser = {
       id: newRole === 'Super Admin' ? 'usr_1' : (newRole === 'Admin' ? 'usr_2' : 'usr_3'),
       name: names[newRole],
       role: newRole,
       email: `${newRole.toLowerCase().replace(' ', '')}@keralapg.com`,
       permissions: rolePermissions[newRole]
-    });
+    };
+
+    setCurrentUser(updatedUser);
+    try {
+      localStorage.setItem('keralapg_auth_user', JSON.stringify(updatedUser));
+    } catch (e) {
+      console.error(e);
+    }
 
     showToast(`Switched active view to: ${newRole}`, 'info');
   };
@@ -130,6 +158,9 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider value={{
       currentUser,
+      isAuthenticated,
+      login,
+      logout,
       switchRole,
       activeTab,
       setActiveTab,

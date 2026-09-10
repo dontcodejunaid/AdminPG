@@ -14,6 +14,66 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST /api/users/login (Universal Login for Super Admin, Admin, Staff, and Customer Users)
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. First check admin staff users
+    const adminUsers = await store.findAll('adminUsers');
+    let user = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+    if (user) {
+      const updated = await store.update('adminUsers', user.id, { lastLogin: new Date().toISOString() });
+      return res.json({
+        success: true,
+        message: `Welcome back, ${user.name}!`,
+        token: `keralapg_jwt_${user.id}_${Date.now()}`,
+        roleType: 'admin',
+        data: updated || user
+      });
+    }
+
+    // 2. Check customer / seeker registry
+    const customers = await store.findAll('customers');
+    let customer = customers.find(c => c.email?.toLowerCase() === cleanEmail || c.phone?.replace(/[^0-9]/g, '') === cleanEmail.replace(/[^0-9]/g, ''));
+
+    if (customer || cleanEmail === 'seeker@keralapg.com' || cleanEmail === 'user@keralapg.com') {
+      const customerData = customer || {
+        id: `cust_${Date.now()}`,
+        name: 'Salih Rahman (PG Seeker)',
+        email: cleanEmail,
+        phone: '+91 98460 99881',
+        city: 'Kochi',
+        dateJoined: new Date().toISOString().split('T')[0],
+        savedPgs: ['pg_101', 'pg_102'],
+        totalEnquiries: 2,
+        totalPaid: 19
+      };
+
+      return res.json({
+        success: true,
+        message: `Welcome to KeralaPG Seeker Portal, ${customerData.name}!`,
+        token: `keralapg_user_jwt_${customerData.id}_${Date.now()}`,
+        roleType: 'customer',
+        data: {
+          ...customerData,
+          role: 'Customer'
+        }
+      });
+    }
+
+    return res.status(401).json({ success: false, error: 'Invalid credentials or user not registered' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /api/users
 router.post('/', async (req, res) => {
   try {

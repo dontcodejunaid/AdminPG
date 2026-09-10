@@ -956,7 +956,7 @@
       "role": "Super Admin",
       "phone": "+91 98470 11111",
       "status": "Active",
-      "lastLogin": "2026-09-10T10:30:00.000Z",
+      "lastLogin": "2026-09-10T07:05:33.252Z",
       "permissions": {
         "canAddPG": true,
         "canEditPG": true,
@@ -971,7 +971,8 @@
         "canManageCMS": true,
         "canManageBanners": true,
         "canManageUsers": true
-      }
+      },
+      "updatedAt": "2026-09-10T07:05:33.252Z"
     },
     {
       "id": "usr_2",
@@ -1004,7 +1005,7 @@
       "role": "Staff",
       "phone": "+91 98470 33333",
       "status": "Active",
-      "lastLogin": "2026-09-10T09:15:00.000Z",
+      "lastLogin": "2026-09-10T06:30:52.446Z",
       "permissions": {
         "canAddPG": true,
         "canEditPG": true,
@@ -1019,7 +1020,8 @@
         "canManageCMS": false,
         "canManageBanners": false,
         "canManageUsers": false
-      }
+      },
+      "updatedAt": "2026-09-10T06:30:52.447Z"
     }
   ]
 }

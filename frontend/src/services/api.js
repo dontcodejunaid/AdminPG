@@ -16,7 +16,14 @@ async function request(endpoint, options = {}) {
 
   try {
     const res = await fetch(url, config);
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { error: text || `Server returned error (${res.status})` };
+    }
+
     if (!res.ok) {
       throw new Error(data.error || `HTTP error! status: ${res.status}`);
     }
@@ -103,7 +110,8 @@ export const api = {
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'PATCH' }),
   markAllNotificationsRead: () => request('/notifications/mark-all-read', { method: 'POST' }),
 
-  // Admin Users & RBAC
+  // Admin Users & RBAC & Auth
+  login: (credentials) => request('/users/login', { method: 'POST', body: credentials }),
   getUsers: () => request('/users'),
   createUser: (data) => request('/users', { method: 'POST', body: data }),
   updateUser: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
