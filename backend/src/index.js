@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { store } from './services/store.js';
 
 import statsRoutes from './routes/stats.js';
@@ -17,6 +19,9 @@ import notificationsRoutes from './routes/notifications.js';
 import usersRoutes from './routes/users.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -38,7 +43,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount Routes
+// Mount API Routes
 app.use('/api/stats', statsRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/locations', locationsRoutes);
@@ -51,6 +56,16 @@ app.use('/api/cms', cmsRoutes);
 app.use('/api/banners', bannersRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/users', usersRoutes);
+
+// Serve Frontend in Production
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(frontendDist, 'index.html'), (err) => {
+    if (err) next();
+  });
+});
 
 // Error Handler
 app.use((err, req, res, next) => {
