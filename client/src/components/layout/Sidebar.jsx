@@ -1,0 +1,176 @@
+import React from 'react';
+import { 
+  LayoutDashboard, 
+  Building2, 
+  MapPin, 
+  Sparkles, 
+  BadgeCheck, 
+  MessageSquareText, 
+  Users, 
+  AlertOctagon, 
+  Star, 
+  CreditCard, 
+  FileText, 
+  Image as ImageIcon, 
+  Bell, 
+  ShieldAlert,
+  ChevronRight,
+  ExternalLink
+} from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+
+export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => {
+  const { activeTab, setActiveTab, currentUser, unreadNotifsCount } = useApp();
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard, category: 'Overview', moduleNum: '1' },
+    
+    // Core Property Ops
+    { id: 'properties', label: 'PG Management', icon: Building2, category: 'Properties', moduleNum: '2 & 3', highlight: true },
+    { id: 'locations', label: 'Locations (City/Area)', icon: MapPin, category: 'Properties', moduleNum: '4' },
+    { id: 'facilities', label: 'Facilities & Amenities', icon: Sparkles, category: 'Properties', moduleNum: '5' },
+    { id: 'verifications', label: 'Verification Hub', icon: BadgeCheck, category: 'Properties', moduleNum: '6' },
+    { id: 'featured', label: 'Featured PGs', icon: Star, category: 'Properties', moduleNum: '10' },
+
+    // Leads & CRM
+    { id: 'enquiries', label: 'Customer Enquiries', icon: MessageSquareText, category: 'Growth & CRM', moduleNum: '7' },
+    { id: 'customers', label: 'Customer Registry', icon: Users, category: 'Growth & CRM', moduleNum: '8' },
+    { id: 'payments', label: 'Payments & ₹19 Log', icon: CreditCard, category: 'Growth & CRM', moduleNum: '11' },
+
+    // Moderation & Marketing
+    { id: 'reported', label: 'Reported Listings', icon: AlertOctagon, category: 'Trust & Safety', moduleNum: '9' },
+    { id: 'banners', label: 'Banners & Ads', icon: ImageIcon, category: 'Marketing', moduleNum: '13' },
+    { id: 'cms', label: 'Pages & Content', icon: FileText, category: 'Marketing', moduleNum: '12' },
+
+    // System
+    { id: 'notifications', label: 'Activity & Alerts', icon: Bell, category: 'System', moduleNum: '14' },
+    { id: 'users', label: 'Admin Users & Roles', icon: ShieldAlert, category: 'System', moduleNum: '15' }
+  ];
+
+  // Group nav items by category
+  const categories = ['Overview', 'Properties', 'Growth & CRM', 'Trust & Safety', 'Marketing', 'System'];
+
+  return (
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <aside className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        
+        {/* Brand Header */}
+        <div className="h-16 px-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-500/20">
+              K
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
+                  Kerala<span className="text-brand-600 dark:text-brand-400">PG</span>
+                </span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+                  Admin
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                Master Control Center
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation List */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+          {categories.map(cat => {
+            const items = navItems.filter(item => item.category === cat);
+            if (items.length === 0) return null;
+
+            return (
+              <div key={cat} className="space-y-1">
+                <h4 className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  {cat}
+                </h4>
+                {items.map(item => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setIsMobileOpen(false);
+                      }}
+                      className={`w-full group flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                        isActive 
+                          ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300 font-semibold shadow-sm' 
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-4 h-4 transition-colors ${
+                          isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 group-hover:text-slate-600 dark:text-slate-400'
+                        }`} />
+                        <span>{item.label}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {item.highlight && (
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded">
+                            Core
+                          </span>
+                        )}
+                        {item.id === 'notifications' && unreadNotifsCount > 0 && (
+                          <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                            {unreadNotifsCount}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Quick PG Add CTA */}
+        {currentUser.permissions.canAddPG && (
+          <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <button
+              onClick={() => onOpenNewPgModal()}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-emerald-600 hover:from-brand-700 hover:to-emerald-700 text-white text-sm font-semibold shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 transition-all"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>+ Add New PG Property</span>
+            </button>
+          </div>
+        )}
+
+        {/* Active Role Footer */}
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
+              {currentUser.name.charAt(0)}
+            </div>
+            <div className="truncate max-w-[130px]">
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                {currentUser.name}
+              </p>
+              <p className="text-[10px] text-brand-600 dark:text-brand-400 font-semibold truncate">
+                {currentUser.role}
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </>
+  );
+};
