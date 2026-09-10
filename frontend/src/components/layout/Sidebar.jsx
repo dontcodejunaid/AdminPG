@@ -63,10 +63,10 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
       {/* Sidebar Container */}
       <aside className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
-        {/* Brand Header with Official Logo */}
-        <div className="h-20 px-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+        {/* Brand Header with Emblem Logo */}
+        <div className="h-20 px-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-brand-50/30 dark:bg-brand-950/20">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md border border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <div className="h-11 w-11 rounded-2xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md border border-brand-200/60 dark:border-slate-700 flex-shrink-0">
               <img
                 src="/logo.png"
                 alt="KeralaPG Logo"
@@ -75,15 +75,15 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                  Kerala<span className="text-amber-500">PG</span>
+                <span className="font-extrabold text-base tracking-tight text-brand-900 dark:text-white">
+                  Kerala<span className="text-amber-500 font-black">PG</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className="text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300">
                   Admin
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                Master Control Center
+                Master Operations Hub
               </p>
             </div>
           </div>
@@ -113,7 +113,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
                       }}
                       className={`w-full group flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                         isActive 
-                          ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300 font-semibold shadow-sm' 
+                          ? 'bg-brand-50 text-brand-800 dark:bg-brand-950/80 dark:text-brand-300 font-bold shadow-sm border border-brand-200/60 dark:border-brand-800/40' 
                           : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
@@ -126,7 +126,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
 
                       <div className="flex items-center gap-1.5">
                         {item.highlight && (
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded">
                             Core
                           </span>
                         )}
@@ -149,7 +149,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
           <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
             <button
               onClick={() => onOpenNewPgModal()}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-emerald-600 hover:from-brand-700 hover:to-emerald-700 text-white text-sm font-semibold shadow-md shadow-brand-600/20 flex items-center justify-center gap-2 transition-all"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white text-sm font-bold shadow-md shadow-brand-600/25 flex items-center justify-center gap-2 transition-all"
             >
               <Building2 className="w-4 h-4" />
               <span>+ Add New PG Property</span>
@@ -160,14 +160,14 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
         {/* Active Role Footer */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
+            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center text-xs font-black">
               {currentUser.name.charAt(0)}
             </div>
             <div className="truncate max-w-[130px]">
               <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                 {currentUser.name}
               </p>
-              <p className="text-[10px] text-brand-600 dark:text-brand-400 font-semibold truncate">
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold truncate">
                 {currentUser.role}
               </p>
             </div>

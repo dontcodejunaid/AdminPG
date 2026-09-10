@@ -24,11 +24,20 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #1b5e50;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* KeralaPG Heritage Gradients */
+.bg-kerala-hero {
+  background: linear-gradient(135deg, #0f342d 0%, #1b5e50 50%, #2a4736 100%);
+}
+
+.bg-kerala-accent {
+  background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
 }
 
 .glass-panel {
@@ -38,7 +47,7 @@
 }
 
 .dark .glass-panel {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 52, 45, 0.85);
 }
 
 /* Smooth transitions */
