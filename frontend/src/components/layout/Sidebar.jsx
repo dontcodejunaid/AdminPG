@@ -15,37 +15,51 @@ import {
   Bell, 
   ShieldAlert,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  LogOut
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => {
-  const { activeTab, setActiveTab, currentUser, unreadNotifsCount } = useApp();
+  const { activeTab, setActiveTab, currentUser, unreadNotifsCount, logout } = useApp();
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard, category: 'Overview', moduleNum: '1' },
+
+  // Define all navigation items with role restrictions
+  const allNavItems = [
+    { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard, category: 'Overview', moduleNum: '1', roles: ['Super Admin', 'Admin', 'Staff'] },
     
     // Core Property Ops
-    { id: 'properties', label: 'PG Management', icon: Building2, category: 'Properties', moduleNum: '2 & 3', highlight: true },
-    { id: 'locations', label: 'Locations (City/Area)', icon: MapPin, category: 'Properties', moduleNum: '4' },
-    { id: 'facilities', label: 'Facilities & Amenities', icon: Sparkles, category: 'Properties', moduleNum: '5' },
-    { id: 'verifications', label: 'Verification Hub', icon: BadgeCheck, category: 'Properties', moduleNum: '6' },
-    { id: 'featured', label: 'Featured PGs', icon: Star, category: 'Properties', moduleNum: '10' },
+    { id: 'properties', label: 'PG Management', icon: Building2, category: 'Properties', moduleNum: '2 & 3', highlight: true, roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'locations', label: 'Locations (City/Area)', icon: MapPin, category: 'Properties', moduleNum: '4', roles: ['Super Admin', 'Admin'] },
+    { id: 'facilities', label: 'Facilities & Amenities', icon: Sparkles, category: 'Properties', moduleNum: '5', roles: ['Super Admin', 'Admin'] },
+    { id: 'verifications', label: 'Verification Hub', icon: BadgeCheck, category: 'Properties', moduleNum: '6', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'featured', label: 'Featured PGs', icon: Star, category: 'Properties', moduleNum: '10', roles: ['Super Admin', 'Admin'] },
 
     // Leads & CRM
-    { id: 'enquiries', label: 'Customer Enquiries', icon: MessageSquareText, category: 'Growth & CRM', moduleNum: '7' },
-    { id: 'customers', label: 'Customer Registry', icon: Users, category: 'Growth & CRM', moduleNum: '8' },
-    { id: 'payments', label: 'Payments & ₹19 Log', icon: CreditCard, category: 'Growth & CRM', moduleNum: '11' },
+    { id: 'enquiries', label: 'Customer Enquiries', icon: MessageSquareText, category: 'Growth & CRM', moduleNum: '7', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'customers', label: 'Customer Registry', icon: Users, category: 'Growth & CRM', moduleNum: '8', roles: ['Super Admin', 'Admin'] },
+    { id: 'payments', label: 'Payments & ₹19 Log', icon: CreditCard, category: 'Growth & CRM', moduleNum: '11', roles: ['Super Admin', 'Admin'] },
 
     // Moderation & Marketing
-    { id: 'reported', label: 'Reported Listings', icon: AlertOctagon, category: 'Trust & Safety', moduleNum: '9' },
-    { id: 'banners', label: 'Banners & Ads', icon: ImageIcon, category: 'Marketing', moduleNum: '13' },
-    { id: 'cms', label: 'Pages & Content', icon: FileText, category: 'Marketing', moduleNum: '12' },
+    { id: 'reported', label: 'Reported Listings', icon: AlertOctagon, category: 'Trust & Safety', moduleNum: '9', roles: ['Super Admin', 'Admin'] },
+    { id: 'banners', label: 'Banners & Ads', icon: ImageIcon, category: 'Marketing', moduleNum: '13', roles: ['Super Admin', 'Admin'] },
+    { id: 'cms', label: 'Pages & Content', icon: FileText, category: 'Marketing', moduleNum: '12', roles: ['Super Admin', 'Admin'] },
 
     // System
-    { id: 'notifications', label: 'Activity & Alerts', icon: Bell, category: 'System', moduleNum: '14' },
-    { id: 'users', label: 'Admin Users & Roles', icon: ShieldAlert, category: 'System', moduleNum: '15' }
+    { id: 'notifications', label: 'Activity & Alerts', icon: Bell, category: 'System', moduleNum: '14', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'users', label: 'Admin Users & Roles', icon: ShieldAlert, category: 'System', moduleNum: '15', roles: ['Super Admin'] }
   ];
+
+  const currentRole = currentUser?.role || 'Super Admin';
+  const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
+
+  // Role metadata for header
+  const roleDisplay = {
+    'Super Admin': { badge: 'Super Admin', sub: 'Master Control Hub', badgeColor: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300' },
+    'Admin': { badge: 'Admin', sub: 'Operations Portal', badgeColor: 'bg-brand-100 text-brand-900 dark:bg-brand-950 dark:text-brand-300' },
+    'Staff': { badge: 'Staff', sub: 'Field & Ops Portal', badgeColor: 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300' }
+  };
+  const activeRoleInfo = roleDisplay[currentRole] || roleDisplay['Super Admin'];
 
   // Group nav items by category
   const categories = ['Overview', 'Properties', 'Growth & CRM', 'Trust & Safety', 'Marketing', 'System'];
@@ -78,12 +92,12 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
                 <span className="font-extrabold text-base tracking-tight text-brand-900 dark:text-white">
                   Kerala<span className="text-amber-500 font-black">PG</span>
                 </span>
-                <span className="text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300">
-                  Admin
+                <span className={`text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded ${activeRoleInfo.badgeColor}`}>
+                  {activeRoleInfo.badge}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                Master Operations Hub
+                {activeRoleInfo.sub}
               </p>
             </div>
           </div>
@@ -159,20 +173,29 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
 
         {/* Active Role Footer */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center text-xs font-black">
-              {currentUser.name.charAt(0)}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center text-xs font-black flex-shrink-0">
+              {currentUser?.name?.charAt(0) || 'A'}
             </div>
-            <div className="truncate max-w-[130px]">
+            <div className="truncate max-w-[120px]">
               <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                {currentUser.name}
+                {currentUser?.name || 'Administrator'}
               </p>
               <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold truncate">
-                {currentUser.role}
+                {currentUser?.role || 'Super Admin'}
               </p>
             </div>
           </div>
+
+          <button
+            onClick={logout}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
+
 
       </aside>
     </>

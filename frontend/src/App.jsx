@@ -5,6 +5,11 @@ import { Header } from './components/layout/Header';
 import { ToastContainer } from './components/common/Toast';
 import { PGFormModal } from './components/forms/PGFormModal';
 
+// Auth
+import { LoginPage } from './pages/LoginPage';
+
+import { SeekerPortalPage } from './pages/SeekerPortalPage';
+
 // Pages for all 15 modules
 import { DashboardHome } from './pages/DashboardHome';
 import { PropertiesPage } from './pages/PropertiesPage';
@@ -22,10 +27,26 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
 
 export function App() {
-  const { activeTab } = useApp();
+  const { activeTab, isAuthenticated, currentUser } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPgModalOpen, setIsPgModalOpen] = useState(false);
   const [pgToEdit, setPgToEdit] = useState(null);
+
+  // If user is not signed in, show the Universal Login Page
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // If user role is Customer / Seeker / User, open the dedicated Seeker Portal
+  const isCustomerUser = currentUser?.role === 'Customer' || currentUser?.role === 'User' || currentUser?.role === 'PG Seeker';
+  if (isCustomerUser) {
+    return (
+      <>
+        <SeekerPortalPage />
+        <ToastContainer />
+      </>
+    );
+  }
 
   const handleOpenNewPg = () => {
     setPgToEdit(null);
