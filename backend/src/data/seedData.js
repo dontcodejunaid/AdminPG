@@ -115,7 +115,7 @@ export const initialSeedData = {
       totalBeds: 42,
       availableBeds: 6,
       charges: {
-        deposit: 5000,
+        deposit: 5001,
         foodCharges: "Included (3 times daily)",
         electricityCharges: "As per sub-meter (₹9/unit)",
         maintenanceCharges: 500,
@@ -123,7 +123,7 @@ export const initialSeedData = {
       },
       rooms: [
         { id: "r_101_1", type: "Single Sharing", rent: 14000, deposit: 10000, totalBeds: 6, availableBeds: 1, hasAC: true, hasAttachedBath: true },
-        { id: "r_101_2", type: "2 Sharing", rent: 9500, deposit: 5000, totalBeds: 16, availableBeds: 3, hasAC: true, hasAttachedBath: true },
+        { id: "r_101_2", type: "2 Sharing", rent: 9500, deposit: 5001, totalBeds: 16, availableBeds: 3, hasAC: true, hasAttachedBath: true },
         { id: "r_101_3", type: "3 Sharing", rent: 7500, deposit: 4000, totalBeds: 12, availableBeds: 2, hasAC: false, hasAttachedBath: true },
         { id: "r_101_4", type: "4 Sharing", rent: 6500, deposit: 3000, totalBeds: 8, availableBeds: 0, hasAC: false, hasAttachedBath: true }
       ],
@@ -165,7 +165,7 @@ export const initialSeedData = {
       },
       rooms: [
         { id: "r_102_1", type: "Single Sharing", rent: 13500, deposit: 8000, totalBeds: 5, availableBeds: 0, hasAC: true, hasAttachedBath: true },
-        { id: "r_102_2", type: "2 Sharing", rent: 9000, deposit: 5000, totalBeds: 20, availableBeds: 1, hasAC: true, hasAttachedBath: true },
+        { id: "r_102_2", type: "2 Sharing", rent: 9000, deposit: 5001, totalBeds: 20, availableBeds: 1, hasAC: true, hasAttachedBath: true },
         { id: "r_102_3", type: "3 Sharing", rent: 7200, deposit: 4000, totalBeds: 10, availableBeds: 1, hasAC: false, hasAttachedBath: true }
       ],
       facilities: ["fac_food", "fac_wifi", "fac_ac", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_lift", "fac_attach_bath", "fac_power"],
@@ -205,7 +205,7 @@ export const initialSeedData = {
         otherCharges: "Gym access included"
       },
       rooms: [
-        { id: "r_103_1", type: "Single Studio", rent: 18000, deposit: 15000, totalBeds: 10, availableBeds: 3, hasAC: true, hasAttachedBath: true },
+        { id: "r_103_1", type: "Single Studio", rent: 18000, deposit: 15001, totalBeds: 10, availableBeds: 3, hasAC: true, hasAttachedBath: true },
         { id: "r_103_2", type: "2 Sharing", rent: 11000, deposit: 8000, totalBeds: 30, availableBeds: 7, hasAC: true, hasAttachedBath: true },
         { id: "r_103_3", type: "3 Sharing", rent: 8500, deposit: 6000, totalBeds: 10, availableBeds: 2, hasAC: false, hasAttachedBath: true }
       ],

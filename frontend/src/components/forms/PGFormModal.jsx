@@ -41,7 +41,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     description: '',
     contactNumber: '',
     whatsappNumber: '',
-    photos: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000&q=80'],
+    photos: [],
     videoUrl: '',
     status: 'Active',
     availabilityStatus: 'Available',
@@ -49,7 +49,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     isFeatured: false,
     featuredOrder: 0,
     charges: {
-      deposit: 5000,
+      deposit: 5001,
       foodCharges: 'Included (3 times daily)',
       electricityCharges: 'As per sub-meter',
       maintenanceCharges: 300,
@@ -57,7 +57,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     },
     rooms: [
       { id: 'r_1', type: 'Single Sharing', rent: 12000, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
-      { id: 'r_2', type: '2 Sharing', rent: 8500, deposit: 5000, totalBeds: 10, availableBeds: 3, hasAC: true, hasAttachedBath: true }
+      { id: 'r_2', type: '2 Sharing', rent: 8500, deposit: 5001, totalBeds: 10, availableBeds: 3, hasAC: true, hasAttachedBath: true }
     ],
     facilities: ['fac_food', 'fac_wifi', 'fac_ac', 'fac_wm', 'fac_cctv']
   });
@@ -104,7 +104,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           description: '',
           contactNumber: '',
           whatsappNumber: '',
-          photos: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000&q=80'],
+          photos: [],
           videoUrl: '',
           status: 'Active',
           availabilityStatus: 'Available',
@@ -112,7 +112,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           isFeatured: false,
           featuredOrder: 0,
           charges: {
-            deposit: 5000,
+            deposit: 5001,
             foodCharges: 'Included (3 times daily)',
             electricityCharges: 'As per meter',
             maintenanceCharges: 300,
@@ -120,7 +120,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           },
           rooms: [
             { id: 'r_1', type: 'Single Sharing', rent: 12000, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
-            { id: 'r_2', type: '2 Sharing', rent: 8500, deposit: 5000, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
+            { id: 'r_2', type: '2 Sharing', rent: 8500, deposit: 5001, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
           ],
           facilities: ['fac_food', 'fac_wifi', 'fac_ac', 'fac_wm', 'fac_cctv']
         });
@@ -176,6 +176,20 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     if (!newPhotoUrl.trim()) return;
     setFormData(prev => ({ ...prev, photos: [...prev.photos, newPhotoUrl.trim()] }));
     setNewPhotoUrl('');
+  };
+  const handlePhotoFiles = (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+
+    Promise.all(files.map(file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    }))).then(newPhotos => {
+      setFormData(prev => ({ ...prev, photos: [...prev.photos, ...newPhotos] }));
+    }).catch(() => showToast('Could not read one or more photos', 'error'));
+    event.target.value = '';
   };
   const handleRemovePhoto = (index) => {
     setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== index) }));
@@ -778,7 +792,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Add Photo URL (High Resolution)
+              Add Photo
             </label>
             <div className="flex gap-2">
               <input
@@ -793,15 +807,20 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 onClick={handleAddPhoto}
                 className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl"
               >
-                Add Photo
+                Add URL
               </button>
             </div>
+            <label className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer">
+              <Plus className="w-3.5 h-3.5" />
+              Choose from device
+              <input type="file" accept="image/*" multiple onChange={handlePhotoFiles} className="sr-only" />
+            </label>
           </div>
 
           {/* Photos Grid */}
           <div className="space-y-2">
             <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Uploaded Photo Gallery ({formData.photos.length})
+              Photo Gallery ({formData.photos.length})
             </h5>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {formData.photos.map((url, idx) => (
@@ -818,6 +837,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 </div>
               ))}
             </div>
+            {!formData.photos.length && <p className="text-xs text-slate-400">No photos added yet.</p>}
           </div>
 
           <div>

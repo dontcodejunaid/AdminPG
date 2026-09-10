@@ -56,7 +56,7 @@ export const BannersPage = () => {
     setFormData({
       title: '',
       subtitle: '',
-      imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80',
+      imageUrl: '',
       targetUrl: '/search?city=Kochi',
       placement: 'Homepage Hero Top',
       city: 'All Cities',
@@ -65,6 +65,17 @@ export const BannersPage = () => {
       endDate: '2026-12-31'
     });
     setIsModalOpen(true);
+  };
+
+  const handleBannerImageFile = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => setFormData(prev => ({ ...prev, imageUrl: reader.result }));
+    reader.onerror = () => showToast('Could not read the banner image', 'error');
+    reader.readAsDataURL(file);
+    event.target.value = '';
   };
 
   const handleOpenEdit = (b) => {
@@ -267,15 +278,20 @@ export const BannersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Image URL *</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Banner Image *</label>
             <input
               type="text"
-              value={formData.imageUrl}
+              value={formData.imageUrl.startsWith('data:') ? '' : formData.imageUrl}
               onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-              placeholder="https://images.unsplash.com/... or hosted banner image"
+              placeholder={formData.imageUrl.startsWith('data:') ? 'Device image selected' : 'https://images.unsplash.com/... or hosted image URL'}
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none"
-              required
             />
+            <label className="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer">
+              <ImageIcon className="w-3.5 h-3.5" />
+              Choose from device
+              <input type="file" accept="image/*" onChange={handleBannerImageFile} className="sr-only" />
+            </label>
+            {formData.imageUrl && <img src={formData.imageUrl} alt="Banner preview" className="mt-2 h-24 w-full object-cover rounded-xl border border-slate-200 dark:border-slate-700" />}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

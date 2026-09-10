@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
       id: `ban_${uuidv4().substring(0, 8)}`,
       title: payload.title,
       subtitle: payload.subtitle || '',
-      imageUrl: payload.imageUrl || 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80',
+      imageUrl: payload.imageUrl || '',
       targetUrl: payload.targetUrl || '/',
       placement: payload.placement || 'Homepage Hero Top',
       city: payload.city || 'All Cities',
