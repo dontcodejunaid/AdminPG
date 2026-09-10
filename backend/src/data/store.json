@@ -213,6 +213,69 @@
   ],
   "properties": [
     {
+      "id": "pg_1789021550060",
+      "name": "Royal palms",
+      "slug": "royal-palms-1789021550060",
+      "type": "Boys",
+      "state": "Karnataka",
+      "city": "",
+      "area": "",
+      "fullAddress": "xyz road",
+      "mapUrl": "",
+      "description": "",
+      "contactNumber": "998877665",
+      "whatsappNumber": "998877665",
+      "photos": [
+        "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000&q=80"
+      ],
+      "videoUrl": "",
+      "status": "Active",
+      "availabilityStatus": "Available",
+      "verificationStatus": "Verified",
+      "isFeatured": true,
+      "featuredOrder": 0,
+      "totalBeds": 14,
+      "availableBeds": 3,
+      "charges": {
+        "deposit": 5001,
+        "foodCharges": "Included (3 times daily)",
+        "electricityCharges": "As per meter",
+        "maintenanceCharges": 300,
+        "otherCharges": "None"
+      },
+      "rooms": [
+        {
+          "id": "r_1",
+          "type": "Single Sharing",
+          "rent": 1200,
+          "deposit": 8000,
+          "totalBeds": 4,
+          "availableBeds": 1,
+          "hasAC": true,
+          "hasAttachedBath": true
+        },
+        {
+          "id": "r_2",
+          "type": "2 Sharing",
+          "rent": 8500,
+          "deposit": 5001,
+          "totalBeds": 10,
+          "availableBeds": 2,
+          "hasAC": true,
+          "hasAttachedBath": true
+        }
+      ],
+      "facilities": [
+        "fac_food",
+        "fac_wifi",
+        "fac_ac",
+        "fac_wm",
+        "fac_cctv"
+      ],
+      "createdAt": "2026-09-10T06:25:50.060Z",
+      "updatedAt": "2026-09-10T06:33:23.300Z"
+    },
+    {
       "id": "pg_101",
       "name": "Malabar Luxury Executive PG for Men",
       "slug": "malabar-luxury-executive-pg-men-kakkanad",
@@ -231,15 +294,15 @@
         "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80"
       ],
       "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "status": "Active",
+      "status": "Inactive",
       "availabilityStatus": "Available",
       "verificationStatus": "Verified",
-      "isFeatured": true,
+      "isFeatured": false,
       "featuredOrder": 1,
       "totalBeds": 42,
       "availableBeds": 6,
       "charges": {
-        "deposit": 5000,
+        "deposit": 5001,
         "foodCharges": "Included (3 times daily)",
         "electricityCharges": "As per sub-meter (₹9/unit)",
         "maintenanceCharges": 500,
@@ -260,7 +323,7 @@
           "id": "r_101_2",
           "type": "2 Sharing",
           "rent": 9500,
-          "deposit": 5000,
+          "deposit": 5001,
           "totalBeds": 16,
           "availableBeds": 3,
           "hasAC": true,
@@ -300,7 +363,7 @@
         "fac_power"
       ],
       "createdAt": "2026-08-15T09:30:00.000Z",
-      "updatedAt": "2026-09-08T14:20:00.000Z"
+      "updatedAt": "2026-09-10T06:47:36.437Z"
     },
     {
       "id": "pg_102",
@@ -349,7 +412,7 @@
           "id": "r_102_2",
           "type": "2 Sharing",
           "rent": 9000,
-          "deposit": 5000,
+          "deposit": 5001,
           "totalBeds": 20,
           "availableBeds": 1,
           "hasAC": true,
@@ -401,7 +464,7 @@
       ],
       "videoUrl": "",
       "status": "Active",
-      "availabilityStatus": "Available",
+      "availabilityStatus": "Limited",
       "verificationStatus": "Verified",
       "isFeatured": true,
       "featuredOrder": 3,
@@ -419,7 +482,7 @@
           "id": "r_103_1",
           "type": "Single Studio",
           "rent": 18000,
-          "deposit": 15000,
+          "deposit": 15001,
           "totalBeds": 10,
           "availableBeds": 3,
           "hasAC": true,
@@ -461,7 +524,7 @@
         "fac_kitchen"
       ],
       "createdAt": "2026-08-25T16:45:00.000Z",
-      "updatedAt": "2026-09-09T18:30:00.000Z"
+      "updatedAt": "2026-09-10T06:47:04.104Z"
     },
     {
       "id": "pg_104",
@@ -607,10 +670,11 @@
       "budget": "₹9,000 - ₹10,000",
       "moveInDate": "2026-09-15",
       "message": "Looking for immediate joining near Infopark. Need AC 2-sharing room with food.",
-      "status": "New",
+      "status": "Visited",
       "adminNotes": "Customer called once, asked for callback around 6 PM.",
       "source": "Enquiry Form",
-      "createdAt": "2026-09-10T08:15:00.000Z"
+      "createdAt": "2026-09-10T08:15:00.000Z",
+      "updatedAt": "2026-09-10T06:19:20.427Z"
     },
     {
       "id": "enq_502",
@@ -623,10 +687,11 @@
       "budget": "₹13,000",
       "moveInDate": "2026-09-20",
       "message": "Need single room with attached bath near Technopark Phase 1.",
-      "status": "Contacted",
+      "status": "Interested",
       "adminNotes": "Sent photos & WhatsApp brochure. Scheduled visit for Saturday 11 AM.",
       "source": "WhatsApp Direct",
-      "createdAt": "2026-09-09T14:30:00.000Z"
+      "createdAt": "2026-09-09T14:30:00.000Z",
+      "updatedAt": "2026-09-10T06:19:23.606Z"
     },
     {
       "id": "enq_503",
@@ -755,9 +820,10 @@
       "customerPhone": "+91 94471 99000",
       "reason": "Full/unavailable",
       "complaint": "Owner told over call that all beds are full for past 2 months, but website still shows it as available.",
-      "status": "Pending",
-      "actionTaken": null,
-      "createdAt": "2026-09-08T15:20:00.000Z"
+      "status": "Ignored",
+      "actionTaken": "Marked as non-actionable / false alarm",
+      "createdAt": "2026-09-08T15:20:00.000Z",
+      "updatedAt": "2026-09-10T06:31:04.864Z"
     },
     {
       "id": "rep_702",
@@ -836,6 +902,20 @@
   ],
   "banners": [
     {
+      "id": "ban_217e37f4",
+      "title": "best girls pg in bangalore",
+      "subtitle": "zero brokerage",
+      "imageUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80",
+      "targetUrl": "/search?city=Kochi",
+      "placement": "Homepage Hero Top",
+      "city": "All Cities",
+      "isActive": true,
+      "startDate": "2026-09-10",
+      "endDate": "2026-12-31",
+      "createdAt": "2026-09-10T06:29:54.675Z",
+      "updatedAt": "2026-09-10T06:30:02.015Z"
+    },
+    {
       "id": "ban_01",
       "title": "Best Girls PGs in Kochi Infopark & SmartCity",
       "subtitle": "Verified hostels with food, Wi-Fi & 24/7 security",
@@ -845,7 +925,8 @@
       "city": "Kochi",
       "isActive": true,
       "startDate": "2026-08-01",
-      "endDate": "2026-12-31"
+      "endDate": "2026-12-31",
+      "updatedAt": "2026-09-10T06:28:09.227Z"
     },
     {
       "id": "ban_02",
@@ -926,8 +1007,9 @@
       "title": "New Enquiry Received",
       "message": "Salih Rahman submitted an enquiry for Malabar Luxury Executive PG (2 Sharing).",
       "timestamp": "2026-09-10T08:15:00.000Z",
-      "read": false,
-      "link": "/enquiries"
+      "read": true,
+      "link": "/enquiries",
+      "updatedAt": "2026-09-10T06:19:06.866Z"
     },
     {
       "id": "notif_2",
@@ -935,8 +1017,9 @@
       "title": "Listing Reported",
       "message": "Cyber Heights Gents PG reported for 'Full/unavailable'.",
       "timestamp": "2026-09-08T15:20:00.000Z",
-      "read": false,
-      "link": "/reported"
+      "read": true,
+      "link": "/reported",
+      "updatedAt": "2026-09-10T06:30:48.738Z"
     },
     {
       "id": "notif_3",
@@ -949,6 +1032,54 @@
     }
   ],
   "adminUsers": [
+    {
+      "id": "usr_466b60",
+      "name": "operation manager",
+      "email": "staff@kerala.in",
+      "role": "Admin",
+      "phone": "998877665",
+      "status": "Active",
+      "lastLogin": "2026-09-10T06:32:30.763Z",
+      "permissions": {
+        "canAddPG": true,
+        "canEditPG": true,
+        "canDeletePG": true,
+        "canVerifyPG": true,
+        "canManageLocations": true,
+        "canManageFacilities": true,
+        "canManageEnquiries": true,
+        "canManageCustomers": true,
+        "canModerateReports": true,
+        "canManagePayments": false,
+        "canManageCMS": true,
+        "canManageBanners": true,
+        "canManageUsers": false
+      }
+    },
+    {
+      "id": "usr_1669d7",
+      "name": "Zainab Rakiah",
+      "email": "zainab@gmail.com",
+      "role": "Super Admin",
+      "phone": "8861044384",
+      "status": "Active",
+      "lastLogin": "2026-09-10T06:18:51.503Z",
+      "permissions": {
+        "canAddPG": true,
+        "canEditPG": true,
+        "canDeletePG": true,
+        "canVerifyPG": true,
+        "canManageLocations": true,
+        "canManageFacilities": true,
+        "canManageEnquiries": true,
+        "canManageCustomers": true,
+        "canModerateReports": true,
+        "canManagePayments": true,
+        "canManageCMS": true,
+        "canManageBanners": true,
+        "canManageUsers": true
+      }
+    },
     {
       "id": "usr_1",
       "name": "Junaid (Super Admin)",
