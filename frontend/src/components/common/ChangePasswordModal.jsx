@@ -5,7 +5,7 @@ import { api } from '../../services/api';
 import { useApp } from '../../context/AppContext';
 
 export const ChangePasswordModal = ({ isOpen, onClose }) => {
-  const { currentUser, showToast } = useApp();
+  const { currentUser, showToast, login } = useApp();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,9 +17,17 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Check if user has an existing password or is setting one for the first time
+  const hasExistingPassword = Boolean(currentUser?.password || currentUser?.passwordHash || currentUser?.password_hash);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (hasExistingPassword && !currentPassword) {
+      setError('Please enter your current password');
+      return;
+    }
 
     if (!newPassword || newPassword.length < 4) {
       setError('New password must be at least 4 characters long');
@@ -33,13 +41,24 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
 
     setLoading(true);
     try {
-      await api.changePassword({
+      const res = await api.changePassword({
         userId: currentUser.id,
-        currentPassword,
+        email: currentUser.email,
+        currentPassword: hasExistingPassword ? currentPassword : null,
         newPassword
       });
 
-      showToast('Password changed successfully! Keep your new credentials safe.', 'success');
+      if (res?.data) {
+        // Update user state so hasExistingPassword is now true
+        login({ ...currentUser, ...res.data, password: newPassword });
+      }
+
+      showToast(
+        hasExistingPassword 
+          ? 'Password changed successfully! Keep your new credentials safe.' 
+          : 'Password set successfully! You can now sign in using your email & password or Google.', 
+        'success'
+      );
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -58,8 +77,12 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Change Your Password"
-      subtitle={`Update your login password for ${currentUser?.name || 'your account'} (${currentUser?.role || 'Staff'})`}
+      title={hasExistingPassword ? "Change Your Password" : "Set Account Password"}
+      subtitle={
+        hasExistingPassword
+          ? `Update your login password for ${currentUser?.name || 'your account'} (${currentUser?.role || 'Staff'})`
+          : `Create a password to enable direct email & password sign-in for ${currentUser?.name || 'your account'}`
+      }
       size="sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,34 +93,36 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        {/* Current Password */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-            Current Password
-          </label>
-          <div className="relative">
-            <input
-              type={showCurrent ? 'text' : 'password'}
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
-              className="w-full px-3 py-2 pr-10 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              {showCurrent ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            </button>
+        {/* Current Password (Only shown if user already has a password set) */}
+        {hasExistingPassword && (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                className="w-full px-3 py-2 pr-10 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                required={hasExistingPassword}
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                {showCurrent ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* New Password */}
         <div>
           <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-            New Password
+            {hasExistingPassword ? "New Password" : "Create Password"}
           </label>
           <div className="relative">
             <input
@@ -121,14 +146,14 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
         {/* Confirm New Password */}
         <div>
           <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-            Confirm New Password
+            {hasExistingPassword ? "Confirm New Password" : "Confirm Password"}
           </label>
           <div className="relative">
             <input
               type={showConfirm ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter new password"
+              placeholder="Re-enter password"
               className={`w-full px-3 py-2 pr-10 text-xs rounded-xl border bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 ${
                 confirmPassword && !passwordsMatch
                   ? 'border-rose-300 dark:border-rose-700 focus:ring-rose-500'
@@ -166,7 +191,11 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
             className="px-5 py-2 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-md shadow-brand-600/20 transition-all flex items-center gap-1.5"
           >
             <KeyRound className="w-3.5 h-3.5" />
-            <span>{loading ? 'Updating...' : 'Update Password'}</span>
+            <span>
+              {loading 
+                ? (hasExistingPassword ? 'Updating...' : 'Setting Password...') 
+                : (hasExistingPassword ? 'Update Password' : 'Set Password')}
+            </span>
           </button>
         </div>
       </form>

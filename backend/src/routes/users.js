@@ -374,25 +374,44 @@ router.post('/', async (req, res) => {
   }
 });
 
-// POST /api/users/change-password (User updates their own password)
+// POST /api/users/change-password (User updates or sets their own password)
 router.post('/change-password', async (req, res) => {
   try {
-    const { userId, currentPassword, newPassword } = req.body;
-    if (!userId || !newPassword) {
-      return res.status(400).json({ success: false, error: 'User ID and new password are required' });
+    const { userId, email, currentPassword, newPassword } = req.body;
+    if ((!userId && !email) || !newPassword) {
+      return res.status(400).json({ success: false, error: 'User identifier and new password are required' });
     }
     if (newPassword.length < 4) {
       return res.status(400).json({ success: false, error: 'New password must be at least 4 characters' });
     }
 
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    // Search in adminUsers
     const adminUsers = await store.findAll('adminUsers');
-    const user = adminUsers.find(u => u.id === userId);
+    let user = adminUsers.find(u => (userId && u.id === userId) || (cleanEmail && u.email.toLowerCase() === cleanEmail));
+    let collection = 'adminUsers';
+
+    if (!user) {
+      const customers = await store.findAll('customers');
+      user = customers.find(c => (userId && c.id === userId) || (cleanEmail && c.email?.toLowerCase() === cleanEmail));
+      collection = 'customers';
+    }
+
     if (!user) {
       return res.status(404).json({ success: false, error: 'User account not found' });
     }
 
-    if (user.password && currentPassword && user.password !== currentPassword && user.passwordHash !== currentPassword) {
-      return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+    const existingPassword = user.password || user.passwordHash || user.password_hash;
+
+    // If account already has a password, verify current password
+    if (existingPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, error: 'Current password is required to change your existing password.' });
+      }
+      if (existingPassword !== currentPassword) {
+        return res.status(400).json({ success: false, error: 'Current password is incorrect.' });
+      }
     }
 
     // If Supabase is configured and authUserId exists, update Supabase Auth password
@@ -404,7 +423,7 @@ router.post('/change-password', async (req, res) => {
       }
     }
 
-    const updated = await store.update('adminUsers', userId, {
+    const updated = await store.update(collection, user.id, {
       password: newPassword,
       passwordHash: newPassword,
       passwordLastChanged: new Date().toISOString()
@@ -412,7 +431,9 @@ router.post('/change-password', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Password changed successfully! Please use your new password next time you log in.',
+      message: existingPassword 
+        ? 'Password changed successfully! Keep your new credentials safe.' 
+        : 'Password created successfully! You can now log in using email & password or Google.',
       data: updated
     });
   } catch (err) {
