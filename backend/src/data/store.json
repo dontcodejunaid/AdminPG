@@ -304,7 +304,7 @@
         "fac_cctv"
       ],
       "createdAt": "2026-09-11T06:34:34.869Z",
-      "updatedAt": "2026-09-11T07:36:23.653Z"
+      "updatedAt": "2026-09-11T11:00:59.122Z"
     },
     {
       "id": "pg_1789021550060",
@@ -1163,7 +1163,10 @@
         "canManageCMS": false,
         "canManageBanners": false,
         "canManageUsers": false
-      }
+      },
+      "password": "KeralaPG@9M8M",
+      "passwordLastChanged": "2026-09-11T10:19:33.579Z",
+      "updatedAt": "2026-09-11T10:19:33.579Z"
     },
     {
       "id": "usr_466b60",
@@ -1220,7 +1223,7 @@
       "role": "Super Admin",
       "phone": "+91 98470 11111",
       "status": "Active",
-      "lastLogin": "2026-09-11T05:04:35.677Z",
+      "lastLogin": "2026-09-11T10:20:43.570Z",
       "permissions": {
         "canAddPG": true,
         "canEditPG": true,
@@ -1236,7 +1239,9 @@
         "canManageBanners": true,
         "canManageUsers": true
       },
-      "updatedAt": "2026-09-11T05:04:35.679Z"
+      "updatedAt": "2026-09-11T10:56:32.530Z",
+      "password": "admin123",
+      "passwordLastChanged": "2026-09-11T10:56:32.530Z"
     },
     {
       "id": "usr_2",
