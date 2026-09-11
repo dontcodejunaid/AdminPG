@@ -27,7 +27,7 @@ export const FacilitiesPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     category: 'General',
-    icon: 'Sparkles'
+    icon: 'ListChecks'
   });
 
   const categories = [
@@ -64,13 +64,13 @@ export const FacilitiesPage = () => {
 
   const handleOpenAdd = () => {
     setFacilityToEdit(null);
-    setFormData({ name: '', category: 'General', icon: 'Sparkles' });
+    setFormData({ name: '', category: 'General', icon: 'ListChecks' });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (fac) => {
     setFacilityToEdit(fac);
-    setFormData({ name: fac.name, category: fac.category || 'General', icon: fac.icon || 'Sparkles' });
+    setFormData({ name: fac.name, category: fac.category || 'General', icon: fac.icon || 'ListChecks' });
     setIsModalOpen(true);
   };
 

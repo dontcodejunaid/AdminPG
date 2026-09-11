@@ -172,7 +172,7 @@
     {
       "id": "fac_housekeep",
       "name": "Daily Housekeeping",
-      "icon": "Sparkles",
+      "icon": "Brush",
       "category": "Cleaning",
       "isDefault": true
     },
