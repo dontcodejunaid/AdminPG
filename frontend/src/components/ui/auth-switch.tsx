@@ -30,8 +30,8 @@ export function AuthSwitch({
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("superadmin@keralapg.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
