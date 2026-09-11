@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const MONTH_NAMES = [
@@ -22,7 +23,6 @@ const parseDate = (val) => {
   if (!val) return null;
   if (val instanceof Date && !isNaN(val.getTime())) return val;
   if (typeof val === 'string') {
-    // If YYYY-MM-DD
     const parts = val.split('-');
     if (parts.length === 3) {
       const parsed = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
@@ -54,8 +54,9 @@ export const CustomDatePicker = ({
   align = 'auto' // 'left', 'right', 'auto'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ dropUp: false, alignRight: false });
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
   const containerRef = useRef(null);
+  const popoverRef = useRef(null);
 
   const selectedDate = parseDate(value);
   const min = parseDate(minDate);
@@ -66,21 +67,49 @@ export const CustomDatePicker = ({
   const [viewYear, setViewYear] = useState(initialView.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialView.getMonth());
 
-  // Dynamic positioning when opened
-  useEffect(() => {
-    if (isOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      
-      // If less than 320px below, flip upwards
-      const shouldDropUp = spaceBelow < 320 && spaceAbove > 280;
-      const shouldAlignRight = align === 'right' || (align === 'auto' && (rect.left + 280 > window.innerWidth || rect.right > window.innerWidth - 60));
+  // Calculate screen coordinates for fixed Portal
+  const updatePosition = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const calendarWidth = 264;
+    const calendarHeight = 296;
 
-      setPosition({
-        dropUp: shouldDropUp,
-        alignRight: shouldAlignRight
-      });
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    let top;
+    if (spaceBelow >= calendarHeight + 12 || spaceBelow >= spaceAbove) {
+      top = rect.bottom + 6;
+    } else {
+      top = rect.top - calendarHeight - 6;
+    }
+
+    // Clamp top inside viewport
+    top = Math.max(12, Math.min(window.innerHeight - calendarHeight - 12, top));
+
+    let left;
+    if (align === 'right' || (align === 'auto' && (rect.left + calendarWidth > window.innerWidth - 20))) {
+      left = rect.right - calendarWidth;
+    } else {
+      left = rect.left;
+    }
+
+    // Clamp left inside viewport
+    left = Math.max(12, Math.min(window.innerWidth - calendarWidth - 12, left));
+
+    setCoords({ top, left });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      const handleScrollOrResize = () => updatePosition();
+      window.addEventListener('resize', handleScrollOrResize);
+      window.addEventListener('scroll', handleScrollOrResize, true);
+      return () => {
+        window.removeEventListener('resize', handleScrollOrResize);
+        window.removeEventListener('scroll', handleScrollOrResize, true);
+      };
     }
   }, [isOpen, align]);
 
@@ -95,7 +124,10 @@ export const CustomDatePicker = ({
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
+      if (
+        containerRef.current && !containerRef.current.contains(e.target) &&
+        popoverRef.current && !popoverRef.current.contains(e.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -131,7 +163,6 @@ export const CustomDatePicker = ({
     const newDate = new Date(y, m, d);
     const isoString = toIsoDateString(newDate);
     if (onChange) {
-      // Support both event-like objects and direct strings
       onChange({ target: { value: isoString } });
     }
     setIsOpen(false);
@@ -211,7 +242,11 @@ export const CustomDatePicker = ({
     <div ref={containerRef} className={`relative ${className}`}>
       {/* Trigger Button */}
       <div
-        onClick={() => !disabled && setIsOpen(prev => !prev)}
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen(prev => !prev);
+          }
+        }}
         className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 cursor-pointer shadow-sm hover:border-slate-300 dark:hover:border-slate-600 transition-all select-none ${
           disabled ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-900' : ''
         } ${isOpen ? 'ring-2 ring-brand-500/20 border-brand-500 dark:border-brand-500' : ''}`}
@@ -237,14 +272,18 @@ export const CustomDatePicker = ({
         </div>
       </div>
 
-      {/* Popover Calendar */}
-      {isOpen && (
+      {/* Popover Calendar rendered into document.body to prevent any container clipping */}
+      {isOpen && createPortal(
         <div
-          className={`absolute z-[9999] ${
-            position.dropUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-          } ${
-            position.alignRight ? 'right-0' : 'left-0'
-          } w-64 p-2.5 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150`}
+          ref={popoverRef}
+          style={{
+            position: 'fixed',
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            zIndex: 999999
+          }}
+          className="w-[264px] p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150 select-none"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header Month / Year & Prev / Next */}
           <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-700/60">
@@ -374,7 +413,7 @@ export const CustomDatePicker = ({
           </div>
 
           {/* Quick Actions Footer */}
-          <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 text-xs">
+          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700/60 text-xs">
             <button
               type="button"
               onClick={handleClear}
@@ -390,7 +429,8 @@ export const CustomDatePicker = ({
               Today
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
