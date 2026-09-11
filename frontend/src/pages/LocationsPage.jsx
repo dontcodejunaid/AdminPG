@@ -16,7 +16,7 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const LocationsPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState(null);
@@ -141,15 +141,21 @@ export const LocationsPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Remove area "${areaName}" from ${cityName}?`)) {
-      try {
-        await api.deleteArea(cityName, areaName);
-        showToast(`Area removed`, 'success');
-        fetchLocations(selectedState?.name, selectedCity?.name);
-        triggerRefresh();
-      } catch (err) {
-        showToast('Failed to delete area', 'error');
-      }
+    const ok = await confirm({
+      title: 'Remove Area',
+      message: `Are you sure you want to remove area "${areaName}" from ${cityName}?`,
+      confirmText: 'Remove Area',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteArea(cityName, areaName);
+      showToast(`Area removed successfully`, 'success');
+      fetchLocations(selectedState?.name, selectedCity?.name);
+      triggerRefresh();
+    } catch (err) {
+      showToast('Failed to delete area', 'error');
     }
   };
 
@@ -159,15 +165,21 @@ export const LocationsPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Delete city "${city.name}" and all its areas?`)) {
-      try {
-        await api.deleteCity(city.id);
-        showToast(`City deleted`, 'success');
-        fetchLocations(selectedState?.name);
-        triggerRefresh();
-      } catch (err) {
-        showToast('Failed to delete city', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete City',
+      message: `Are you sure you want to delete city "${city.name}" and all its areas?`,
+      confirmText: 'Delete City',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteCity(city.id);
+      showToast(`City deleted successfully`, 'success');
+      fetchLocations(selectedState?.name);
+      triggerRefresh();
+    } catch (err) {
+      showToast('Failed to delete city', 'error');
     }
   };
 

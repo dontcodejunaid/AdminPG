@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 
 const AppContext = createContext();
 
@@ -35,6 +36,36 @@ export const AppProvider = ({ children }) => {
   const [unreadNotifsCount, setUnreadNotifsCount] = useState(2);
   const [stats, setStats] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Custom Confirm Alert Dialog State
+  const [confirmState, setConfirmState] = useState(null);
+
+  const confirm = ({
+    title = 'Are you sure?',
+    message = 'This action cannot be undone.',
+    confirmText = 'Delete',
+    cancelText = 'Cancel',
+    type = 'danger'
+  }) => {
+    return new Promise((resolve) => {
+      setConfirmState({
+        title,
+        message,
+        confirmText,
+        cancelText,
+        type,
+        isOpen: true,
+        onConfirm: () => {
+          setConfirmState(null);
+          resolve(true);
+        },
+        onCancel: () => {
+          setConfirmState(null);
+          resolve(false);
+        }
+      });
+    });
+  };
 
   // Toggle Dark Mode
   useEffect(() => {
@@ -183,9 +214,11 @@ export const AppProvider = ({ children }) => {
       stats,
       setStats,
       refreshTrigger,
-      triggerRefresh
+      triggerRefresh,
+      confirm
     }}>
       {children}
+      {confirmState && <ConfirmDialog {...confirmState} />}
     </AppContext.Provider>
   );
 };

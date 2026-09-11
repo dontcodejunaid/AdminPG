@@ -19,7 +19,7 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const AdminUsersPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,15 +75,21 @@ export const AdminUsersPage = () => {
       showToast('Cannot delete Primary Super Admin', 'error');
       return;
     }
-    if (window.confirm(`Delete user "${u.name}"?`)) {
-      try {
-        await api.deleteUser(u.id);
-        showToast('Team member removed', 'success');
-        fetchUsers();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Remove Team Member',
+      message: `Are you sure you want to remove team member "${u.name}" (${u.role})?`,
+      confirmText: 'Remove User',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteUser(u.id);
+      showToast('Team member removed successfully', 'success');
+      fetchUsers();
+      triggerRefresh();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 

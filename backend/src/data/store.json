@@ -757,6 +757,22 @@
   ],
   "enquiries": [
     {
+      "id": "enq_1789112910243",
+      "customerName": "sd",
+      "customerPhone": "789456123",
+      "customerEmail": "",
+      "pgId": "pg_103",
+      "pgName": "Urban Nest Co-Living & Studio PG",
+      "roomType": "Single Sharing",
+      "budget": "₹8,000",
+      "moveInDate": "2026-12-23",
+      "message": "",
+      "status": "New",
+      "adminNotes": "vbnk",
+      "source": "Admin Direct",
+      "createdAt": "2026-09-11T07:48:30.243Z"
+    },
+    {
       "id": "enq_501",
       "customerName": "Salih Rahman",
       "customerPhone": "+91 98460 99881",
@@ -1023,7 +1039,7 @@
       "isActive": true,
       "startDate": "2026-08-01",
       "endDate": "2026-12-31",
-      "updatedAt": "2026-09-10T06:28:09.227Z"
+      "updatedAt": "2026-09-11T07:50:37.376Z"
     },
     {
       "id": "ban_02",
@@ -1098,6 +1114,15 @@
     }
   },
   "notifications": [
+    {
+      "id": "notif_1789112910247",
+      "type": "enquiry",
+      "title": "New Enquiry Added",
+      "message": "sd enquiry for Urban Nest Co-Living & Studio PG",
+      "timestamp": "2026-09-11T07:48:30.247Z",
+      "read": false,
+      "link": "/enquiries"
+    },
     {
       "id": "notif_1",
       "type": "enquiry",

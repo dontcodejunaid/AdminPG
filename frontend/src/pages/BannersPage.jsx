@@ -18,23 +18,26 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const BannersPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bannerToEdit, setBannerToEdit] = useState(null);
+
+  // Form State
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
     imageUrl: '',
-    targetUrl: '',
-    placement: 'Homepage Hero Top',
+    targetType: 'All',
     city: 'All Cities',
-    isActive: true,
+    actionText: 'Explore PGs',
+    link: '/properties',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    isActive: true
   });
 
   const fetchBanners = async () => {
@@ -58,11 +61,11 @@ export const BannersPage = () => {
     setFormData({
       title: '',
       subtitle: '',
-      imageUrl: '',
-      targetUrl: '/search?city=Kochi',
-      placement: 'Homepage Hero Top',
+      imageUrl: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80',
+      targetType: 'All',
       city: 'All Cities',
-      isActive: true,
+      actionText: 'Explore PGs',
+      link: '/properties',
       startDate: new Date().toISOString().split('T')[0],
       endDate: '2026-12-31'
     });
@@ -133,14 +136,20 @@ export const BannersPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Delete banner "${b.title}"?`)) {
-      try {
-        await api.deleteBanner(b.id);
-        showToast('Banner deleted', 'success');
-        fetchBanners();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete Banner',
+      message: `Are you sure you want to permanently delete banner "${b.title}"?`,
+      confirmText: 'Delete Banner',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteBanner(b.id);
+      showToast('Banner deleted successfully', 'success');
+      fetchBanners();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 

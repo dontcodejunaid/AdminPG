@@ -27,7 +27,7 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
-  const { showToast, currentUser, refreshTrigger, triggerRefresh, pageFilters } = useApp();
+  const { showToast, currentUser, refreshTrigger, triggerRefresh, pageFilters, confirm } = useApp();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPgId, setExpandedPgId] = useState(null);
@@ -139,15 +139,21 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
       showToast('Permission Denied: Staff cannot delete properties', 'error');
       return;
     }
-    if (window.confirm(`Are you sure you want to permanently delete "${pg.name}"?`)) {
-      try {
-        await api.deleteProperty(pg.id);
-        showToast(`Deleted "${pg.name}" successfully`, 'success');
-        fetchProperties();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete Property',
+      message: `Are you sure you want to permanently delete "${pg.name}"? This will remove all associated rooms and listings.`,
+      confirmText: 'Delete Property',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteProperty(pg.id);
+      showToast(`Deleted "${pg.name}" successfully`, 'success');
+      fetchProperties();
+      triggerRefresh();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 

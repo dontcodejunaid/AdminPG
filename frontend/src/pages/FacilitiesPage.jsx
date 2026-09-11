@@ -15,7 +15,7 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const FacilitiesPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -99,15 +99,21 @@ export const FacilitiesPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Delete facility "${fac.name}"?`)) {
-      try {
-        await api.deleteFacility(fac.id);
-        showToast('Facility deleted', 'success');
-        fetchFacilities();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete Facility',
+      message: `Are you sure you want to delete amenity "${fac.name}"?`,
+      confirmText: 'Delete Facility',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteFacility(fac.id);
+      showToast('Facility deleted successfully', 'success');
+      fetchFacilities();
+      triggerRefresh();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 
