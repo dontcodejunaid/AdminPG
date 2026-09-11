@@ -216,6 +216,18 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
       const payload = {
         ...formData,
+        rooms: formData.rooms.map(r => ({
+          ...r,
+          rent: Number(r.rent) || 0,
+          totalBeds: Number(r.totalBeds) || 0,
+          availableBeds: Number(r.availableBeds) || 0,
+          deposit: Number(r.deposit) || 0
+        })),
+        charges: {
+          ...formData.charges,
+          deposit: Number(formData.charges.deposit) || 0,
+          maintenanceCharges: Number(formData.charges.maintenanceCharges) || 0
+        },
         totalBeds,
         availableBeds
       };
@@ -594,8 +606,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     <label className="block text-[10px] font-bold text-slate-500 uppercase">Monthly Rent (₹)</label>
                     <input
                       type="number"
-                      value={room.rent}
-                      onChange={(e) => handleRoomChange(room.id, 'rent', Number(e.target.value))}
+                      value={room.rent ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'rent', e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-brand-600 dark:text-brand-400"
                     />
                   </div>
@@ -604,8 +616,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     <label className="block text-[10px] font-bold text-slate-500 uppercase">Total Beds</label>
                     <input
                       type="number"
-                      value={room.totalBeds}
-                      onChange={(e) => handleRoomChange(room.id, 'totalBeds', Number(e.target.value))}
+                      value={room.totalBeds ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'totalBeds', e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                     />
                   </div>
@@ -614,8 +626,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     <label className="block text-[10px] font-bold text-slate-500 uppercase">Available Beds</label>
                     <input
                       type="number"
-                      value={room.availableBeds}
-                      onChange={(e) => handleRoomChange(room.id, 'availableBeds', Number(e.target.value))}
+                      value={room.availableBeds ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'availableBeds', e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
                     />
                   </div>
@@ -658,10 +670,10 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 </label>
                 <input
                   type="number"
-                  value={formData.charges.deposit}
+                  value={formData.charges.deposit ?? ''}
                   onChange={(e) => setFormData({
                     ...formData,
-                    charges: { ...formData.charges, deposit: Number(e.target.value) }
+                    charges: { ...formData.charges, deposit: e.target.value === '' ? '' : Number(e.target.value) }
                   })}
                   className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold"
                 />
@@ -707,10 +719,10 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 </label>
                 <input
                   type="number"
-                  value={formData.charges.maintenanceCharges}
+                  value={formData.charges.maintenanceCharges ?? ''}
                   onChange={(e) => setFormData({
                     ...formData,
-                    charges: { ...formData.charges, maintenanceCharges: Number(e.target.value) }
+                    charges: { ...formData.charges, maintenanceCharges: e.target.value === '' ? '' : Number(e.target.value) }
                   })}
                   className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 />
