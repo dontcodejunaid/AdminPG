@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
   Mail, 
   Lock, 
@@ -25,6 +25,16 @@ export function AuthSwitch({
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
   const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  // Load remembered email if present
+  useEffect(() => {
+    const saved = localStorage.getItem('keralapg_remember_email');
+    if (saved) {
+      setSignInEmail(saved);
+      setRememberMe(true);
+    }
+  }, []);
 
   // Sign Up state
   const [signUpName, setSignUpName] = useState("");
@@ -80,7 +90,15 @@ export function AuthSwitch({
     try {
       if (onLogin) {
         const res = await onLogin(signInEmail, signInPassword);
-        if (!res?.success) setErrorMessage(res?.message || "Login failed");
+        if (res?.success) {
+          if (rememberMe) {
+            localStorage.setItem('keralapg_remember_email', signInEmail);
+          } else {
+            localStorage.removeItem('keralapg_remember_email');
+          }
+        } else {
+          setErrorMessage(res?.message || "Login failed");
+        }
       }
     } catch (err) {
       setErrorMessage(err.message || "An error occurred");
@@ -316,7 +334,7 @@ export function AuthSwitch({
                 className="w-full bg-transparent text-xs md:text-sm text-white placeholder-slate-400 outline-none font-medium"
               />
             </div>
-            <div className="input-field max-w-[290px] w-full h-10 md:h-11 bg-[#1e293b] rounded-full px-4 flex items-center mb-4 relative border border-slate-700 focus-within:border-emerald-500">
+            <div className="input-field max-w-[290px] w-full h-10 md:h-11 bg-[#1e293b] rounded-full px-4 flex items-center mb-3 relative border border-slate-700 focus-within:border-emerald-500">
               <Lock className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
               <input
                 type={showSignInPassword ? "text" : "password"}
@@ -334,6 +352,30 @@ export function AuthSwitch({
                 {showSignInPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+
+            {/* Remember Me Options Row */}
+            <div className="w-full max-w-[290px] flex items-center justify-between px-2 mb-4">
+              <label className="flex items-center gap-2 text-slate-300 hover:text-white cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-0 focus:ring-offset-0 accent-emerald-500 cursor-pointer"
+                />
+                <span className="text-xs font-medium text-slate-300">Remember me</span>
+              </label>
+              <a
+                href="#forgot"
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert("To reset your password, please contact the Super Admin or system administrator.");
+                }}
+                className="text-xs font-medium text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                Forgot?
+              </a>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
