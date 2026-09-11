@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Sparkles, 
+  ListChecks, 
   Plus, 
   Edit3, 
   Trash2, 
@@ -126,7 +126,7 @@ export const FacilitiesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Sparkles className="w-6 h-6 text-brand-600" />
+            <ListChecks className="w-6 h-6 text-brand-600" />
             Dynamic Facilities & Amenities Management (Module 5)
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">

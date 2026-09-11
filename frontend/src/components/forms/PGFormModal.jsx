@@ -4,7 +4,7 @@ import {
   MapPin, 
   IndianRupee, 
   Image, 
-  Sparkles, 
+  ListChecks, 
   Plus, 
   Trash2, 
   Check, 
@@ -302,7 +302,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <Sparkles className="w-4 h-4" />
+          <ListChecks className="w-4 h-4" />
           <span>3. Facilities ({formData.facilities.length})</span>
         </button>
 
