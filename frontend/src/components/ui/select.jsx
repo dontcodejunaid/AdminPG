@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check, Search } from 'lucide-react';
 
 export const CustomSelect = ({
@@ -16,7 +17,9 @@ export const CustomSelect = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, dropUp: false, maxHeight: 240 });
   const containerRef = useRef(null);
+  const popoverRef = useRef(null);
   const searchInputRef = useRef(null);
 
   // Normalize options: allow strings or objects { value, label, desc, badge }
@@ -43,16 +46,69 @@ export const CustomSelect = ({
       )
     : normalizedOptions;
 
+  // Measure and calculate exact screen position for Portal
+  const updatePosition = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const width = Math.max(rect.width, 180);
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    const estimatedHeight = Math.min(260, Math.max(120, filteredOptions.length * 44 + (searchable ? 50 : 20)));
+    const shouldDropUp = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+
+    let top;
+    let maxHeight;
+
+    if (shouldDropUp) {
+      maxHeight = Math.min(260, Math.max(100, spaceAbove - 16));
+      top = rect.top - 6; // Will be transformed/aligned
+    } else {
+      maxHeight = Math.min(260, Math.max(100, spaceBelow - 16));
+      top = rect.bottom + 6;
+    }
+
+    let left = rect.left;
+    // Clamp inside screen horizontally
+    left = Math.max(10, Math.min(window.innerWidth - width - 10, left));
+
+    setCoords({
+      top,
+      left,
+      width,
+      dropUp: shouldDropUp,
+      maxHeight
+    });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      const handleScrollOrResize = () => updatePosition();
+      window.addEventListener('resize', handleScrollOrResize);
+      window.addEventListener('scroll', handleScrollOrResize, true);
+      return () => {
+        window.removeEventListener('resize', handleScrollOrResize);
+        window.removeEventListener('scroll', handleScrollOrResize, true);
+      };
+    }
+  }, [isOpen, filteredOptions.length, searchable]);
+
   // Handle click outside to close
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current && !containerRef.current.contains(event.target) &&
+        popoverRef.current && !popoverRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   // Focus search input when opened
   useEffect(() => {
@@ -68,7 +124,6 @@ export const CustomSelect = ({
     if (disabled) return;
     setIsOpen(false);
     if (onChange) {
-      // Create synthetic event for compatibility with standard e.target.value handlers
       const syntheticEvent = {
         target: { value: val, name: name || id },
         currentTarget: { value: val, name: name || id },
@@ -130,11 +185,21 @@ export const CustomSelect = ({
         />
       </button>
 
-      {/* Custom Dropdown Popover */}
-      {isOpen && (
+      {/* Custom Dropdown Popover rendered via React Portal directly into document.body */}
+      {isOpen && createPortal(
         <div
-          className={`absolute left-0 top-full mt-1.5 w-full min-w-[180px] max-h-64 overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 ${dropdownClassName}`}
-          style={{ zIndex: 999 }}
+          ref={popoverRef}
+          style={{
+            position: 'fixed',
+            top: coords.dropUp ? undefined : `${coords.top}px`,
+            bottom: coords.dropUp ? `${window.innerHeight - coords.top}px` : undefined,
+            left: `${coords.left}px`,
+            width: `${coords.width}px`,
+            maxHeight: `${coords.maxHeight}px`,
+            zIndex: 999999
+          }}
+          className={`overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-100 select-none ${dropdownClassName}`}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Optional In-dropdown Search */}
           {(searchable || normalizedOptions.length > 7) && (
@@ -153,7 +218,7 @@ export const CustomSelect = ({
           )}
 
           {/* Options List */}
-          <div className="space-y-0.5 max-h-52 overflow-y-auto">
+          <div className="space-y-0.5 overflow-y-auto" style={{ maxHeight: `${coords.maxHeight - (searchable ? 55 : 15)}px` }}>
             {filteredOptions.length === 0 ? (
               <div className="p-3 text-center text-xs text-slate-400">
                 No matching options
@@ -196,7 +261,8 @@ export const CustomSelect = ({
               })
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
