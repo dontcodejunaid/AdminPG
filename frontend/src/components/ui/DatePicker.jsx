@@ -231,12 +231,9 @@ export const CustomDatePicker = ({
     return false;
   };
 
-  // Year options for fast selection (+- 10 years)
+  // Year options: current year and upcoming year
   const currentYear = new Date().getFullYear();
-  const yearOptions = [];
-  for (let y = currentYear - 5; y <= currentYear + 10; y++) {
-    yearOptions.push(y);
-  }
+  const yearOptions = [currentYear, currentYear + 1];
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
