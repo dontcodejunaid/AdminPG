@@ -50,9 +50,11 @@ export const CustomDatePicker = ({
   className = '',
   disabled = false,
   minDate = null,
-  maxDate = null
+  maxDate = null,
+  align = 'auto' // 'left', 'right', 'auto'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ dropUp: false, alignRight: false });
   const containerRef = useRef(null);
 
   const selectedDate = parseDate(value);
@@ -63,6 +65,24 @@ export const CustomDatePicker = ({
   const initialView = selectedDate || new Date();
   const [viewYear, setViewYear] = useState(initialView.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialView.getMonth());
+
+  // Dynamic positioning when opened
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // If less than 320px below, flip upwards
+      const shouldDropUp = spaceBelow < 320 && spaceAbove > 280;
+      const shouldAlignRight = align === 'right' || (align === 'auto' && (rect.left + 280 > window.innerWidth || rect.right > window.innerWidth - 60));
+
+      setPosition({
+        dropUp: shouldDropUp,
+        alignRight: shouldAlignRight
+      });
+    }
+  }, [isOpen, align]);
 
   // Keep view aligned when value changes externally
   useEffect(() => {
@@ -219,9 +239,15 @@ export const CustomDatePicker = ({
 
       {/* Popover Calendar */}
       {isOpen && (
-        <div className="absolute z-50 mt-1.5 left-0 w-72 p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className={`absolute z-[9999] ${
+            position.dropUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          } ${
+            position.alignRight ? 'right-0' : 'left-0'
+          } w-64 p-2.5 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150`}
+        >
           {/* Header Month / Year & Prev / Next */}
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-slate-700/60">
+          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-700/60">
             <div className="flex items-center gap-1.5">
               {/* Month Selector */}
               <select

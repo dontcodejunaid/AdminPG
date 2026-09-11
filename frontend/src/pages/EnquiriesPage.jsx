@@ -381,6 +381,7 @@ export const EnquiriesPage = () => {
                 value={formData.moveInDate}
                 onChange={(e) => setFormData({ ...formData, moveInDate: e.target.value })}
                 placeholder="Select move-in date"
+                align="right"
               />
             </div>
           </div>
