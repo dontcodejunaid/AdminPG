@@ -6,13 +6,6 @@ import { AuthSwitch } from '@/components/ui/auth-switch';
 export const LoginPage = () => {
   const { login } = useApp();
 
-  const demoAccounts = [
-    { role: 'Super Admin', email: 'superadmin@keralapg.com' },
-    { role: 'Admin', email: 'admin@keralapg.com' },
-    { role: 'Staff', email: 'staff@keralapg.com' },
-    { role: 'Seeker', email: 'salih.rahman@gmail.com' }
-  ];
-
   const handleLogin = async (email, password) => {
     try {
       const res = await api.login({ email, password });

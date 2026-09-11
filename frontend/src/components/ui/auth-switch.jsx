@@ -28,16 +28,7 @@ export function AuthSwitch({
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
   const [showSignInPassword, setShowSignInPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
-
-  // Load remembered email if present
-  useEffect(() => {
-    const saved = localStorage.getItem('keralapg_remember_email');
-    if (saved) {
-      setSignInEmail(saved);
-      setRememberMe(true);
-    }
-  }, []);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Sign Up state
   const [signUpName, setSignUpName] = useState("");
