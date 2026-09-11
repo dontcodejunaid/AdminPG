@@ -169,47 +169,46 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase font-semibold text-[11px]">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase font-semibold">
                 <tr>
-                  <th className="py-2.5 px-3.5 rounded-l-xl whitespace-nowrap">PG Name & Location</th>
-                  <th className="py-2.5 px-3 whitespace-nowrap">Type</th>
-                  <th className="py-2.5 px-3 whitespace-nowrap">Min Rent</th>
-                  <th className="py-2.5 px-3 whitespace-nowrap">Availability</th>
-                  <th className="py-2.5 px-3 whitespace-nowrap">Verification</th>
-                  <th className="py-2.5 px-3.5 rounded-r-xl text-right whitespace-nowrap">Action</th>
+                  <th className="py-2.5 px-3 rounded-l-lg">PG Name & Location</th>
+                  <th className="py-2.5 px-3">Type</th>
+                  <th className="py-2.5 px-3">Min Rent</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3">Verification</th>
+                  <th className="py-2.5 px-3 rounded-r-lg text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {(stats?.recentPgs || []).map((pg) => {
                   const minRent = (pg.rooms || []).reduce((min, r) => r.rent < min ? r.rent : min, 99999);
-                  const locationText = [pg.area, pg.city, pg.state].filter(Boolean).join(', ') || 'Location pending';
                   return (
                     <tr key={pg.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-3.5 min-w-[200px]">
-                        <p className="font-bold text-slate-900 dark:text-white truncate">
+                      <td className="py-3 px-3">
+                        <div className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]">
                           {pg.name}
-                        </p>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate">
-                          <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                          <span className="truncate">{locationText}</span>
-                        </p>
+                        </div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-slate-400" />
+                          <span>{pg.area}, {pg.city}</span>
+                        </div>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
+                      <td className="py-3 px-3">
                         <Badge variant={pg.type}>{pg.type}</Badge>
                       </td>
-                      <td className="py-3 px-3 font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">
+                      <td className="py-3 px-3 font-bold text-brand-600 dark:text-brand-400">
                         ₹{minRent !== 99999 ? minRent.toLocaleString() : 'N/A'}/mo
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
+                      <td className="py-3 px-3">
                         <Badge variant={pg.availabilityStatus}>{pg.availabilityStatus}</Badge>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
+                      <td className="py-3 px-3">
                         <Badge variant={pg.verificationStatus}>{pg.verificationStatus}</Badge>
                       </td>
-                      <td className="py-3 px-3.5 text-right whitespace-nowrap">
+                      <td className="py-3 px-3 text-right">
                         <button
                           onClick={() => onEditPg(pg)}
-                          className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950 dark:hover:text-brand-300 rounded-lg text-slate-700 dark:text-slate-300 font-semibold transition-colors shadow-xs"
+                          className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-950 dark:hover:text-brand-300 rounded-lg text-slate-700 dark:text-slate-300 font-semibold transition-colors"
                         >
                           Edit PG
                         </button>

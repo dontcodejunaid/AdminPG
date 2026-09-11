@@ -39,6 +39,32 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
   const [selectedStatus, setSelectedStatus] = useState(pageFilters?.status || '');
   const [selectedVerification, setSelectedVerification] = useState(pageFilters?.verificationStatus || '');
   const [selectedAvailability, setSelectedAvailability] = useState(pageFilters?.availabilityStatus || '');
+  const [availableCities, setAvailableCities] = useState([]);
+
+  // Fetch full master cities list from Locations & Properties so filter never collapses
+  useEffect(() => {
+    const fetchMasterCities = async () => {
+      try {
+        const [flatLocRes, propsRes] = await Promise.allSettled([
+          api.getFlatLocations(),
+          api.getProperties()
+        ]);
+        const locCities = flatLocRes.status === 'fulfilled' && flatLocRes.value?.data?.cities
+          ? flatLocRes.value.data.cities.map(c => c.name)
+          : [];
+        const propCities = propsRes.status === 'fulfilled' && propsRes.value?.data
+          ? propsRes.value.data.map(p => p.city).filter(Boolean)
+          : [];
+        const mergedCities = Array.from(new Set([...locCities, ...propCities])).filter(Boolean).sort();
+        if (mergedCities.length > 0) {
+          setAvailableCities(mergedCities);
+        }
+      } catch (err) {
+        console.error('Failed to load cities for filter:', err);
+      }
+    };
+    fetchMasterCities();
+  }, [refreshTrigger]);
 
   // Sync incoming navigation filters from Dashboard or Header
   useEffect(() => {
@@ -125,8 +151,10 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
     }
   };
 
-  // Distinct cities list for filter
-  const cities = Array.from(new Set(properties.map(p => p.city).filter(Boolean)));
+  // Full master cities list for filter (persists when a single city is filtered)
+  const cities = availableCities.length > 0
+    ? availableCities
+    : Array.from(new Set(properties.map(p => p.city).filter(Boolean)));
 
   return (
     <div className="space-y-6">

@@ -55,7 +55,7 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
   const sizeStyle = sizes[size] || sizes.md;
 
   return (
-    <span className={`inline-flex items-center justify-center gap-1.5 rounded-full border whitespace-nowrap shrink-0 ${badgeStyle} ${sizeStyle} ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border ${badgeStyle} ${sizeStyle} ${className}`}>
       {children}
     </span>
   );
