@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Menu, 
   Search, 
-  Moon, 
-  Sun, 
   Bell, 
   ShieldCheck, 
   ChevronDown, 
@@ -27,8 +25,6 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
     currentUser, 
     switchRole, 
     logout,
-    darkMode, 
-    setDarkMode, 
     unreadNotifsCount, 
     setActiveTab 
   } = useApp();
@@ -359,15 +355,6 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
           {unreadNotifsCount > 0 && (
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
           )}
-        </button>
-
-        {/* Dark/Light mode toggle */}
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
         </button>
 
         {/* Quick Add Button */}

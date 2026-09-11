@@ -239,9 +239,9 @@
       "name": "kerala pg",
       "slug": "kerala-pg-1789108474869",
       "type": "Co-living",
-      "state": "Kerala",
-      "city": "Kochi",
-      "area": "Kakkanad",
+      "state": "Goa",
+      "city": "Panaji",
+      "area": "Miramar Beach",
       "fullAddress": "aedgfhg",
       "mapUrl": "",
       "description": "",
@@ -295,7 +295,7 @@
         "fac_cctv"
       ],
       "createdAt": "2026-09-11T06:34:34.869Z",
-      "updatedAt": "2026-09-11T06:35:13.645Z"
+      "updatedAt": "2026-09-11T07:22:21.801Z"
     },
     {
       "id": "pg_1789021550060",
@@ -759,7 +759,7 @@
       "adminNotes": "Customer called once, asked for callback around 6 PM.",
       "source": "Enquiry Form",
       "createdAt": "2026-09-10T08:15:00.000Z",
-      "updatedAt": "2026-09-10T06:19:20.427Z"
+      "updatedAt": "2026-09-11T07:21:45.618Z"
     },
     {
       "id": "enq_502",
