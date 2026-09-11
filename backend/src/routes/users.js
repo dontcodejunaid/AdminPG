@@ -29,6 +29,10 @@ router.post('/login', async (req, res) => {
     let user = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
     if (user) {
+      // Validate password if user has password configured and password was provided
+      if (user.password && password && user.password !== password) {
+        return res.status(401).json({ success: false, error: 'Incorrect password. Please verify your credentials.' });
+      }
       const updated = await store.update('adminUsers', user.id, { lastLogin: new Date().toISOString() });
       return res.json({
         success: true,
@@ -180,7 +184,8 @@ router.post('/', async (req, res) => {
     const newUser = {
       id: `usr_${uuidv4().substring(0, 6)}`,
       name,
-      email,
+      email: cleanEmail,
+      password: req.body.password || 'KeralaPG@123',
       role,
       phone: phone || '',
       status: 'Active',
@@ -190,6 +195,63 @@ router.post('/', async (req, res) => {
 
     const created = await store.create('adminUsers', newUser);
     res.status(201).json({ success: true, data: created });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/users/change-password (User updates their own password)
+router.post('/change-password', async (req, res) => {
+  try {
+    const { userId, currentPassword, newPassword } = req.body;
+    if (!userId || !newPassword) {
+      return res.status(400).json({ success: false, error: 'User ID and new password are required' });
+    }
+    if (newPassword.length < 4) {
+      return res.status(400).json({ success: false, error: 'New password must be at least 4 characters' });
+    }
+
+    const adminUsers = await store.findAll('adminUsers');
+    const user = adminUsers.find(u => u.id === userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User account not found' });
+    }
+
+    // If user has an existing password, verify current password
+    if (user.password && currentPassword && user.password !== currentPassword) {
+      return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+    }
+
+    const updated = await store.update('adminUsers', userId, {
+      password: newPassword,
+      passwordLastChanged: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully! Please use your new password next time you log in.',
+      data: updated
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/users/reset-password (Super Admin resets someone's password)
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword) {
+      return res.status(400).json({ success: false, error: 'User ID and new password are required' });
+    }
+    const updated = await store.update('adminUsers', userId, {
+      password: newPassword,
+      passwordLastChanged: new Date().toISOString()
+    });
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    res.json({ success: true, message: `Password reset successfully for ${updated.name}`, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

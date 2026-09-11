@@ -15,10 +15,12 @@ import {
   MessageSquareText,
   Loader2,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  KeyRound
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
+import { ChangePasswordModal } from '../common/ChangePasswordModal';
 
 export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
   const { 
@@ -31,6 +33,7 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
 
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   // Global Omni-Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -392,7 +395,18 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
                 </span>
               </div>
 
-              <div className="pt-1.5">
+              <div className="pt-1.5 space-y-1">
+                <button
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    setIsChangePasswordOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <KeyRound className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                  <span>Change Password</span>
+                </button>
+
                 <button
                   onClick={() => {
                     setProfileDropdownOpen(false);
@@ -409,6 +423,14 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
         </div>
 
       </div>
+
+      {/* Change Password Modal */}
+      {isChangePasswordOpen && (
+        <ChangePasswordModal
+          isOpen={isChangePasswordOpen}
+          onClose={() => setIsChangePasswordOpen(false)}
+        />
+      )}
     </header>
   );
 };

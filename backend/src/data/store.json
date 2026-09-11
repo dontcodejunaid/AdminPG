@@ -1015,20 +1015,6 @@
   ],
   "banners": [
     {
-      "id": "ban_217e37f4",
-      "title": "best girls pg in bangalore",
-      "subtitle": "zero brokerage",
-      "imageUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80",
-      "targetUrl": "/search?city=Kochi",
-      "placement": "Homepage Hero Top",
-      "city": "All Cities",
-      "isActive": true,
-      "startDate": "2026-09-10",
-      "endDate": "2026-12-31",
-      "createdAt": "2026-09-10T06:29:54.675Z",
-      "updatedAt": "2026-09-10T06:30:02.015Z"
-    },
-    {
       "id": "ban_01",
       "title": "Best Girls PGs in Kochi Infopark & SmartCity",
       "subtitle": "Verified hostels with food, Wi-Fi & 24/7 security",
@@ -1058,7 +1044,7 @@
     "aboutUs": {
       "title": "About KeralaPG.com",
       "subtitle": "Kerala & Bangalore's #1 Dedicated Paying Guest & Hostel Discovery Platform",
-      "content": "KeralaPG.com was founded with a single mission: to make finding verified, safe, and comfortable Paying Guest (PG) accommodations completely hassle-free for students and working professionals. Whether you are moving to Kochi's Infopark, Trivandrum's Technopark, Kozhikode Cyberpark, or tech hubs across Bangalore, we connect you directly with genuine property owners with zero fake broker commissions.",
+      "content": "KeralaPG.com was founded with a single mission: to make finding verified, safe, and comfortable Paying Guest (PG) accommodations completely hassle-free for students and working professionals. Whether you are moving to Kochi's Infopark, Trivandrum's Technopark, Kozhikode Cyberpark, or tech hubs across Bangalore, we connect you directly with genuine property owners with zero fake broker.",
       "statsHighlight": [
         {
           "label": "Verified Properties",
@@ -1077,7 +1063,7 @@
           "value": "100%"
         }
       ],
-      "updatedAt": "2026-09-01T10:00:00.000Z"
+      "updatedAt": "2026-09-11T07:56:02.168Z"
     },
     "contactUs": {
       "phone": "+91 98470 00000",
@@ -1120,8 +1106,9 @@
       "title": "New Enquiry Added",
       "message": "sd enquiry for Urban Nest Co-Living & Studio PG",
       "timestamp": "2026-09-11T07:48:30.247Z",
-      "read": false,
-      "link": "/enquiries"
+      "read": true,
+      "link": "/enquiries",
+      "updatedAt": "2026-09-11T07:56:09.452Z"
     },
     {
       "id": "notif_1",
@@ -1154,6 +1141,30 @@
     }
   ],
   "adminUsers": [
+    {
+      "id": "usr_38b40d",
+      "name": "JStaff",
+      "email": "baigjunaid187@gmail.com",
+      "role": "Staff",
+      "phone": "9945505665",
+      "status": "Active",
+      "lastLogin": "2026-09-11T07:58:04.924Z",
+      "permissions": {
+        "canAddPG": true,
+        "canEditPG": true,
+        "canDeletePG": false,
+        "canVerifyPG": false,
+        "canManageLocations": false,
+        "canManageFacilities": false,
+        "canManageEnquiries": true,
+        "canManageCustomers": false,
+        "canModerateReports": false,
+        "canManagePayments": false,
+        "canManageCMS": false,
+        "canManageBanners": false,
+        "canManageUsers": false
+      }
+    },
     {
       "id": "usr_466b60",
       "name": "operation manager",
