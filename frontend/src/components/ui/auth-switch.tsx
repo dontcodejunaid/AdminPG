@@ -143,8 +143,7 @@ export function AuthSwitch({
                 : 'opacity-0 pointer-events-none -translate-y-48 md:-translate-y-0 md:-translate-x-32 z-10'
             }`}
           >
-            <h2 className="text-xl md:text-2xl font-black text-white tracking-tight mb-0.5">Create Account</h2>
-            <p className="text-[11px] text-emerald-400 font-semibold mb-2 tracking-wide uppercase">PG Seeker Registration</p>
+            <h2 className="text-xl md:text-2xl font-black text-white tracking-tight mb-2">Sign up</h2>
             
             {errorMessage && isSignUp && (
               <div className="mb-1.5 w-full max-w-[290px] rounded-xl bg-rose-950/80 p-1 text-xs text-rose-300 border border-rose-800">
