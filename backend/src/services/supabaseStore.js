@@ -32,6 +32,27 @@ function toDbFormat(data, table = '') {
     delete converted.password; // profiles table column is password_hash
   }
 
+  if (table === 'properties') {
+    if (converted.contact_number && !converted.owner_phone) {
+      converted.owner_phone = converted.contact_number;
+    }
+    if (!converted.owner_phone) converted.owner_phone = '+91 98470 00000';
+    if (!converted.owner_name) converted.owner_name = converted.name || 'PG Caretaker';
+    if (!converted.full_address) converted.full_address = `${converted.area || 'Kakkanad'}, ${converted.city || 'Kochi'}`;
+    if (!converted.state) converted.state = 'Kerala';
+    if (!converted.city) converted.city = 'Kochi';
+    if (!converted.area) converted.area = 'Kakkanad';
+    if (converted.type === 'Co-living' || converted.type === 'co-living') converted.type = 'Coliving';
+    if (converted.verification_status === 'Not Verified' || converted.verification_status === 'not verified') {
+      converted.verification_status = 'Pending';
+    }
+    delete converted.contact_number;
+    delete converted.charges;
+    delete converted.total_beds;
+    delete converted.available_beds;
+    delete converted.min_rent;
+  }
+
   return converted;
 }
 
@@ -49,6 +70,17 @@ function fromDbFormat(data, table = '') {
     const pass = converted.passwordHash || converted.password_hash || '';
     converted.password = pass;
     converted.passwordHash = pass;
+  }
+
+  if (table === 'properties') {
+    converted.contactNumber = converted.ownerPhone || converted.whatsappNumber || '';
+    converted.fullAddress = converted.fullAddress || '';
+    if (Array.isArray(converted.rooms) && converted.rooms.length > 0) {
+      const rents = converted.rooms.map(r => Number(r.rent || r.price || 0)).filter(r => r > 0);
+      converted.minRent = rents.length > 0 ? Math.min(...rents) : 0;
+      converted.totalBeds = converted.rooms.reduce((acc, r) => acc + (Number(r.totalBeds || r.total_beds) || 0), 0);
+      converted.availableBeds = converted.rooms.reduce((acc, r) => acc + (Number(r.availableBeds || r.available_beds) || 0), 0);
+    }
   }
 
   return converted;

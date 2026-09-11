@@ -111,7 +111,26 @@
       "isDefault": true
     }
   ],
-  "properties": [],
+  "properties": [
+    {
+      "id": "pg_test_1",
+      "name": "asdfg",
+      "slug": "asdfg-123",
+      "type": "Boys",
+      "state": "Kerala",
+      "city": "Kochi",
+      "area": "Kakkanad",
+      "fullAddress": "Kochi",
+      "description": "test",
+      "contactNumber": "+91 98470 11111",
+      "status": "Active",
+      "availabilityStatus": "Available",
+      "verificationStatus": "Pending",
+      "rooms": [],
+      "facilities": [],
+      "photos": []
+    }
+  ],
   "enquiries": [],
   "customers": [],
   "reportedListings": [],
