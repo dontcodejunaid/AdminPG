@@ -135,6 +135,15 @@
   ],
   "facilities": [
     {
+      "id": "fac_5fe7d2d5",
+      "name": "Gym",
+      "icon": "Dumbbell",
+      "category": "Health & Fitness",
+      "isDefault": false,
+      "createdAt": "2026-09-11T07:35:52.326Z",
+      "updatedAt": "2026-09-11T07:36:04.480Z"
+    },
+    {
       "id": "fac_food",
       "name": "3 Times Food (Kerala / Veg & Non-Veg)",
       "icon": "Utensils",
@@ -253,7 +262,7 @@
       "videoUrl": "",
       "status": "Active",
       "availabilityStatus": "Available",
-      "verificationStatus": "Verified",
+      "verificationStatus": "Pending",
       "isFeatured": false,
       "featuredOrder": 0,
       "totalBeds": 14,
@@ -295,7 +304,7 @@
         "fac_cctv"
       ],
       "createdAt": "2026-09-11T06:34:34.869Z",
-      "updatedAt": "2026-09-11T07:22:21.801Z"
+      "updatedAt": "2026-09-11T07:36:23.653Z"
     },
     {
       "id": "pg_1789021550060",
@@ -318,7 +327,7 @@
       "availabilityStatus": "Available",
       "verificationStatus": "Verified",
       "isFeatured": true,
-      "featuredOrder": 0,
+      "featuredOrder": 3,
       "totalBeds": 14,
       "availableBeds": 3,
       "charges": {
@@ -358,7 +367,7 @@
         "fac_cctv"
       ],
       "createdAt": "2026-09-10T06:25:50.060Z",
-      "updatedAt": "2026-09-10T06:33:23.300Z"
+      "updatedAt": "2026-09-11T07:40:10.326Z"
     },
     {
       "id": "pg_101",
@@ -472,7 +481,7 @@
       "availabilityStatus": "Limited",
       "verificationStatus": "Verified",
       "isFeatured": true,
-      "featuredOrder": 2,
+      "featuredOrder": 3,
       "totalBeds": 35,
       "availableBeds": 2,
       "charges": {
@@ -528,7 +537,7 @@
         "fac_power"
       ],
       "createdAt": "2026-08-20T11:15:00.000Z",
-      "updatedAt": "2026-09-09T10:00:00.000Z"
+      "updatedAt": "2026-09-11T07:40:09.218Z"
     },
     {
       "id": "pg_103",
@@ -551,8 +560,8 @@
       "status": "Active",
       "availabilityStatus": "Limited",
       "verificationStatus": "Verified",
-      "isFeatured": true,
-      "featuredOrder": 3,
+      "isFeatured": false,
+      "featuredOrder": 0,
       "totalBeds": 50,
       "availableBeds": 12,
       "charges": {
@@ -606,10 +615,13 @@
         "fac_gym",
         "fac_studytable",
         "fac_power",
-        "fac_kitchen"
+        "fac_kitchen",
+        "fac_food",
+        "fac_5fe7d2d5",
+        "fac_attach_bath"
       ],
       "createdAt": "2026-08-25T16:45:00.000Z",
-      "updatedAt": "2026-09-10T06:47:04.104Z"
+      "updatedAt": "2026-09-11T07:40:17.008Z"
     },
     {
       "id": "pg_104",
@@ -630,7 +642,7 @@
       "videoUrl": "",
       "status": "Active",
       "availabilityStatus": "Full",
-      "verificationStatus": "Pending",
+      "verificationStatus": "Verified",
       "isFeatured": false,
       "featuredOrder": 0,
       "totalBeds": 28,
@@ -673,7 +685,7 @@
         "fac_parking"
       ],
       "createdAt": "2026-09-01T08:20:00.000Z",
-      "updatedAt": "2026-09-07T12:00:00.000Z"
+      "updatedAt": "2026-09-11T07:36:20.697Z"
     },
     {
       "id": "pg_105",
@@ -694,7 +706,7 @@
       "videoUrl": "",
       "status": "Active",
       "availabilityStatus": "Available",
-      "verificationStatus": "Not Verified",
+      "verificationStatus": "Verified",
       "isFeatured": false,
       "featuredOrder": 0,
       "totalBeds": 24,
@@ -740,7 +752,7 @@
         "fac_attach_bath"
       ],
       "createdAt": "2026-09-05T14:10:00.000Z",
-      "updatedAt": "2026-09-09T11:45:00.000Z"
+      "updatedAt": "2026-09-11T07:36:32.445Z"
     }
   ],
   "enquiries": [
