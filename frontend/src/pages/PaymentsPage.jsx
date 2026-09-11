@@ -161,9 +161,9 @@ export const PaymentsPage = () => {
           <span className="text-xs font-semibold text-slate-500">Gateway Status</span>
           <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-2 flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            Razorpay / UPI Webhook Ready
+            Active & Operational
           </p>
-          <span className="text-[11px] text-slate-400">Database decoupled & scalable</span>
+          <span className="text-[11px] text-slate-400">Razorpay & UPI Enabled</span>
         </div>
       </div>
 
