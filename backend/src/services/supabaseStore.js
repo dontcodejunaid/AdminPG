@@ -15,26 +15,42 @@ const COLLECTION_TABLE_MAP = {
 };
 
 // Convert camelCase object to snake_case for PostgreSQL
-function toDbFormat(data) {
+function toDbFormat(data, table = '') {
   if (!data || typeof data !== 'object') return data;
-  if (Array.isArray(data)) return data.map(toDbFormat);
+  if (Array.isArray(data)) return data.map(d => toDbFormat(d, table));
   const converted = {};
   for (const [key, value] of Object.entries(data)) {
     const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
     converted[snakeKey] = value;
   }
+
+  // Schema-specific fixes
+  if (table === 'profiles') {
+    if (converted.password && !converted.password_hash) {
+      converted.password_hash = converted.password;
+    }
+    delete converted.password; // profiles table column is password_hash
+  }
+
   return converted;
 }
 
 // Convert snake_case object to camelCase for frontend consistency
-function fromDbFormat(data) {
+function fromDbFormat(data, table = '') {
   if (!data || typeof data !== 'object') return data;
-  if (Array.isArray(data)) return data.map(fromDbFormat);
+  if (Array.isArray(data)) return data.map(d => fromDbFormat(d, table));
   const converted = {};
   for (const [key, value] of Object.entries(data)) {
     const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
     converted[camelKey] = value;
   }
+
+  if (table === 'profiles' || converted.passwordHash || converted.password_hash) {
+    const pass = converted.passwordHash || converted.password_hash || '';
+    converted.password = pass;
+    converted.passwordHash = pass;
+  }
+
   return converted;
 }
 
@@ -61,7 +77,7 @@ export const supabaseStore = {
       return null;
     }
 
-    const items = (data || []).map(fromDbFormat);
+    const items = (data || []).map(d => fromDbFormat(d, table));
     if (filterFn) return items.filter(filterFn);
     return items;
   },
@@ -76,7 +92,7 @@ export const supabaseStore = {
       console.error(`Supabase findById error on table [${table}] id [${id}]:`, error.message);
       return null;
     }
-    return data ? fromDbFormat(data) : null;
+    return data ? fromDbFormat(data, table) : null;
   },
 
   async create(collectionName, item) {
@@ -84,13 +100,13 @@ export const supabaseStore = {
     const table = COLLECTION_TABLE_MAP[collectionName];
     if (!table) return null;
 
-    const dbPayload = toDbFormat(item);
+    const dbPayload = toDbFormat(item, table);
     const { data, error } = await supabase.from(table).insert([dbPayload]).select().single();
     if (error) {
       console.error(`Supabase create error on table [${table}]:`, error.message);
       throw error;
     }
-    return fromDbFormat(data);
+    return fromDbFormat(data, table);
   },
 
   async update(collectionName, id, updates) {
@@ -98,7 +114,7 @@ export const supabaseStore = {
     const table = COLLECTION_TABLE_MAP[collectionName];
     if (!table) return null;
 
-    const dbPayload = toDbFormat(updates);
+    const dbPayload = toDbFormat(updates, table);
     delete dbPayload.id; // never overwrite primary key
     dbPayload.updated_at = new Date().toISOString();
 
@@ -107,7 +123,7 @@ export const supabaseStore = {
       console.error(`Supabase update error on table [${table}] id [${id}]:`, error.message);
       throw error;
     }
-    return fromDbFormat(data);
+    return fromDbFormat(data, table);
   },
 
   async delete(collectionName, id) {
