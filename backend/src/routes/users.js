@@ -1,6 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { store } from '../services/store.js';
+import { supabase, isSupabaseConfigured } from '../services/supabase.js';
 
 const router = express.Router();
 
@@ -24,13 +25,42 @@ router.post('/login', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. First check admin staff users
+    // 1. If Supabase is configured and password is provided, try Supabase Auth first
+    if (isSupabaseConfigured() && supabase && password) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password
+        });
+
+        if (!authError && authData?.user) {
+          // Look up user's profile in DB
+          const adminUsers = await store.findAll('adminUsers');
+          const user = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+          if (user) {
+            await store.update('adminUsers', user.id, { lastLogin: new Date().toISOString() });
+            return res.json({
+              success: true,
+              message: `Welcome back, ${user.name}! (Authenticated via Supabase)`,
+              token: authData.session?.access_token || `keralapg_jwt_${user.id}_${Date.now()}`,
+              roleType: 'admin',
+              data: user
+            });
+          }
+        }
+      } catch (authErr) {
+        console.warn('Supabase Auth attempt fallback to database profile check:', authErr.message);
+      }
+    }
+
+    // 2. Direct Profile Verification (PostgreSQL / Store verification)
     const adminUsers = await store.findAll('adminUsers');
     let user = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
     if (user) {
       // Validate password if user has password configured and password was provided
-      if (user.password && password && user.password !== password) {
+      if (user.password && password && user.password !== password && user.passwordHash !== password) {
         return res.status(401).json({ success: false, error: 'Incorrect password. Please verify your credentials.' });
       }
       const updated = await store.update('adminUsers', user.id, { lastLogin: new Date().toISOString() });
@@ -43,7 +73,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // 2. Check customer / seeker registry
+    // 3. Check customer / seeker registry
     const customers = await store.findAll('customers');
     let customer = customers.find(c => c.email?.toLowerCase() === cleanEmail || c.phone?.replace(/[^0-9]/g, '') === cleanEmail.replace(/[^0-9]/g, ''));
 
@@ -78,7 +108,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// POST /api/users/register (User / Seeker Registration)
+// POST /api/users/register (Seeker / User Registration)
 router.post('/register', async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
@@ -99,8 +129,26 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, error: 'An account with this email/phone already exists. Please sign in.' });
     }
 
+    // Try creating user in Supabase Auth if configured
+    let authUserId = null;
+    if (isSupabaseConfigured() && supabase && cleanEmail && password) {
+      try {
+        const { data: authData } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: { name: name.trim(), phone: cleanPhone, role: 'Seeker' }
+          }
+        });
+        authUserId = authData?.user?.id || null;
+      } catch (authErr) {
+        console.warn('Supabase Auth signup skipped:', authErr.message);
+      }
+    }
+
     const newCustomer = {
       id: `cust_${uuidv4().substring(0, 6)}`,
+      authUserId,
       name: name.trim(),
       email: cleanEmail || `${cleanPhone.replace(/[^0-9]/g, '')}@keralapg.com`,
       phone: cleanPhone || '+91 98470 00000',
@@ -125,12 +173,31 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// POST /api/users
+// POST /api/users (Super Admin adds Admin or Staff user)
 router.post('/', async (req, res) => {
   try {
-    const { name, email, role, phone } = req.body;
+    const { name, email, role, phone, password } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ success: false, error: 'Name, email and role are required' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const assignedPassword = password || 'KeralaPG@123';
+
+    // Optional Supabase Auth user provisioning
+    let authUserId = null;
+    if (isSupabaseConfigured() && supabase && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const { data: authUser } = await supabase.auth.admin.createUser({
+          email: cleanEmail,
+          password: assignedPassword,
+          email_confirm: true,
+          user_metadata: { name: name.trim(), role }
+        });
+        authUserId = authUser?.user?.id || null;
+      } catch (authErr) {
+        console.warn('Supabase admin.createUser warning:', authErr.message);
+      }
     }
 
     const defaultPermissions = {
@@ -183,9 +250,11 @@ router.post('/', async (req, res) => {
 
     const newUser = {
       id: `usr_${uuidv4().substring(0, 6)}`,
-      name,
+      authUserId,
+      name: name.trim(),
       email: cleanEmail,
-      password: req.body.password || 'KeralaPG@123',
+      password: assignedPassword,
+      passwordHash: assignedPassword,
       role,
       phone: phone || '',
       status: 'Active',
@@ -217,13 +286,22 @@ router.post('/change-password', async (req, res) => {
       return res.status(404).json({ success: false, error: 'User account not found' });
     }
 
-    // If user has an existing password, verify current password
-    if (user.password && currentPassword && user.password !== currentPassword) {
+    if (user.password && currentPassword && user.password !== currentPassword && user.passwordHash !== currentPassword) {
       return res.status(400).json({ success: false, error: 'Current password is incorrect' });
+    }
+
+    // If Supabase is configured and authUserId exists, update Supabase Auth password
+    if (isSupabaseConfigured() && supabase && user.authUserId && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        await supabase.auth.admin.updateUserById(user.authUserId, { password: newPassword });
+      } catch (authErr) {
+        console.warn('Supabase auth password update error:', authErr.message);
+      }
     }
 
     const updated = await store.update('adminUsers', userId, {
       password: newPassword,
+      passwordHash: newPassword,
       passwordLastChanged: new Date().toISOString()
     });
 
@@ -244,13 +322,27 @@ router.post('/reset-password', async (req, res) => {
     if (!userId || !newPassword) {
       return res.status(400).json({ success: false, error: 'User ID and new password are required' });
     }
-    const updated = await store.update('adminUsers', userId, {
-      password: newPassword,
-      passwordLastChanged: new Date().toISOString()
-    });
-    if (!updated) {
+
+    const adminUsers = await store.findAll('adminUsers');
+    const user = adminUsers.find(u => u.id === userId);
+    if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
+
+    if (isSupabaseConfigured() && supabase && user.authUserId && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        await supabase.auth.admin.updateUserById(user.authUserId, { password: newPassword });
+      } catch (authErr) {
+        console.warn('Supabase auth password update error:', authErr.message);
+      }
+    }
+
+    const updated = await store.update('adminUsers', userId, {
+      password: newPassword,
+      passwordHash: newPassword,
+      passwordLastChanged: new Date().toISOString()
+    });
+
     res.json({ success: true, message: `Password reset successfully for ${updated.name}`, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -271,6 +363,14 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/users/:id
 router.delete('/:id', async (req, res) => {
   try {
+    const user = await store.findById('adminUsers', req.params.id);
+    if (user && isSupabaseConfigured() && supabase && user.authUserId && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        await supabase.auth.admin.deleteUser(user.authUserId);
+      } catch (authErr) {
+        console.warn('Supabase auth user deletion error:', authErr.message);
+      }
+    }
     const ok = await store.delete('adminUsers', req.params.id);
     if (!ok) return res.status(404).json({ success: false, error: 'User not found' });
     res.json({ success: true, message: 'User deleted' });
