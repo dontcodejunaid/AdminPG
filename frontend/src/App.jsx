@@ -37,8 +37,11 @@ export function App() {
     return <LoginPage />;
   }
 
-  // If user role is Customer / Seeker / User, open the dedicated Seeker Portal
-  const isCustomerUser = currentUser?.role === 'Customer' || currentUser?.role === 'User' || currentUser?.role === 'PG Seeker';
+  // Check if user is an Admin vs Seeker/Customer
+  const roleLower = (currentUser?.role || '').toLowerCase().trim();
+  const isAdminRole = roleLower === 'super admin' || roleLower === 'admin' || roleLower === 'staff' || roleLower === 'property manager';
+  const isCustomerUser = !isAdminRole || ['seeker', 'customer', 'user', 'pg seeker', 'tenant', 'guest'].includes(roleLower);
+
   if (isCustomerUser) {
     return (
       <>
