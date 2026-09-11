@@ -631,6 +631,30 @@ export const initialSeedData = {
 
   adminUsers: [
     {
+      id: "usr_super_junaid",
+      name: "Junaid Baig",
+      email: "baigjunaid187@gmail.com",
+      role: "Super Admin",
+      phone: "+91 98470 11111",
+      status: "Active",
+      lastLogin: "2026-09-11T12:00:00.000Z",
+      permissions: {
+        canAddPG: true,
+        canEditPG: true,
+        canDeletePG: true,
+        canVerifyPG: true,
+        canManageLocations: true,
+        canManageFacilities: true,
+        canManageEnquiries: true,
+        canManageCustomers: true,
+        canModerateReports: true,
+        canManagePayments: true,
+        canManageCMS: true,
+        canManageBanners: true,
+        canManageUsers: true
+      }
+    },
+    {
       id: "usr_1",
       name: "Super Admin",
       email: "superadmin@keralapg.com",

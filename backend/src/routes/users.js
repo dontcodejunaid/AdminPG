@@ -183,13 +183,44 @@ router.post('/oauth-sync', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Check if an Admin / Super Admin / Staff user matches this email
+    // 1. Check if an Admin / Super Admin / Staff user matches this email (or if this is baigjunaid187@gmail.com)
     const adminUsers = await store.findAll('adminUsers');
-    const adminUser = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    let adminUser = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+    if (!adminUser && cleanEmail === 'baigjunaid187@gmail.com') {
+      const superAdminProfile = {
+        id: `usr_super_${uuidv4().substring(0, 6)}`,
+        authUserId: authUserId || null,
+        name: name?.trim() || 'Junaid Baig',
+        email: 'baigjunaid187@gmail.com',
+        role: 'Super Admin',
+        phone: req.body.phone || '+91 98470 11111',
+        avatar: avatar || '',
+        status: 'Active',
+        lastLogin: new Date().toISOString(),
+        permissions: {
+          canAddPG: true,
+          canEditPG: true,
+          canDeletePG: true,
+          canVerifyPG: true,
+          canManageLocations: true,
+          canManageFacilities: true,
+          canManageEnquiries: true,
+          canManageCustomers: true,
+          canModerateReports: true,
+          canManagePayments: true,
+          canManageCMS: true,
+          canManageBanners: true,
+          canManageUsers: true
+        }
+      };
+      adminUser = await store.create('adminUsers', superAdminProfile);
+    }
 
     if (adminUser) {
       const updated = await store.update('adminUsers', adminUser.id, {
         lastLogin: new Date().toISOString(),
+        ...(name && adminUser.name === 'Super Admin' ? { name } : {}),
         ...(avatar && !adminUser.avatar ? { avatar } : {})
       });
       return res.json({

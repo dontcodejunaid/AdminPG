@@ -11,12 +11,7 @@ export const AppProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem('keralapg_auth_user');
       if (!saved) return null;
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed.name === 'string' && parsed.name.toLowerCase().includes('junaid')) {
-        parsed.name = 'Super Admin';
-        localStorage.setItem('keralapg_auth_user', JSON.stringify(parsed));
-      }
-      return parsed;
+      return JSON.parse(saved);
     } catch {
       return null;
     }
@@ -113,10 +108,6 @@ export const AppProvider = ({ children }) => {
 
             if (res.success && res.data) {
               const matchedUser = res.data;
-              // Ensure name is clean
-              if (typeof matchedUser.name === 'string' && matchedUser.name.toLowerCase().includes('junaid')) {
-                matchedUser.name = 'Super Admin';
-              }
               login(matchedUser, res.token || session.access_token);
               return;
             }

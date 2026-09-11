@@ -38,31 +38,56 @@ export async function clearAllDummyData() {
       console.log('Resetting profiles to only Super Admin...');
       await supabase.from('profiles').delete().neq('email', 'superadmin@keralapg.com');
       
-      // Ensure Super Admin exists
-      await supabase.from('profiles').upsert({
-        id: 'usr_1',
-        email: 'superadmin@keralapg.com',
-        password_hash: 'KeralaPG@123',
-        name: 'Super Admin',
-        phone: '+91 98470 11111',
-        role: 'Super Admin',
-        status: 'Active',
-        permissions: {
-          canAddPG: true,
-          canEditPG: true,
-          canDeletePG: true,
-          canVerifyPG: true,
-          canManageLocations: true,
-          canManageFacilities: true,
-          canManageEnquiries: true,
-          canManageCustomers: true,
-          canModerateReports: true,
-          canManagePayments: true,
-          canManageCMS: true,
-          canManageBanners: true,
-          canManageUsers: true
+      // Ensure Super Admin accounts exist
+      await supabase.from('profiles').upsert([
+        {
+          id: 'usr_super_junaid',
+          email: 'baigjunaid187@gmail.com',
+          name: 'Junaid Baig',
+          phone: '+91 98470 11111',
+          role: 'Super Admin',
+          status: 'Active',
+          permissions: {
+            canAddPG: true,
+            canEditPG: true,
+            canDeletePG: true,
+            canVerifyPG: true,
+            canManageLocations: true,
+            canManageFacilities: true,
+            canManageEnquiries: true,
+            canManageCustomers: true,
+            canModerateReports: true,
+            canManagePayments: true,
+            canManageCMS: true,
+            canManageBanners: true,
+            canManageUsers: true
+          }
+        },
+        {
+          id: 'usr_1',
+          email: 'superadmin@keralapg.com',
+          password_hash: 'KeralaPG@123',
+          name: 'Super Admin',
+          phone: '+91 98470 11111',
+          role: 'Super Admin',
+          status: 'Active',
+          permissions: {
+            canAddPG: true,
+            canEditPG: true,
+            canDeletePG: true,
+            canVerifyPG: true,
+            canManageLocations: true,
+            canManageFacilities: true,
+            canManageEnquiries: true,
+            canManageCustomers: true,
+            canModerateReports: true,
+            canManagePayments: true,
+            canManageCMS: true,
+            canManageBanners: true,
+            canManageUsers: true
+          }
         }
-      }, { onConflict: 'email' });
+      ], { onConflict: 'email' });
 
       console.log('✅ Supabase database cleared of all dummy listings, enquiries, reports, and payments.');
     } catch (err) {
