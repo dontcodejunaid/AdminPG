@@ -632,7 +632,7 @@ export const initialSeedData = {
   adminUsers: [
     {
       id: "usr_1",
-      name: "Junaid (Super Admin)",
+      name: "Super Admin",
       email: "superadmin@keralapg.com",
       role: "Super Admin",
       phone: "+91 98470 11111",

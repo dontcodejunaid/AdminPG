@@ -43,7 +43,7 @@ export async function clearAllDummyData() {
         id: 'usr_1',
         email: 'superadmin@keralapg.com',
         password_hash: 'KeralaPG@123',
-        name: 'Junaid (Super Admin)',
+        name: 'Super Admin',
         phone: '+91 98470 11111',
         role: 'Super Admin',
         status: 'Active',
@@ -130,7 +130,7 @@ export async function clearAllDummyData() {
       adminUsers: [
         {
           id: "usr_1",
-          name: "Junaid (Super Admin)",
+          name: "Super Admin",
           email: "superadmin@keralapg.com",
           role: "Super Admin",
           phone: "+91 98470 11111",

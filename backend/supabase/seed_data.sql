@@ -10,7 +10,7 @@ VALUES
   'usr_1',
   'superadmin@keralapg.com',
   'KeralaPG@123',
-  'Junaid (Super Admin)',
+  'Super Admin',
   '+91 98470 11111',
   'Super Admin',
   'Active',

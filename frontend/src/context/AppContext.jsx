@@ -166,7 +166,7 @@ export const AppProvider = ({ children }) => {
     };
 
     const names = {
-      'Super Admin': 'Junaid (Super Admin)',
+      'Super Admin': 'Super Admin',
       'Admin': 'Operations Admin',
       'Staff': 'Staff Executive'
     };
