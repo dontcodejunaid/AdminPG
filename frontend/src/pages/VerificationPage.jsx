@@ -65,7 +65,7 @@ export const VerificationPage = ({ onEditPg }) => {
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
           <BadgeCheck className="w-6 h-6 text-teal-600" />
-          Verification Management Hub (Module 6)
+          Verification Management Hub
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Review, approve, and verify PG properties. Verified listings display the official KeralaPG Verified badge.

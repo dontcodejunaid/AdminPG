@@ -44,7 +44,7 @@ export const CustomersPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <Users className="w-6 h-6 text-indigo-600" />
-            Customer Directory (Module 8)
+            Customer Directory
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             View registered seekers, their wishlisted properties, and total contact unlocks

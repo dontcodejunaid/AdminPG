@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
+import { CustomDatePicker } from '../components/ui/DatePicker';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -140,7 +142,7 @@ export const EnquiriesPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <MessageSquareText className="w-6 h-6 text-brand-600" />
-            Customer Enquiries & Leads CRM (Module 7)
+            Customer Enquiries & Leads CRM
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Track inquiries, callbacks, and visit scheduling. Move leads through the sales pipeline.
@@ -152,7 +154,7 @@ export const EnquiriesPage = () => {
           className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 flex items-center gap-2 transition-all self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Record New Customer Lead</span>
+          <span>Record New Customer Lead</span>
         </button>
       </div>
 
@@ -249,15 +251,14 @@ export const EnquiriesPage = () => {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <select
-                        value={enq.status}
-                        onChange={(e) => handleStatusChange(enq.id, e.target.value)}
-                        className="text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-                      >
-                        {statuses.map(st => (
-                          <option key={st} value={st}>{st}</option>
-                        ))}
-                      </select>
+                      <div className="w-32">
+                        <CustomSelect
+                          value={enq.status}
+                          onChange={(e) => handleStatusChange(enq.id, e.target.value)}
+                          className="py-1 px-2 font-bold text-xs"
+                          options={statuses.map(st => ({ value: st, label: st }))}
+                        />
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -270,7 +271,7 @@ export const EnquiriesPage = () => {
                         className="text-left group"
                       >
                         <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 max-w-[160px] group-hover:underline">
-                          {enq.adminNotes || '+ Add admin note'}
+                          {enq.adminNotes || 'Add admin note'}
                         </p>
                       </button>
                     </td>
@@ -338,32 +339,31 @@ export const EnquiriesPage = () => {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target PG Property *</label>
-            <select
+            <CustomSelect
               value={formData.pgId}
               onChange={(e) => setFormData({ ...formData, pgId: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-              required
-            >
-              <option value="">Select Property</option>
-              {properties.map(p => (
-                <option key={p.id} value={p.id}>{p.name} ({p.city})</option>
-              ))}
-            </select>
+              placeholder="Select Property"
+              searchable={true}
+              options={properties.map(p => ({
+                value: p.id,
+                label: `${p.name} (${p.city || 'Kerala'})`
+              }))}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Room Sharing</label>
-              <select
+              <CustomSelect
                 value={formData.roomType}
                 onChange={(e) => setFormData({ ...formData, roomType: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-              >
-                <option value="Single Sharing">Single Sharing</option>
-                <option value="2 Sharing">2 Sharing</option>
-                <option value="3 Sharing">3 Sharing</option>
-                <option value="4 Sharing">4 Sharing</option>
-              </select>
+                options={[
+                  { value: 'Single Sharing', label: 'Single Sharing' },
+                  { value: '2 Sharing', label: '2 Sharing' },
+                  { value: '3 Sharing', label: '3 Sharing' },
+                  { value: '4 Sharing', label: '4 Sharing' }
+                ]}
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Budget (₹)</label>
@@ -377,11 +377,11 @@ export const EnquiriesPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Expected Move-in</label>
-              <input
-                type="date"
+              <CustomDatePicker
                 value={formData.moveInDate}
                 onChange={(e) => setFormData({ ...formData, moveInDate: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                placeholder="Select move-in date"
+                align="right"
               />
             </div>
           </div>

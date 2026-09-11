@@ -7,12 +7,13 @@ import {
   CheckCircle2, 
   XCircle, 
   Clock, 
-  DollarSign, 
+  IndianRupee, 
   ArrowUpRight,
   ShieldCheck
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -114,7 +115,7 @@ export const PaymentsPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <CreditCard className="w-6 h-6 text-brand-600" />
-            Payments & ₹19 Transaction System (Module 11)
+            Payments & ₹19 Transaction System
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Architecture ready for customer ₹19 owner unlock fees and PG listing subscriptions
@@ -136,7 +137,7 @@ export const PaymentsPage = () => {
               className="px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 flex items-center gap-1.5 transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Record Transaction</span>
+              <span>Record Transaction</span>
             </button>
           )}
         </div>
@@ -160,9 +161,9 @@ export const PaymentsPage = () => {
           <span className="text-xs font-semibold text-slate-500">Gateway Status</span>
           <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-2 flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            Razorpay / UPI Webhook Ready
+            Active & Operational
           </p>
-          <span className="text-[11px] text-slate-400">Database decoupled & scalable</span>
+          <span className="text-[11px] text-slate-400">Razorpay & UPI Enabled</span>
         </div>
       </div>
 
@@ -179,16 +180,19 @@ export const PaymentsPage = () => {
           />
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none w-full sm:w-48"
-        >
-          <option value="">All Payment Statuses</option>
-          <option value="Success">Success Only</option>
-          <option value="Pending">Pending Only</option>
-          <option value="Failed">Failed Only</option>
-        </select>
+        <div className="w-full sm:w-48">
+          <CustomSelect
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            placeholder="All Payment Statuses"
+            options={[
+              { value: '', label: 'All Payment Statuses' },
+              { value: 'Success', label: 'Success Only' },
+              { value: 'Pending', label: 'Pending Only' },
+              { value: 'Failed', label: 'Failed Only' }
+            ]}
+          />
+        </div>
       </div>
 
       {/* Transactions Table */}
@@ -295,8 +299,8 @@ export const PaymentsPage = () => {
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Amount (₹)</label>
               <input
                 type="number"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+                value={formData.amount ?? ''}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value === '' ? '' : Number(e.target.value) })}
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-bold text-brand-600"
               />
             </div>
@@ -305,28 +309,28 @@ export const PaymentsPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Status</label>
-              <select
+              <CustomSelect
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Success">🟢 Success</option>
-                <option value="Pending">🟡 Pending</option>
-                <option value="Failed">🔴 Failed</option>
-              </select>
+                options={[
+                  { value: 'Success', label: '🟢 Success' },
+                  { value: 'Pending', label: '🟡 Pending' },
+                  { value: 'Failed', label: '🔴 Failed' }
+                ]}
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
-              <select
+              <CustomSelect
                 value={formData.paymentGateway}
                 onChange={(e) => setFormData({ ...formData, paymentGateway: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-              >
-                <option value="UPI / Razorpay">UPI / Razorpay</option>
-                <option value="UPI / PhonePe">UPI / PhonePe</option>
-                <option value="Google Pay">Google Pay</option>
-                <option value="Credit / Debit Card">Credit / Debit Card</option>
-              </select>
+                options={[
+                  { value: 'UPI / Razorpay', label: 'UPI / Razorpay' },
+                  { value: 'UPI / PhonePe', label: 'UPI / PhonePe' },
+                  { value: 'Google Pay', label: 'Google Pay' },
+                  { value: 'Credit / Debit Card', label: 'Credit / Debit Card' }
+                ]}
+              />
             </div>
           </div>
 

@@ -18,24 +18,65 @@ import {
   ExternalLink,
   Bed,
   Eye,
-  DollarSign
+  IndianRupee,
+  RotateCcw
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
-  const { showToast, currentUser, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, currentUser, refreshTrigger, triggerRefresh, pageFilters, confirm } = useApp();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPgId, setExpandedPgId] = useState(null);
 
-  // Filters
-  const [search, setSearch] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedType, setSelectedType] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [selectedVerification, setSelectedVerification] = useState('');
+  // Filters - initialized directly from navigation payload if present
+  const [search, setSearch] = useState(pageFilters?.search || '');
+  const [selectedCity, setSelectedCity] = useState(pageFilters?.city || '');
+  const [selectedType, setSelectedType] = useState(pageFilters?.type || '');
+  const [selectedStatus, setSelectedStatus] = useState(pageFilters?.status || '');
+  const [selectedVerification, setSelectedVerification] = useState(pageFilters?.verificationStatus || '');
+  const [selectedAvailability, setSelectedAvailability] = useState(pageFilters?.availabilityStatus || '');
+  const [availableCities, setAvailableCities] = useState([]);
+
+  // Fetch full master cities list from Locations & Properties so filter never collapses
+  useEffect(() => {
+    const fetchMasterCities = async () => {
+      try {
+        const [flatLocRes, propsRes] = await Promise.allSettled([
+          api.getFlatLocations(),
+          api.getProperties()
+        ]);
+        const locCities = flatLocRes.status === 'fulfilled' && flatLocRes.value?.data?.cities
+          ? flatLocRes.value.data.cities.map(c => c.name)
+          : [];
+        const propCities = propsRes.status === 'fulfilled' && propsRes.value?.data
+          ? propsRes.value.data.map(p => p.city).filter(Boolean)
+          : [];
+        const mergedCities = Array.from(new Set([...locCities, ...propCities])).filter(Boolean).sort();
+        if (mergedCities.length > 0) {
+          setAvailableCities(mergedCities);
+        }
+      } catch (err) {
+        console.error('Failed to load cities for filter:', err);
+      }
+    };
+    fetchMasterCities();
+  }, [refreshTrigger]);
+
+  // Sync incoming navigation filters from Dashboard or Header
+  useEffect(() => {
+    if (pageFilters) {
+      if (pageFilters.status !== undefined) setSelectedStatus(pageFilters.status);
+      if (pageFilters.verificationStatus !== undefined) setSelectedVerification(pageFilters.verificationStatus);
+      if (pageFilters.availabilityStatus !== undefined) setSelectedAvailability(pageFilters.availabilityStatus);
+      if (pageFilters.city !== undefined) setSelectedCity(pageFilters.city);
+      if (pageFilters.type !== undefined) setSelectedType(pageFilters.type);
+      if (pageFilters.search !== undefined) setSearch(pageFilters.search);
+    }
+  }, [pageFilters]);
 
   // Load properties
   const fetchProperties = async () => {
@@ -47,6 +88,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
       if (selectedType) params.type = selectedType;
       if (selectedStatus) params.status = selectedStatus;
       if (selectedVerification) params.verificationStatus = selectedVerification;
+      if (selectedAvailability) params.availabilityStatus = selectedAvailability;
 
       const res = await api.getProperties(params);
       if (res.data) setProperties(res.data);
@@ -59,7 +101,26 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
 
   useEffect(() => {
     fetchProperties();
-  }, [refreshTrigger, search, selectedCity, selectedType, selectedStatus, selectedVerification]);
+  }, [refreshTrigger, search, selectedCity, selectedType, selectedStatus, selectedVerification, selectedAvailability]);
+
+  // Client-side strict filter guarantee
+  const filteredProperties = properties.filter((pg) => {
+    if (selectedStatus && pg.status?.toLowerCase() !== selectedStatus.toLowerCase()) return false;
+    if (selectedVerification && pg.verificationStatus?.toLowerCase() !== selectedVerification.toLowerCase()) return false;
+    if (selectedAvailability && pg.availabilityStatus?.toLowerCase() !== selectedAvailability.toLowerCase()) return false;
+    if (selectedCity && pg.city?.toLowerCase() !== selectedCity.toLowerCase()) return false;
+    if (selectedType && pg.type?.toLowerCase() !== selectedType.toLowerCase()) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const match =
+        pg.name?.toLowerCase().includes(q) ||
+        pg.area?.toLowerCase().includes(q) ||
+        pg.city?.toLowerCase().includes(q) ||
+        pg.contactNumber?.includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
 
   // Quick Action Handlers
   const handleQuickUpdate = async (pgId, patch, message) => {
@@ -78,20 +139,28 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
       showToast('Permission Denied: Staff cannot delete properties', 'error');
       return;
     }
-    if (window.confirm(`Are you sure you want to permanently delete "${pg.name}"?`)) {
-      try {
-        await api.deleteProperty(pg.id);
-        showToast(`Deleted "${pg.name}" successfully`, 'success');
-        fetchProperties();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete Property',
+      message: `Are you sure you want to permanently delete "${pg.name}"? This will remove all associated rooms and listings.`,
+      confirmText: 'Delete Property',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteProperty(pg.id);
+      showToast(`Deleted "${pg.name}" successfully`, 'success');
+      fetchProperties();
+      triggerRefresh();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 
-  // Distinct cities list for filter
-  const cities = Array.from(new Set(properties.map(p => p.city).filter(Boolean)));
+  // Full master cities list for filter (persists when a single city is filtered)
+  const cities = availableCities.length > 0
+    ? availableCities
+    : Array.from(new Set(properties.map(p => p.city).filter(Boolean)));
 
   return (
     <div className="space-y-6">
@@ -114,14 +183,14 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
             className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 flex items-center gap-2 transition-all self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add New PG Property</span>
+            <span>Add New PG Property</span>
           </button>
         )}
       </div>
 
       {/* Filter & Search Toolbar */}
       <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           
           {/* Search */}
           <div className="relative">
@@ -136,57 +205,138 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
           </div>
 
           {/* City Filter */}
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All Cities</option>
-            {cities.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div>
+            <CustomSelect
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              placeholder="All Cities"
+              options={[
+                { value: '', label: 'All Cities' },
+                ...cities.map(c => ({ value: c, label: c }))
+              ]}
+            />
+          </div>
 
           {/* Type Filter */}
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All PG Types</option>
-            <option value="Boys">Boys PG</option>
-            <option value="Girls">Girls PG / Hostel</option>
-            <option value="Co-living">Co-living Space</option>
-          </select>
+          <div>
+            <CustomSelect
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              placeholder="All PG Types"
+              options={[
+                { value: '', label: 'All PG Types' },
+                { value: 'Boys', label: 'Boys PG' },
+                { value: 'Girls', label: 'Girls PG / Hostel' },
+                { value: 'Co-living', label: 'Co-living Space' }
+              ]}
+            />
+          </div>
 
           {/* Publish Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All Statuses</option>
-            <option value="Active">Active Only</option>
-            <option value="Inactive">Inactive Only</option>
-          </select>
+          <div>
+            <CustomSelect
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              placeholder="All Statuses"
+              options={[
+                { value: '', label: 'All Statuses' },
+                { value: 'Active', label: '🟢 Active Only' },
+                { value: 'Inactive', label: '🔴 Inactive Only' }
+              ]}
+            />
+          </div>
+
+          {/* Availability Filter */}
+          <div>
+            <CustomSelect
+              value={selectedAvailability}
+              onChange={(e) => setSelectedAvailability(e.target.value)}
+              placeholder="All Availability"
+              options={[
+                { value: '', label: 'All Availability' },
+                { value: 'Available', label: 'Available' },
+                { value: 'Limited', label: 'Limited' },
+                { value: 'Full', label: 'Full / Unavailable' }
+              ]}
+            />
+          </div>
 
           {/* Verification Status */}
-          <select
-            value={selectedVerification}
-            onChange={(e) => setSelectedVerification(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All Verifications</option>
-            <option value="Verified">Verified Only</option>
-            <option value="Pending">Pending Verification</option>
-            <option value="Not Verified">Not Verified</option>
-          </select>
+          <div>
+            <CustomSelect
+              value={selectedVerification}
+              onChange={(e) => setSelectedVerification(e.target.value)}
+              placeholder="All Verifications"
+              options={[
+                { value: '', label: 'All Verifications' },
+                { value: 'Verified', label: 'Verified Only' },
+                { value: 'Pending', label: 'Pending Verification' },
+                { value: 'Not Verified', label: 'Not Verified' }
+              ]}
+            />
+          </div>
 
         </div>
+
+        {/* Active Filter Badges & Reset */}
+        {(search || selectedCity || selectedType || selectedStatus || selectedVerification || selectedAvailability) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 text-slate-500 dark:text-slate-400">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">Active Filters:</span>
+              {selectedStatus && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 font-medium">
+                  Status: {selectedStatus}
+                </span>
+              )}
+              {selectedAvailability && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-medium">
+                  Availability: {selectedAvailability}
+                </span>
+              )}
+              {selectedVerification && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-medium">
+                  Verification: {selectedVerification}
+                </span>
+              )}
+              {selectedCity && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  City: {selectedCity}
+                </span>
+              )}
+              {selectedType && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  Type: {selectedType}
+                </span>
+              )}
+              {search && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  Search: "{search}"
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setSearch('');
+                setSelectedCity('');
+                setSelectedType('');
+                setSelectedStatus('');
+                setSelectedVerification('');
+                setSelectedAvailability('');
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-semibold transition-colors ml-auto"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Clear All Filters</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Property Cards List */}
       {loading ? (
         <div className="py-12 text-center text-slate-400">Loading properties...</div>
-      ) : properties.length === 0 ? (
+      ) : filteredProperties.length === 0 ? (
         <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No properties found</h3>
@@ -194,7 +344,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
         </div>
       ) : (
         <div className="space-y-4">
-          {properties.map((pg) => {
+          {filteredProperties.map((pg) => {
             const isExpanded = expandedPgId === pg.id;
             const minRent = (pg.rooms || []).reduce((min, r) => r.rent < min ? r.rent : min, 99999);
             const maxRent = (pg.rooms || []).reduce((max, r) => r.rent > max ? r.rent : max, 0);
@@ -258,7 +408,18 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     
                     {/* Status & Verification Badges */}
                     <div className="flex items-center gap-2">
-                      <Badge variant={pg.status}>{pg.status}</Badge>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickUpdate(
+                          pg.id, 
+                          { status: pg.status === 'Active' ? 'Inactive' : 'Active' }, 
+                          `Marked PG as ${pg.status === 'Active' ? 'Inactive' : 'Active'}`
+                        )}
+                        className="transition-transform active:scale-95"
+                        title="Click to toggle Active / Inactive status"
+                      >
+                        <Badge variant={pg.status}>{pg.status}</Badge>
+                      </button>
                       <Badge variant={pg.availabilityStatus}>{pg.availabilityStatus}</Badge>
                       <Badge variant={pg.verificationStatus}>{pg.verificationStatus}</Badge>
                     </div>
@@ -266,17 +427,32 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     {/* Quick Admin Toggles & Actions */}
                     <div className="flex flex-wrap items-center gap-2">
                       
+                      {/* Publish Status Quick Toggle */}
+                      <div className="w-28">
+                        <CustomSelect
+                          value={pg.status}
+                          onChange={(e) => handleQuickUpdate(pg.id, { status: e.target.value }, `Marked as ${e.target.value}`)}
+                          className="py-1 px-2 text-[11px] font-bold"
+                          options={[
+                            { value: 'Active', label: '🟢 Active' },
+                            { value: 'Inactive', label: '🔴 Inactive' }
+                          ]}
+                        />
+                      </div>
+
                       {/* Availability Quick Toggle */}
-                      <select
-                        value={pg.availabilityStatus}
-                        onChange={(e) => handleQuickUpdate(pg.id, { availabilityStatus: e.target.value }, `Updated availability to ${e.target.value}`)}
-                        className="text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                        title="Quick change availability"
-                      >
-                        <option value="Available">Available</option>
-                        <option value="Limited">Limited</option>
-                        <option value="Full">Mark as Full</option>
-                      </select>
+                      <div className="w-28">
+                        <CustomSelect
+                          value={pg.availabilityStatus}
+                          onChange={(e) => handleQuickUpdate(pg.id, { availabilityStatus: e.target.value }, `Updated availability to ${e.target.value}`)}
+                          className="py-1 px-2 text-[11px]"
+                          options={[
+                            { value: 'Available', label: 'Available' },
+                            { value: 'Limited', label: 'Limited' },
+                            { value: 'Full', label: 'Full' }
+                          ]}
+                        />
+                      </div>
 
                       {/* Featured Quick Toggle */}
                       <button
@@ -342,8 +518,8 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <DollarSign className="w-3.5 h-3.5 text-brand-600" />
-                        Room & Pricing Breakdown (Module 3)
+                        <IndianRupee className="w-3.5 h-3.5 text-brand-600" />
+                        Room & Pricing Breakdown
                       </h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">

@@ -53,11 +53,11 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
   }
 
   const statCards = [
-    { label: 'Total PGs', value: stats?.totalPgs || 0, icon: Building2, color: 'text-brand-600 bg-brand-50 dark:bg-brand-950/60 dark:text-brand-400', tab: 'properties' },
-    { label: 'Active Listings', value: stats?.activePgs || 0, icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400', tab: 'properties' },
+    { label: 'Total PGs', value: stats?.totalPgs || 0, icon: Building2, color: 'text-brand-600 bg-brand-50 dark:bg-brand-950/60 dark:text-brand-400', tab: 'properties', filter: { status: '', verificationStatus: '', availabilityStatus: '', search: '', city: '', type: '' } },
+    { label: 'Active Listings', value: stats?.activePgs || 0, icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400', tab: 'properties', filter: { status: 'Active', verificationStatus: '', availabilityStatus: '', search: '', city: '', type: '' } },
     { label: 'Pending Verification', value: stats?.pendingPgs || 0, icon: Clock, color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400', tab: 'verifications', badge: stats?.pendingPgs > 0 ? 'Action Needed' : null },
-    { label: 'Verified PGs', value: stats?.verifiedPgs || 0, icon: ShieldCheck, color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-400', tab: 'properties' },
-    { label: 'Full / Unavailable', value: stats?.fullPgs || 0, icon: AlertCircle, color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400', tab: 'properties' },
+    { label: 'Verified PGs', value: stats?.verifiedPgs || 0, icon: ShieldCheck, color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-400', tab: 'properties', filter: { verificationStatus: 'Verified', status: '', availabilityStatus: '', search: '', city: '', type: '' } },
+    { label: 'Full / Unavailable', value: stats?.fullPgs || 0, icon: AlertCircle, color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400', tab: 'properties', filter: { availabilityStatus: 'Full', status: '', verificationStatus: '', search: '', city: '', type: '' } },
     { label: 'Total Enquiries', value: stats?.totalEnquiries || 0, icon: MessageSquareText, color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-400', tab: 'enquiries' },
     { label: "Today's Enquiries", value: stats?.todayEnquiries || 0, icon: TrendingUp, color: 'text-sky-600 bg-sky-50 dark:bg-sky-950/60 dark:text-sky-400', tab: 'enquiries', highlight: true },
     { label: 'Total Active Cities', value: stats?.totalCities || 0, icon: MapPin, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/60 dark:text-purple-400', tab: 'locations' }
@@ -97,7 +97,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
               className="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-brand-500/20 transition-all hover:scale-105"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Add New PG Property</span>
+              <span>Add New PG Property</span>
             </button>
             <button
               onClick={() => setActiveTab('enquiries')}
@@ -119,7 +119,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
           return (
             <div
               key={i}
-              onClick={() => setActiveTab(card.tab)}
+              onClick={() => setActiveTab(card.tab, card.filter || {})}
               className="group cursor-pointer p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all flex flex-col justify-between"
             >
               <div className="flex items-start justify-between">

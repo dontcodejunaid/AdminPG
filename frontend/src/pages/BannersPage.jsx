@@ -12,27 +12,32 @@ import {
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
+import { CustomDatePicker } from '../components/ui/DatePicker';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const BannersPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bannerToEdit, setBannerToEdit] = useState(null);
+
+  // Form State
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
     imageUrl: '',
-    targetUrl: '',
-    placement: 'Homepage Hero Top',
+    targetType: 'All',
     city: 'All Cities',
-    isActive: true,
+    actionText: 'Explore PGs',
+    link: '/properties',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    isActive: true
   });
 
   const fetchBanners = async () => {
@@ -56,11 +61,11 @@ export const BannersPage = () => {
     setFormData({
       title: '',
       subtitle: '',
-      imageUrl: '',
-      targetUrl: '/search?city=Kochi',
-      placement: 'Homepage Hero Top',
+      imageUrl: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80',
+      targetType: 'All',
       city: 'All Cities',
-      isActive: true,
+      actionText: 'Explore PGs',
+      link: '/properties',
       startDate: new Date().toISOString().split('T')[0],
       endDate: '2026-12-31'
     });
@@ -131,14 +136,20 @@ export const BannersPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Delete banner "${b.title}"?`)) {
-      try {
-        await api.deleteBanner(b.id);
-        showToast('Banner deleted', 'success');
-        fetchBanners();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete Banner',
+      message: `Are you sure you want to permanently delete banner "${b.title}"?`,
+      confirmText: 'Delete Banner',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteBanner(b.id);
+      showToast('Banner deleted successfully', 'success');
+      fetchBanners();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 
@@ -150,7 +161,7 @@ export const BannersPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <ImageIcon className="w-6 h-6 text-brand-600" />
-            Banner & Advertisement Management (Module 13)
+            Banner & Advertisement Management
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage promotional hero banners, sponsored city campaigns, and special discounts
@@ -163,7 +174,7 @@ export const BannersPage = () => {
             className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 flex items-center gap-2 transition-all self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Create Promo Banner</span>
+            <span>Create Promo Banner</span>
           </button>
         )}
       </div>
@@ -308,15 +319,15 @@ export const BannersPage = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Placement Slot</label>
-              <select
+              <CustomSelect
                 value={formData.placement}
                 onChange={(e) => setFormData({ ...formData, placement: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Homepage Hero Top">Homepage Hero Top</option>
-                <option value="Search Results Header">Search Results Header</option>
-                <option value="City Spotlight Carousel">City Spotlight Carousel</option>
-              </select>
+                options={[
+                  { value: 'Homepage Hero Top', label: 'Homepage Hero Top' },
+                  { value: 'Search Results Header', label: 'Search Results Header' },
+                  { value: 'City Spotlight Carousel', label: 'City Spotlight Carousel' }
+                ]}
+              />
             </div>
           </div>
 
@@ -333,20 +344,18 @@ export const BannersPage = () => {
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Start Date</label>
-              <input
-                type="date"
+              <CustomDatePicker
                 value={formData.startDate}
                 onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                placeholder="Select start date"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">End Date</label>
-              <input
-                type="date"
+              <CustomDatePicker
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                placeholder="Select end date"
               />
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Sparkles, 
+  ListChecks, 
   Plus, 
   Edit3, 
   Trash2, 
@@ -10,11 +10,12 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { DynamicIcon, AVAILABLE_FACILITY_ICONS } from '../components/common/IconHelper';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const FacilitiesPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +27,7 @@ export const FacilitiesPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     category: 'General',
-    icon: 'Sparkles'
+    icon: 'ListChecks'
   });
 
   const categories = [
@@ -63,13 +64,13 @@ export const FacilitiesPage = () => {
 
   const handleOpenAdd = () => {
     setFacilityToEdit(null);
-    setFormData({ name: '', category: 'General', icon: 'Sparkles' });
+    setFormData({ name: '', category: 'General', icon: 'ListChecks' });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (fac) => {
     setFacilityToEdit(fac);
-    setFormData({ name: fac.name, category: fac.category || 'General', icon: fac.icon || 'Sparkles' });
+    setFormData({ name: fac.name, category: fac.category || 'General', icon: fac.icon || 'ListChecks' });
     setIsModalOpen(true);
   };
 
@@ -98,15 +99,21 @@ export const FacilitiesPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Delete facility "${fac.name}"?`)) {
-      try {
-        await api.deleteFacility(fac.id);
-        showToast('Facility deleted', 'success');
-        fetchFacilities();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Delete failed', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete Facility',
+      message: `Are you sure you want to delete amenity "${fac.name}"?`,
+      confirmText: 'Delete Facility',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteFacility(fac.id);
+      showToast('Facility deleted successfully', 'success');
+      fetchFacilities();
+      triggerRefresh();
+    } catch (err) {
+      showToast('Delete failed', 'error');
     }
   };
 
@@ -125,8 +132,8 @@ export const FacilitiesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Sparkles className="w-6 h-6 text-brand-600" />
-            Dynamic Facilities & Amenities Management (Module 5)
+            <ListChecks className="w-6 h-6 text-brand-600" />
+            Dynamic Facilities & Amenities Management
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Add custom amenities anytime. All newly added facilities immediately become selectable in the PG editor.
@@ -138,7 +145,7 @@ export const FacilitiesPage = () => {
           className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 flex items-center gap-2 transition-all self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Add New Facility / Amenity</span>
+          <span>Add Facility / Amenity</span>
         </button>
       </div>
 
@@ -227,15 +234,11 @@ export const FacilitiesPage = () => {
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Category
             </label>
-            <select
+            <CustomSelect
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              options={categories.map(cat => ({ value: cat, label: cat }))}
+            />
           </div>
 
           <div>

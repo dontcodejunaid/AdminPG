@@ -3,7 +3,7 @@ import {
   LayoutDashboard, 
   Building2, 
   MapPin, 
-  Sparkles, 
+  ListChecks, 
   BadgeCheck, 
   MessageSquareText, 
   Users, 
@@ -31,7 +31,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
     // Core Property Ops
     { id: 'properties', label: 'PG Management', icon: Building2, category: 'Properties', moduleNum: '2 & 3', highlight: true, roles: ['Super Admin', 'Admin', 'Staff'] },
     { id: 'locations', label: 'Locations (City/Area)', icon: MapPin, category: 'Properties', moduleNum: '4', roles: ['Super Admin', 'Admin'] },
-    { id: 'facilities', label: 'Facilities & Amenities', icon: Sparkles, category: 'Properties', moduleNum: '5', roles: ['Super Admin', 'Admin'] },
+    { id: 'facilities', label: 'Facilities & Amenities', icon: ListChecks, category: 'Properties', moduleNum: '5', roles: ['Super Admin', 'Admin'] },
     { id: 'verifications', label: 'Verification Hub', icon: BadgeCheck, category: 'Properties', moduleNum: '6', roles: ['Super Admin', 'Admin', 'Staff'] },
     { id: 'featured', label: 'Featured PGs', icon: Star, category: 'Properties', moduleNum: '10', roles: ['Super Admin', 'Admin'] },
 
@@ -166,7 +166,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white text-sm font-bold shadow-md shadow-brand-600/25 flex items-center justify-center gap-2 transition-all"
             >
               <Building2 className="w-4 h-4" />
-              <span>+ Add New PG Property</span>
+              <span>Add New PG Property</span>
             </button>
           </div>
         )}

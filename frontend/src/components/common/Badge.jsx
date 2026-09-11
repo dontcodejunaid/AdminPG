@@ -2,12 +2,12 @@ import React from 'react';
 
 export const Badge = ({ children, variant = 'default', size = 'md', className = '' }) => {
   const variants = {
-    // Status
-    Active: 'bg-brand-50 text-brand-800 border-brand-200 dark:bg-brand-950/70 dark:text-brand-300 dark:border-brand-800',
-    Inactive: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    // Status (Publish Status)
+    Active: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800 font-bold',
+    Inactive: 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800 font-bold',
     
     // Availability
-    Available: 'bg-brand-100 text-brand-800 border-brand-200 dark:bg-brand-950/80 dark:text-brand-300 dark:border-brand-800',
+    Available: 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-950/80 dark:text-teal-300 dark:border-teal-800 font-medium',
     Limited: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800',
     Full: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
 

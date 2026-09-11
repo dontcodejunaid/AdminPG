@@ -83,7 +83,7 @@ export const PagesCmsPage = () => {
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
           <FileText className="w-6 h-6 text-brand-600" />
-          Pages & Content Management (Module 12)
+          Pages & Content Management
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Edit platform content, FAQs, support contacts, About Us, and legal policies without developer help.
@@ -248,7 +248,7 @@ export const PagesCmsPage = () => {
                   className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Add FAQ</span>
+                  <span>Add FAQ</span>
                 </button>
                 <button
                   onClick={() => handleSave('faq', faqs)}

@@ -76,7 +76,7 @@ export const initialSeedData = {
     { id: "fac_ac", name: "Air Conditioner (AC)", icon: "Wind", category: "Comfort", isDefault: true },
     { id: "fac_wm", name: "Automatic Washing Machine", icon: "Shirt", category: "Laundry", isDefault: true },
     { id: "fac_cctv", name: "24/7 CCTV & Security Guard", icon: "ShieldCheck", category: "Security", isDefault: true },
-    { id: "fac_housekeep", name: "Daily Housekeeping", icon: "Sparkles", category: "Cleaning", isDefault: true },
+    { id: "fac_housekeep", name: "Daily Housekeeping", icon: "Brush", category: "Cleaning", isDefault: true },
     { id: "fac_hotwater", name: "24x7 Geyser / Hot Water", icon: "Flame", category: "Bathroom", isDefault: true },
     { id: "fac_parking", name: "2 & 4 Wheeler Parking", icon: "Car", category: "Vehicle", isDefault: true },
     { id: "fac_lift", name: "Elevator / Lift", icon: "ArrowUpDown", category: "Building", isDefault: true },

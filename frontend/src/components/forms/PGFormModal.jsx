@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   MapPin, 
-  DollarSign, 
+  IndianRupee, 
   Image, 
-  Sparkles, 
+  ListChecks, 
   Plus, 
   Trash2, 
   Check, 
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { DynamicIcon } from '../common/IconHelper';
+import { CustomSelect } from '../ui/select';
 import { api } from '../../services/api';
 import { useApp } from '../../context/AppContext';
 
@@ -215,6 +216,18 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
       const payload = {
         ...formData,
+        rooms: formData.rooms.map(r => ({
+          ...r,
+          rent: Number(r.rent) || 0,
+          totalBeds: Number(r.totalBeds) || 0,
+          availableBeds: Number(r.availableBeds) || 0,
+          deposit: Number(r.deposit) || 0
+        })),
+        charges: {
+          ...formData.charges,
+          deposit: Number(formData.charges.deposit) || 0,
+          maintenanceCharges: Number(formData.charges.maintenanceCharges) || 0
+        },
         totalBeds,
         availableBeds
       };
@@ -288,7 +301,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <DollarSign className="w-4 h-4" />
+          <IndianRupee className="w-4 h-4" />
           <span>2. Rooms & Pricing ({formData.rooms.length})</span>
         </button>
 
@@ -301,7 +314,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <Sparkles className="w-4 h-4" />
+          <ListChecks className="w-4 h-4" />
           <span>3. Facilities ({formData.facilities.length})</span>
         </button>
 
@@ -341,15 +354,15 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 PG Type *
               </label>
-              <select
+              <CustomSelect
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
-              >
-                <option value="Boys">Boys PG</option>
-                <option value="Girls">Girls PG / Hostel</option>
-                <option value="Co-living">Co-living Space</option>
-              </select>
+                options={[
+                  { value: 'Boys', label: 'Boys PG' },
+                  { value: 'Girls', label: 'Girls PG / Hostel' },
+                  { value: 'Co-living', label: 'Co-living Space' }
+                ]}
+              />
             </div>
           </div>
 
@@ -366,30 +379,22 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">State</label>
-                <select
+                <CustomSelect
                   value={formData.state}
+                  placeholder="Select State"
                   onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '', area: '' })}
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-                >
-                  <option value="">Select State</option>
-                  {flatLocations.states.map(st => (
-                    <option key={st.id} value={st.name}>{st.name}</option>
-                  ))}
-                </select>
+                  options={flatLocations.states.map(st => ({ value: st.name, label: st.name }))}
+                />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">City</label>
-                <select
+                <CustomSelect
                   value={formData.city}
+                  placeholder="Select City"
                   onChange={(e) => setFormData({ ...formData, city: e.target.value, area: '' })}
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-                >
-                  <option value="">Select City</option>
-                  {filteredCities.map(ct => (
-                    <option key={ct.id} value={ct.name}>{ct.name}</option>
-                  ))}
-                </select>
+                  options={filteredCities.map(ct => ({ value: ct.name, label: ct.name }))}
+                />
               </div>
 
               <div>
@@ -400,7 +405,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                   value={formData.area}
                   onChange={(e) => setFormData({ ...formData, area: e.target.value })}
                   placeholder="e.g. Kakkanad or Electronic City"
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 />
                 <datalist id="area-list">
                   {filteredAreas.map(a => (
@@ -476,40 +481,40 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Publish Status</label>
-              <select
+              <CustomSelect
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Active">🟢 Active</option>
-                <option value="Inactive">🔴 Inactive</option>
-              </select>
+                options={[
+                  { value: 'Active', label: '🟢 Active' },
+                  { value: 'Inactive', label: '🔴 Inactive' }
+                ]}
+              />
             </div>
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Availability</label>
-              <select
+              <CustomSelect
                 value={formData.availabilityStatus}
                 onChange={(e) => setFormData({ ...formData, availabilityStatus: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Available">Available</option>
-                <option value="Limited">Limited Availability</option>
-                <option value="Full">Full / Unavailable</option>
-              </select>
+                options={[
+                  { value: 'Available', label: 'Available' },
+                  { value: 'Limited', label: 'Limited Availability' },
+                  { value: 'Full', label: 'Full / Unavailable' }
+                ]}
+              />
             </div>
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Verification</label>
-              <select
+              <CustomSelect
                 value={formData.verificationStatus}
                 onChange={(e) => setFormData({ ...formData, verificationStatus: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Verified">🟢 Verified</option>
-                <option value="Pending">🟡 Pending</option>
-                <option value="Not Verified">🔴 Not Verified</option>
-              </select>
+                options={[
+                  { value: 'Verified', label: '🟢 Verified' },
+                  { value: 'Pending', label: '🟡 Pending' },
+                  { value: 'Not Verified', label: '🔴 Not Verified' }
+                ]}
+              />
             </div>
 
             <div className="flex flex-col justify-end pb-1">
@@ -556,7 +561,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               className="px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 text-xs font-bold flex items-center gap-1.5 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Add Room Type</span>
+              <span>Add Room Type</span>
             </button>
           </div>
 
@@ -582,27 +587,27 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Sharing Type</label>
-                    <select
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sharing Type</label>
+                    <CustomSelect
                       value={room.type}
                       onChange={(e) => handleRoomChange(room.id, 'type', e.target.value)}
-                      className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-                    >
-                      <option value="Single Sharing">Single Sharing</option>
-                      <option value="Single Studio">Single Studio</option>
-                      <option value="2 Sharing">2 Sharing</option>
-                      <option value="3 Sharing">3 Sharing</option>
-                      <option value="4 Sharing">4 Sharing</option>
-                      <option value="Dormitory">Dormitory</option>
-                    </select>
+                      options={[
+                        { value: 'Single Sharing', label: 'Single Sharing' },
+                        { value: 'Single Studio', label: 'Single Studio' },
+                        { value: '2 Sharing', label: '2 Sharing' },
+                        { value: '3 Sharing', label: '3 Sharing' },
+                        { value: '4 Sharing', label: '4 Sharing' },
+                        { value: 'Dormitory', label: 'Dormitory' }
+                      ]}
+                    />
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase">Monthly Rent (₹)</label>
                     <input
                       type="number"
-                      value={room.rent}
-                      onChange={(e) => handleRoomChange(room.id, 'rent', Number(e.target.value))}
+                      value={room.rent ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'rent', e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-brand-600 dark:text-brand-400"
                     />
                   </div>
@@ -611,8 +616,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     <label className="block text-[10px] font-bold text-slate-500 uppercase">Total Beds</label>
                     <input
                       type="number"
-                      value={room.totalBeds}
-                      onChange={(e) => handleRoomChange(room.id, 'totalBeds', Number(e.target.value))}
+                      value={room.totalBeds ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'totalBeds', e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                     />
                   </div>
@@ -621,8 +626,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     <label className="block text-[10px] font-bold text-slate-500 uppercase">Available Beds</label>
                     <input
                       type="number"
-                      value={room.availableBeds}
-                      onChange={(e) => handleRoomChange(room.id, 'availableBeds', Number(e.target.value))}
+                      value={room.availableBeds ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'availableBeds', e.target.value === '' ? '' : Number(e.target.value))}
                       className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
                     />
                   </div>
@@ -665,10 +670,10 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 </label>
                 <input
                   type="number"
-                  value={formData.charges.deposit}
+                  value={formData.charges.deposit ?? ''}
                   onChange={(e) => setFormData({
                     ...formData,
-                    charges: { ...formData.charges, deposit: Number(e.target.value) }
+                    charges: { ...formData.charges, deposit: e.target.value === '' ? '' : Number(e.target.value) }
                   })}
                   className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold"
                 />
@@ -714,10 +719,10 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 </label>
                 <input
                   type="number"
-                  value={formData.charges.maintenanceCharges}
+                  value={formData.charges.maintenanceCharges ?? ''}
                   onChange={(e) => setFormData({
                     ...formData,
-                    charges: { ...formData.charges, maintenanceCharges: Number(e.target.value) }
+                    charges: { ...formData.charges, maintenanceCharges: e.target.value === '' ? '' : Number(e.target.value) }
                   })}
                   className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 />

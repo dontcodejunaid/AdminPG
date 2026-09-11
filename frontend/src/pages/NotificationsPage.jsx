@@ -75,7 +75,7 @@ export const NotificationsPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <Bell className="w-6 h-6 text-brand-600" />
-            Notifications & Platform Activity (Module 14)
+            Notifications & Platform Activity
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Real-time feed of new enquiries, reported listings, and ₹19 owner contact unlock events

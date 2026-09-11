@@ -11,11 +11,12 @@ import {
   Search
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const LocationsPage = () => {
-  const { showToast, currentUser, triggerRefresh } = useApp();
+  const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState(null);
@@ -31,19 +32,43 @@ export const LocationsPage = () => {
   const [cityForm, setCityForm] = useState({ cityName: '', code: '', stateName: '' });
   const [areaForm, setAreaForm] = useState({ areaName: '', cityName: '' });
 
-  const fetchLocations = async () => {
+  const fetchLocations = async (targetStateName = null, targetCityName = null) => {
     try {
       setLoading(true);
       const res = await api.getLocations();
       if (res.data) {
         setLocations(res.data);
-        // Select first state & city by default if none selected
-        if (res.data[0]?.states?.[0]) {
-          const firstState = res.data[0].states[0];
-          setSelectedState(firstState);
-          if (firstState.cities?.[0]) {
-            setSelectedCity(firstState.cities[0]);
+        const statesList = res.data[0]?.states || [];
+
+        // Determine which state to select
+        let stateToSelect = null;
+        if (targetStateName) {
+          stateToSelect = statesList.find(s => s.name?.toLowerCase() === targetStateName.toLowerCase());
+        }
+        if (!stateToSelect && selectedState) {
+          stateToSelect = statesList.find(s => s.id === selectedState.id || s.name?.toLowerCase() === selectedState.name?.toLowerCase());
+        }
+        if (!stateToSelect) {
+          stateToSelect = statesList[0] || null;
+        }
+
+        setSelectedState(stateToSelect);
+
+        // Determine which city to select within the chosen state
+        if (stateToSelect) {
+          let cityToSelect = null;
+          if (targetCityName) {
+            cityToSelect = (stateToSelect.cities || []).find(c => c.name?.toLowerCase() === targetCityName.toLowerCase());
           }
+          if (!cityToSelect && selectedCity) {
+            cityToSelect = (stateToSelect.cities || []).find(c => c.id === selectedCity.id || c.name?.toLowerCase() === selectedCity.name?.toLowerCase());
+          }
+          if (!cityToSelect) {
+            cityToSelect = stateToSelect.cities?.[0] || null;
+          }
+          setSelectedCity(cityToSelect);
+        } else {
+          setSelectedCity(null);
         }
       }
     } catch (err) {
@@ -60,13 +85,14 @@ export const LocationsPage = () => {
   // Handler: Add State
   const handleAddState = async (e) => {
     e.preventDefault();
-    if (!stateForm.name.trim()) return;
+    const addedStateName = stateForm.name.trim();
+    if (!addedStateName) return;
     try {
       await api.addState(stateForm);
-      showToast(`Added State "${stateForm.name}" successfully!`, 'success');
+      showToast(`Added State "${addedStateName}" successfully!`, 'success');
       setIsAddStateModalOpen(false);
       setStateForm({ name: '', code: '' });
-      fetchLocations();
+      fetchLocations(addedStateName);
       triggerRefresh();
     } catch (err) {
       showToast('Failed to add state', 'error');
@@ -76,13 +102,15 @@ export const LocationsPage = () => {
   // Handler: Add City
   const handleAddCity = async (e) => {
     e.preventDefault();
-    if (!cityForm.cityName.trim() || !cityForm.stateName) return;
+    const targetStateName = cityForm.stateName;
+    const addedCityName = cityForm.cityName.trim();
+    if (!addedCityName || !targetStateName) return;
     try {
       await api.addCity(cityForm);
-      showToast(`Added City "${cityForm.cityName}" to ${cityForm.stateName}!`, 'success');
+      showToast(`Added City "${addedCityName}" to ${targetStateName}!`, 'success');
       setIsAddCityModalOpen(false);
       setCityForm({ cityName: '', code: '', stateName: '' });
-      fetchLocations();
+      fetchLocations(targetStateName, addedCityName);
       triggerRefresh();
     } catch (err) {
       showToast('Failed to add city', 'error');
@@ -92,13 +120,15 @@ export const LocationsPage = () => {
   // Handler: Add Area
   const handleAddArea = async (e) => {
     e.preventDefault();
-    if (!areaForm.areaName.trim() || !areaForm.cityName) return;
+    const targetCityName = areaForm.cityName;
+    const addedAreaName = areaForm.areaName.trim();
+    if (!addedAreaName || !targetCityName) return;
     try {
       await api.addArea(areaForm);
-      showToast(`Added Area "${areaForm.areaName}" to ${areaForm.cityName}!`, 'success');
+      showToast(`Added Area "${addedAreaName}" to ${targetCityName}!`, 'success');
       setIsAddAreaModalOpen(false);
       setAreaForm({ areaName: '', cityName: '' });
-      fetchLocations();
+      fetchLocations(selectedState?.name, targetCityName);
       triggerRefresh();
     } catch (err) {
       showToast('Failed to add area', 'error');
@@ -111,15 +141,21 @@ export const LocationsPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Remove area "${areaName}" from ${cityName}?`)) {
-      try {
-        await api.deleteArea(cityName, areaName);
-        showToast(`Area removed`, 'success');
-        fetchLocations();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Failed to delete area', 'error');
-      }
+    const ok = await confirm({
+      title: 'Remove Area',
+      message: `Are you sure you want to remove area "${areaName}" from ${cityName}?`,
+      confirmText: 'Remove Area',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteArea(cityName, areaName);
+      showToast(`Area removed successfully`, 'success');
+      fetchLocations(selectedState?.name, selectedCity?.name);
+      triggerRefresh();
+    } catch (err) {
+      showToast('Failed to delete area', 'error');
     }
   };
 
@@ -129,15 +165,21 @@ export const LocationsPage = () => {
       showToast('Permission Denied', 'error');
       return;
     }
-    if (window.confirm(`Delete city "${city.name}" and all its areas?`)) {
-      try {
-        await api.deleteCity(city.id);
-        showToast(`City deleted`, 'success');
-        fetchLocations();
-        triggerRefresh();
-      } catch (err) {
-        showToast('Failed to delete city', 'error');
-      }
+    const ok = await confirm({
+      title: 'Delete City',
+      message: `Are you sure you want to delete city "${city.name}" and all its areas?`,
+      confirmText: 'Delete City',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    try {
+      await api.deleteCity(city.id);
+      showToast(`City deleted successfully`, 'success');
+      fetchLocations(selectedState?.name);
+      triggerRefresh();
+    } catch (err) {
+      showToast('Failed to delete city', 'error');
     }
   };
 
@@ -151,7 +193,7 @@ export const LocationsPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <MapPin className="w-6 h-6 text-brand-600" />
-            Dynamic Location Management (Module 4)
+            Dynamic Location Management
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Add new states, cities, and localities dynamically on the fly without changing code
@@ -163,7 +205,7 @@ export const LocationsPage = () => {
             onClick={() => setIsAddStateModalOpen(true)}
             className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            + Add State
+            Add State
           </button>
           <button
             onClick={() => {
@@ -172,7 +214,7 @@ export const LocationsPage = () => {
             }}
             className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            + Add City
+            Add City
           </button>
           <button
             onClick={() => {
@@ -181,7 +223,7 @@ export const LocationsPage = () => {
             }}
             className="px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all"
           >
-            + Add Area / Locality
+            Add Area / Locality
           </button>
         </div>
       </div>
@@ -200,7 +242,7 @@ export const LocationsPage = () => {
               onClick={() => setIsAddStateModalOpen(true)}
               className="text-[11px] font-bold text-brand-600 hover:underline"
             >
-              + New
+              Add State
             </button>
           </div>
 
@@ -249,7 +291,7 @@ export const LocationsPage = () => {
               }}
               className="text-[11px] font-bold text-sky-600 hover:underline"
             >
-              + Add City
+              Add City
             </button>
           </div>
 
@@ -312,7 +354,7 @@ export const LocationsPage = () => {
               }}
               className="text-[11px] font-bold text-purple-600 hover:underline"
             >
-              + Add Area
+              Add Area
             </button>
           </div>
 
@@ -405,17 +447,12 @@ export const LocationsPage = () => {
         <form onSubmit={handleAddCity} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Select State *</label>
-            <select
+            <CustomSelect
               value={cityForm.stateName}
               onChange={(e) => setCityForm({ ...cityForm, stateName: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-              required
-            >
-              <option value="">Select State</option>
-              {allStates.map(st => (
-                <option key={st.id} value={st.name}>{st.name}</option>
-              ))}
-            </select>
+              placeholder="Select State"
+              options={allStates.map(st => ({ value: st.name, label: st.name }))}
+            />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">City Name *</label>
@@ -467,17 +504,12 @@ export const LocationsPage = () => {
         <form onSubmit={handleAddArea} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target City *</label>
-            <select
+            <CustomSelect
               value={areaForm.cityName}
               onChange={(e) => setAreaForm({ ...areaForm, cityName: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-              required
-            >
-              <option value="">Select City</option>
-              {allStates.flatMap(s => (s.cities || [])).map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
+              placeholder="Select City"
+              options={allStates.flatMap(s => (s.cities || [])).map(c => ({ value: c.name, label: c.name }))}
+            />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Area / Locality Name *</label>
