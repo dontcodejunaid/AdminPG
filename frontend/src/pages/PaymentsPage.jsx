@@ -256,7 +256,7 @@ export const PaymentsPage = () => {
         isOpen={isSimulateModalOpen}
         onClose={() => setIsSimulateModalOpen(false)}
         title="Record Customer Payment (₹19 Plan)"
-        subtitle="Simulate or manually record a transaction from UPI or gateway"
+        subtitle="Manually record a verified bank, cash, or gateway unlock transaction"
       >
         <form onSubmit={handleSimulatePayment} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

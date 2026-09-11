@@ -171,7 +171,7 @@ export const AdminUsersPage = () => {
       <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
           <Lock className="w-3.5 h-3.5 text-purple-600" />
-          Access Level & Permissions Matrix (Requirement 15)
+          Access Level & Role Permissions Matrix
         </h3>
 
         <div className="overflow-x-auto">
