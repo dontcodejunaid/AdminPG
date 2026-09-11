@@ -107,6 +107,28 @@
               ]
             }
           ]
+        },
+        {
+          "id": "state_b91e40",
+          "name": "Goa",
+          "code": "GA",
+          "type": "state",
+          "cities": [
+            {
+              "id": "city_413f96",
+              "name": "Panaji",
+              "code": "GOI",
+              "areas": [
+                "Miramar Beach"
+              ]
+            },
+            {
+              "id": "city_32f026",
+              "name": "cabo de rama",
+              "code": "GOX",
+              "areas": []
+            }
+          ]
         }
       ]
     }

@@ -32,19 +32,43 @@ export const LocationsPage = () => {
   const [cityForm, setCityForm] = useState({ cityName: '', code: '', stateName: '' });
   const [areaForm, setAreaForm] = useState({ areaName: '', cityName: '' });
 
-  const fetchLocations = async () => {
+  const fetchLocations = async (targetStateName = null, targetCityName = null) => {
     try {
       setLoading(true);
       const res = await api.getLocations();
       if (res.data) {
         setLocations(res.data);
-        // Select first state & city by default if none selected
-        if (res.data[0]?.states?.[0]) {
-          const firstState = res.data[0].states[0];
-          setSelectedState(firstState);
-          if (firstState.cities?.[0]) {
-            setSelectedCity(firstState.cities[0]);
+        const statesList = res.data[0]?.states || [];
+
+        // Determine which state to select
+        let stateToSelect = null;
+        if (targetStateName) {
+          stateToSelect = statesList.find(s => s.name?.toLowerCase() === targetStateName.toLowerCase());
+        }
+        if (!stateToSelect && selectedState) {
+          stateToSelect = statesList.find(s => s.id === selectedState.id || s.name?.toLowerCase() === selectedState.name?.toLowerCase());
+        }
+        if (!stateToSelect) {
+          stateToSelect = statesList[0] || null;
+        }
+
+        setSelectedState(stateToSelect);
+
+        // Determine which city to select within the chosen state
+        if (stateToSelect) {
+          let cityToSelect = null;
+          if (targetCityName) {
+            cityToSelect = (stateToSelect.cities || []).find(c => c.name?.toLowerCase() === targetCityName.toLowerCase());
           }
+          if (!cityToSelect && selectedCity) {
+            cityToSelect = (stateToSelect.cities || []).find(c => c.id === selectedCity.id || c.name?.toLowerCase() === selectedCity.name?.toLowerCase());
+          }
+          if (!cityToSelect) {
+            cityToSelect = stateToSelect.cities?.[0] || null;
+          }
+          setSelectedCity(cityToSelect);
+        } else {
+          setSelectedCity(null);
         }
       }
     } catch (err) {
@@ -61,13 +85,14 @@ export const LocationsPage = () => {
   // Handler: Add State
   const handleAddState = async (e) => {
     e.preventDefault();
-    if (!stateForm.name.trim()) return;
+    const addedStateName = stateForm.name.trim();
+    if (!addedStateName) return;
     try {
       await api.addState(stateForm);
-      showToast(`Added State "${stateForm.name}" successfully!`, 'success');
+      showToast(`Added State "${addedStateName}" successfully!`, 'success');
       setIsAddStateModalOpen(false);
       setStateForm({ name: '', code: '' });
-      fetchLocations();
+      fetchLocations(addedStateName);
       triggerRefresh();
     } catch (err) {
       showToast('Failed to add state', 'error');
@@ -77,13 +102,15 @@ export const LocationsPage = () => {
   // Handler: Add City
   const handleAddCity = async (e) => {
     e.preventDefault();
-    if (!cityForm.cityName.trim() || !cityForm.stateName) return;
+    const targetStateName = cityForm.stateName;
+    const addedCityName = cityForm.cityName.trim();
+    if (!addedCityName || !targetStateName) return;
     try {
       await api.addCity(cityForm);
-      showToast(`Added City "${cityForm.cityName}" to ${cityForm.stateName}!`, 'success');
+      showToast(`Added City "${addedCityName}" to ${targetStateName}!`, 'success');
       setIsAddCityModalOpen(false);
       setCityForm({ cityName: '', code: '', stateName: '' });
-      fetchLocations();
+      fetchLocations(targetStateName, addedCityName);
       triggerRefresh();
     } catch (err) {
       showToast('Failed to add city', 'error');
@@ -93,13 +120,15 @@ export const LocationsPage = () => {
   // Handler: Add Area
   const handleAddArea = async (e) => {
     e.preventDefault();
-    if (!areaForm.areaName.trim() || !areaForm.cityName) return;
+    const targetCityName = areaForm.cityName;
+    const addedAreaName = areaForm.areaName.trim();
+    if (!addedAreaName || !targetCityName) return;
     try {
       await api.addArea(areaForm);
-      showToast(`Added Area "${areaForm.areaName}" to ${areaForm.cityName}!`, 'success');
+      showToast(`Added Area "${addedAreaName}" to ${targetCityName}!`, 'success');
       setIsAddAreaModalOpen(false);
       setAreaForm({ areaName: '', cityName: '' });
-      fetchLocations();
+      fetchLocations(selectedState?.name, targetCityName);
       triggerRefresh();
     } catch (err) {
       showToast('Failed to add area', 'error');
@@ -116,7 +145,7 @@ export const LocationsPage = () => {
       try {
         await api.deleteArea(cityName, areaName);
         showToast(`Area removed`, 'success');
-        fetchLocations();
+        fetchLocations(selectedState?.name, selectedCity?.name);
         triggerRefresh();
       } catch (err) {
         showToast('Failed to delete area', 'error');
@@ -134,7 +163,7 @@ export const LocationsPage = () => {
       try {
         await api.deleteCity(city.id);
         showToast(`City deleted`, 'success');
-        fetchLocations();
+        fetchLocations(selectedState?.name);
         triggerRefresh();
       } catch (err) {
         showToast('Failed to delete city', 'error');
