@@ -30,6 +30,18 @@ app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request Logger Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (req.path.startsWith('/api')) {
+      console.log(`[${req.method}] ${req.path} ${res.statusCode} (${duration}ms)`);
+    }
+  });
+  next();
+});
+
 // Initialize JSON Data Store
 await store.init();
 
@@ -57,6 +69,11 @@ app.use('/api/banners', bannersRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/users', usersRoutes);
 
+// Catch-all 404 for unhandled API routes
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ success: false, error: `API route [${req.method} ${req.path}] not found` });
+});
+
 // Serve Frontend in Production
 const frontendDist = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendDist));
@@ -67,7 +84,7 @@ app.get('*', (req, res, next) => {
   });
 });
 
-// Error Handler
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({ success: false, error: err.message || 'Internal Server Error' });
@@ -75,4 +92,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 KeralaPG Admin API Server running at http://localhost:${PORT}`);
+  console.log(`📡 Full REST API mounted with 12 resource controllers at /api/*`);
 });
