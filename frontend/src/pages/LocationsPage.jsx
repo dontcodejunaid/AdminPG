@@ -181,7 +181,7 @@ export const LocationsPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <MapPin className="w-6 h-6 text-brand-600" />
-            Dynamic Location Management (Module 4)
+            Dynamic Location Management
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Add new states, cities, and localities dynamically on the fly without changing code

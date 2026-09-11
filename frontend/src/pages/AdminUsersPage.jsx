@@ -95,7 +95,7 @@ export const AdminUsersPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <ShieldAlert className="w-6 h-6 text-purple-600" />
-            Admin Users & Role-Based Access Control (Module 15)
+            Admin Users & Role-Based Access Control
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage administrative team members and configure granular permissions for Super Admin, Admin, and Staff.

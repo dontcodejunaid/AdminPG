@@ -513,7 +513,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
                         <IndianRupee className="w-3.5 h-3.5 text-brand-600" />
-                        Room & Pricing Breakdown (Module 3)
+                        Room & Pricing Breakdown
                       </h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">

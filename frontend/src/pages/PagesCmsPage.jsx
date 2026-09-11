@@ -83,7 +83,7 @@ export const PagesCmsPage = () => {
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
           <FileText className="w-6 h-6 text-brand-600" />
-          Pages & Content Management (Module 12)
+          Pages & Content Management
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Edit platform content, FAQs, support contacts, About Us, and legal policies without developer help.

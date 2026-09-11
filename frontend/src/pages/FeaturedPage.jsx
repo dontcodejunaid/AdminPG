@@ -64,7 +64,7 @@ export const FeaturedPage = ({ onEditPg }) => {
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
           <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
-          Featured PG Management (Module 10)
+          Featured PG Management
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Control which properties appear on the Homepage spotlight carousel and at the top of search results.

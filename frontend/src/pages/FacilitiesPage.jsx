@@ -127,7 +127,7 @@ export const FacilitiesPage = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <ListChecks className="w-6 h-6 text-brand-600" />
-            Dynamic Facilities & Amenities Management (Module 5)
+            Dynamic Facilities & Amenities Management
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Add custom amenities anytime. All newly added facilities immediately become selectable in the PG editor.

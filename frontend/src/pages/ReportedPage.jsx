@@ -79,7 +79,7 @@ export const ReportedPage = ({ onEditPg }) => {
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
           <AlertOctagon className="w-6 h-6 text-rose-600" />
-          Reported Listings Moderation (Module 9)
+          Reported Listings Moderation
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Investigate user complaints (Wrong price, Fake photos, Full/Unavailable, Wrong contact) and protect seeker trust.
