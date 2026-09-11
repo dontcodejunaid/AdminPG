@@ -56,11 +56,11 @@ router.post('/login', async (req, res) => {
 
     // 2. Direct Profile Verification (PostgreSQL / Store verification)
     const adminUsers = await store.findAll('adminUsers');
-    let user = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    const user = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
     if (user) {
-      // Validate password if user has password configured and password was provided
-      if (user.password && password && user.password !== password && user.passwordHash !== password) {
+      const expectedPassword = user.password || user.passwordHash || user.password_hash;
+      if (expectedPassword && password && expectedPassword !== password) {
         return res.status(401).json({ success: false, error: 'Incorrect password. Please verify your credentials.' });
       }
       const updated = await store.update('adminUsers', user.id, { lastLogin: new Date().toISOString() });
