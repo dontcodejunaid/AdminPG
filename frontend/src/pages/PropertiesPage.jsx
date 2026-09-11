@@ -32,13 +32,13 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
   const [loading, setLoading] = useState(true);
   const [expandedPgId, setExpandedPgId] = useState(null);
 
-  // Filters
-  const [search, setSearch] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedType, setSelectedType] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [selectedVerification, setSelectedVerification] = useState('');
-  const [selectedAvailability, setSelectedAvailability] = useState('');
+  // Filters - initialized directly from navigation payload if present
+  const [search, setSearch] = useState(pageFilters?.search || '');
+  const [selectedCity, setSelectedCity] = useState(pageFilters?.city || '');
+  const [selectedType, setSelectedType] = useState(pageFilters?.type || '');
+  const [selectedStatus, setSelectedStatus] = useState(pageFilters?.status || '');
+  const [selectedVerification, setSelectedVerification] = useState(pageFilters?.verificationStatus || '');
+  const [selectedAvailability, setSelectedAvailability] = useState(pageFilters?.availabilityStatus || '');
 
   // Sync incoming navigation filters from Dashboard or Header
   useEffect(() => {
@@ -76,6 +76,25 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
   useEffect(() => {
     fetchProperties();
   }, [refreshTrigger, search, selectedCity, selectedType, selectedStatus, selectedVerification, selectedAvailability]);
+
+  // Client-side strict filter guarantee
+  const filteredProperties = properties.filter((pg) => {
+    if (selectedStatus && pg.status?.toLowerCase() !== selectedStatus.toLowerCase()) return false;
+    if (selectedVerification && pg.verificationStatus?.toLowerCase() !== selectedVerification.toLowerCase()) return false;
+    if (selectedAvailability && pg.availabilityStatus?.toLowerCase() !== selectedAvailability.toLowerCase()) return false;
+    if (selectedCity && pg.city?.toLowerCase() !== selectedCity.toLowerCase()) return false;
+    if (selectedType && pg.type?.toLowerCase() !== selectedType.toLowerCase()) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const match =
+        pg.name?.toLowerCase().includes(q) ||
+        pg.area?.toLowerCase().includes(q) ||
+        pg.city?.toLowerCase().includes(q) ||
+        pg.contactNumber?.includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
 
   // Quick Action Handlers
   const handleQuickUpdate = async (pgId, patch, message) => {
@@ -283,7 +302,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
       {/* Property Cards List */}
       {loading ? (
         <div className="py-12 text-center text-slate-400">Loading properties...</div>
-      ) : properties.length === 0 ? (
+      ) : filteredProperties.length === 0 ? (
         <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No properties found</h3>
@@ -291,7 +310,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
         </div>
       ) : (
         <div className="space-y-4">
-          {properties.map((pg) => {
+          {filteredProperties.map((pg) => {
             const isExpanded = expandedPgId === pg.id;
             const minRent = (pg.rooms || []).reduce((min, r) => r.rent < min ? r.rent : min, 99999);
             const maxRent = (pg.rooms || []).reduce((max, r) => r.rent > max ? r.rent : max, 0);
