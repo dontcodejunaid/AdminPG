@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const AppContext = createContext();
 
@@ -90,6 +91,41 @@ export const AppProvider = ({ children }) => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
   };
+
+  // Supabase OAuth (Google Sign-In) session handler
+  useEffect(() => {
+    if (isSupabaseConfigured() && supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const u = session.user;
+          const userObj = {
+            id: u.id,
+            email: u.email,
+            name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0],
+            role: u.user_metadata?.role || 'Customer',
+            avatar: u.user_metadata?.avatar_url || '',
+            permissions: {
+              canAddPG: false,
+              canEditPG: false,
+              canDeletePG: false,
+              canVerifyPG: false,
+              canManageLocations: false,
+              canManageFacilities: false,
+              canManageEnquiries: true,
+              canManageCustomers: false,
+              canModerateReports: false,
+              canManagePayments: false,
+              canManageCMS: false,
+              canManageBanners: false,
+              canManageUsers: false
+            }
+          };
+          login(userObj, session.access_token);
+        }
+      });
+      return () => subscription?.unsubscribe();
+    }
+  }, []);
 
   const removeToast = (id) => {
     setToasts(prev => prev.filter(t => t.id !== id));
