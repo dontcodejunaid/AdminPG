@@ -35,9 +35,33 @@ export const AppProvider = ({ children }) => {
 
   const [darkMode, setDarkMode] = useState(false);
   const [toasts, setToasts] = useState([]);
-  const [unreadNotifsCount, setUnreadNotifsCount] = useState(2);
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState(0);
   const [stats, setStats] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Fetch real unread notifications count from API
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setUnreadNotifsCount(0);
+      return;
+    }
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await api.getNotifications();
+        if (res?.unreadCount !== undefined) {
+          setUnreadNotifsCount(res.unreadCount);
+        } else if (res?.data && Array.isArray(res.data)) {
+          const count = res.data.filter(n => !n.read && !n.isRead).length;
+          setUnreadNotifsCount(count);
+        } else {
+          setUnreadNotifsCount(0);
+        }
+      } catch {
+        setUnreadNotifsCount(0);
+      }
+    };
+    fetchUnreadCount();
+  }, [isAuthenticated, refreshTrigger]);
 
   // Custom Confirm Alert Dialog State
   const [confirmState, setConfirmState] = useState(null);
