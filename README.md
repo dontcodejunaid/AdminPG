@@ -30,14 +30,27 @@
 
 You can use the following pre-configured test accounts to explore the application under different authorization levels:
 
-| # | Role | Email | Password | Access Level & Portal View |
-|---|---|---|---|---|
-| **1** | **Super Admin** | `superadmin@keralapg.com` | `password123` | **Full Unrestricted Access** — Complete control over all 14 admin modules, RBAC user permissions, revenue/payments tracking, and platform settings. |
-| **2** | **Admin (Operations Manager)** | `admin@keralapg.com` | `password123` | **Operations Management** — Manage PG listings, verify properties, manage locations/facilities, handle enquiries, moderate reports, and update CMS/banners. (Restricted from financial reports & user administration). |
-| **3** | **Staff (Field Executive)** | `staff@keralapg.com` | `password123` | **Field & Listings Entry** — Create and edit PG properties, process and follow up on customer enquiries. (Restricted from delete actions, verifications, CMS, and user management). |
-| **4** | **Seeker / Customer** | `salih.rahman@gmail.com` *(or `seeker@keralapg.com`)* | `password123` | **Seeker Portal** — Customer-facing portal to search PGs, view room types, bookmark favorites, unlock owner contacts, and submit booking enquiries. |
+| # | Role | Email | Password | Access Level & Portal View | Creation Method |
+|---|---|---|---|---|---|
+| **1** | **Super Admin** | `superadmin@keralapg.com` | `password123` | **Full Unrestricted Access** — Complete control over all 14 admin modules, RBAC user permissions, revenue/payments tracking, and platform settings. | System Pre-seeded / Root |
+| **2** | **Admin (Operations Manager)** | `admin@keralapg.com` | `password123` | **Operations Management** — Manage PG listings, verify properties, manage locations/facilities, handle enquiries, moderate reports, and update CMS/banners. | Created & Invited by **Super Admin** |
+| **3** | **Staff (Field Executive)** | `staff@keralapg.com` | `password123` | **Field & Listings Entry** — Create and edit PG properties, process and follow up on customer enquiries. | Created & Invited by **Super Admin** |
+| **4** | **Seeker / Customer** | `salih.rahman@gmail.com` *(or `seeker@keralapg.com`)* | `password123` | **Seeker Portal** — Customer-facing portal to search PGs, view room types, bookmark favorites, unlock owner contacts, and submit booking enquiries. | **Public Sign Up** |
 
-> 💡 **Tip:** Any password string works in demo authentication mode for the pre-seeded demo accounts. New users can also be registered directly via the **Sign Up** tab on the login screen.
+---
+
+## 👥 Role Creation & Provisioning Rules
+
+> ⚠️ **Important Security & Governance Architecture:**
+> 
+> 1. **Public Sign Up is Strictly for Users / Seekers:**
+>    - Anyone creating an account via the public **Sign Up** screen is automatically registered as a **Customer / PG Seeker**.
+>    - Customers get instant access to the **KeralaPG Seeker Discovery Portal** (search PGs, bookmark favorites, unlock direct owner contacts for ₹19, and submit enquiries).
+>
+> 2. **Administrative Team (Super Admin, Admin, Staff) Cannot Self-Register:**
+>    - Admin and Staff accounts cannot be registered from the public sign-up page.
+>    - All internal team members (**Admin** and **Staff**) must be created, invited, and provisioned directly by the **Super Admin** from within the **Admin Users & Permissions Management** module (`Admin Users` in sidebar).
+>    - The Super Admin can configure 13 granular capability toggles (e.g., Can Verify PG, Can Delete PG, Can Moderate Reports, Can Manage CMS, etc.) for each team member.
 
 ---
 
