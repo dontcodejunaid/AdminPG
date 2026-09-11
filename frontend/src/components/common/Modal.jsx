@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export const Modal = ({ isOpen, onClose, title, subtitle, children, size = 'lg', footer }) => {
@@ -6,7 +7,9 @@ export const Modal = ({ isOpen, onClose, title, subtitle, children, size = 'lg',
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
     };
-    window.addEventListener('keydown', handleKeyDown);
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
@@ -20,18 +23,18 @@ export const Modal = ({ isOpen, onClose, title, subtitle, children, size = 'lg',
     full: 'max-w-7xl'
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[100000] overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-150"
         onClick={onClose}
       />
 
       {/* Modal Container */}
       <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
         <div 
-          className={`relative w-full ${sizeClasses[size] || sizeClasses.lg} transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]`}
+          className={`relative w-full ${sizeClasses[size] || sizeClasses.lg} transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] z-10 animate-in fade-in zoom-in-95 duration-150`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -67,6 +70,9 @@ export const Modal = ({ isOpen, onClose, title, subtitle, children, size = 'lg',
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
+
+export default Modal;
