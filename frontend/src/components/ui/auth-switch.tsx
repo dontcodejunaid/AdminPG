@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { 
   Mail, 
   Lock, 
@@ -9,7 +9,8 @@ import {
   Check,
   Shield,
   ShieldCheck,
-  ShieldAlert
+  ShieldAlert,
+  KeyRound
 } from "lucide-react";
 
 export interface AuthSwitchProps {
@@ -28,26 +29,45 @@ export function AuthSwitch({
   className = ""
 }: AuthSwitchProps) {
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
-  const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("superadmin@keralapg.com");
-  const [password, setPassword] = useState("password123");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  
+  // Sign In state
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  // Load remembered email if present
+  useEffect(() => {
+    const saved = localStorage.getItem('keralapg_remember_email');
+    if (saved) {
+      setSignInEmail(saved);
+      setRememberMe(true);
+    }
+  }, []);
+
+  // Sign Up state
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState("");
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Password requirements calculation
-  const reqLength = password.length >= 8;
-  const reqNumber = /[0-9]/.test(password);
-  const reqLower = /[a-z]/.test(password);
-  const reqUpper = /[A-Z]/.test(password);
+  // Password requirements calculation for Sign Up
+  const reqLength = signUpPassword.length >= 8;
+  const reqNumber = /[0-9]/.test(signUpPassword);
+  const reqLower = /[a-z]/.test(signUpPassword);
+  const reqUpper = /[A-Z]/.test(signUpPassword);
 
   const strengthScore = useMemo(() => {
     return [reqLength, reqNumber, reqLower, reqUpper].filter(Boolean).length;
   }, [reqLength, reqNumber, reqLower, reqUpper]);
 
   const getStrengthText = () => {
-    if (!password) return "Enter password";
+    if (!signUpPassword) return "Enter password";
     if (strengthScore <= 1) return "Weak password";
     if (strengthScore <= 2) return "Fair password";
     if (strengthScore === 3) return "Good password";
@@ -55,7 +75,7 @@ export function AuthSwitch({
   };
 
   const getStrengthColor = () => {
-    if (!password) return "bg-slate-700";
+    if (!signUpPassword) return "bg-slate-700";
     if (strengthScore <= 1) return "bg-rose-500";
     if (strengthScore <= 2) return "bg-orange-500";
     if (strengthScore === 3) return "bg-amber-500";
@@ -63,15 +83,15 @@ export function AuthSwitch({
   };
 
   const getStrengthTextColor = () => {
-    if (!password) return "text-slate-400";
+    if (!signUpPassword) return "text-slate-400";
     if (strengthScore <= 2) return "text-rose-400";
     if (strengthScore === 3) return "text-amber-400";
     return "text-emerald-400";
   };
 
-  // Password confirmation states
-  const isMatch = password.length > 0 && confirmPassword === password;
-  const hasMismatch = confirmPassword.length > 0 && !password.startsWith(confirmPassword);
+  // Password confirmation states for Sign Up
+  const isMatch = signUpPassword.length > 0 && signUpConfirmPassword === signUpPassword;
+  const hasMismatch = signUpConfirmPassword.length > 0 && !signUpPassword.startsWith(signUpConfirmPassword);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +99,16 @@ export function AuthSwitch({
     setErrorMessage("");
     try {
       if (onLogin) {
-        const res = await onLogin(email, password);
-        if (!res?.success) setErrorMessage(res?.message || "Login failed");
+        const res = await onLogin(signInEmail, signInPassword);
+        if (res?.success) {
+          if (rememberMe) {
+            localStorage.setItem('keralapg_remember_email', signInEmail);
+          } else {
+            localStorage.removeItem('keralapg_remember_email');
+          }
+        } else {
+          setErrorMessage(res?.message || "Login failed");
+        }
       }
     } catch (err: any) {
       setErrorMessage(err.message || "An error occurred");
@@ -91,7 +119,7 @@ export function AuthSwitch({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (confirmPassword && confirmPassword !== password) {
+    if (signUpConfirmPassword && signUpConfirmPassword !== signUpPassword) {
       setErrorMessage("Passwords do not match");
       return;
     }
@@ -99,7 +127,7 @@ export function AuthSwitch({
     setErrorMessage("");
     try {
       if (onSignUp) {
-        const res = await onSignUp(name, email, password);
+        const res = await onSignUp(signUpName, signUpEmail, signUpPassword);
         if (!res?.success) setErrorMessage(res?.message || "Sign up failed");
       }
     } catch (err: any) {
@@ -151,8 +179,8 @@ export function AuthSwitch({
                   type="text"
                   required
                   placeholder="Full Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={signUpName}
+                  onChange={(e) => setSignUpName(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none font-medium"
                 />
               </div>
@@ -164,8 +192,8 @@ export function AuthSwitch({
                   type="email"
                   required
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={signUpEmail}
+                  onChange={(e) => setSignUpEmail(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none font-medium"
                 />
               </div>
@@ -174,19 +202,19 @@ export function AuthSwitch({
               <div className="input-field w-full h-9 md:h-10 bg-[#1e293b] rounded-full px-3.5 flex items-center relative border border-slate-700 focus-within:border-emerald-500 transition-colors">
                 <Lock className="w-3.5 h-3.5 text-slate-400 mr-2.5 shrink-0" />
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showSignUpPassword ? "text" : "password"}
                   required
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={signUpPassword}
+                  onChange={(e) => setSignUpPassword(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none pr-7 font-mono"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowSignUpPassword(!showSignUpPassword)}
                   className="absolute right-3 text-slate-400 hover:text-emerald-400 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showSignUpPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
@@ -195,7 +223,7 @@ export function AuthSwitch({
                 <div className="h-1 w-full bg-slate-700 rounded-full overflow-hidden mb-0.5">
                   <div 
                     className={`h-full ${getStrengthColor()} transition-all duration-300 rounded-full`}
-                    style={{ width: password ? `${Math.max((strengthScore / 4) * 100, 15)}%` : '0%' }}
+                    style={{ width: signUpPassword ? `${Math.max((strengthScore / 4) * 100, 15)}%` : '0%' }}
                   />
                 </div>
                 
@@ -225,9 +253,9 @@ export function AuthSwitch({
 
               {/* Dot Track */}
               <div className="w-full h-7 md:h-8 bg-[#1e293b] rounded-full px-3 flex items-center justify-start gap-1 border border-slate-700 overflow-x-auto">
-                {password.length > 0 ? (
-                  password.split('').map((char, index) => {
-                    const typedChar = confirmPassword[index];
+                {signUpPassword.length > 0 ? (
+                  signUpPassword.split('').map((char, index) => {
+                    const typedChar = signUpConfirmPassword[index];
                     const isCharMatch = typedChar !== undefined && typedChar === char;
                     const isCharMismatch = typedChar !== undefined && typedChar !== char;
 
@@ -271,8 +299,8 @@ export function AuthSwitch({
                 <input
                   type="password"
                   placeholder="••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={signUpConfirmPassword}
+                  onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none font-mono"
                 />
               </div>
@@ -311,29 +339,53 @@ export function AuthSwitch({
                 type="email"
                 required
                 placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={signInEmail}
+                onChange={(e) => setSignInEmail(e.target.value)}
                 className="w-full bg-transparent text-xs md:text-sm text-white placeholder-slate-400 outline-none font-medium"
               />
             </div>
-            <div className="input-field max-w-[290px] w-full h-10 md:h-11 bg-[#1e293b] rounded-full px-4 flex items-center mb-4 relative border border-slate-700 focus-within:border-emerald-500">
+            <div className="input-field max-w-[290px] w-full h-10 md:h-11 bg-[#1e293b] rounded-full px-4 flex items-center mb-3 relative border border-slate-700 focus-within:border-emerald-500">
               <Lock className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
               <input
-                type={showPassword ? "text" : "password"}
+                type={showSignInPassword ? "text" : "password"}
                 required
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={signInPassword}
+                onChange={(e) => setSignInPassword(e.target.value)}
                 className="w-full bg-transparent text-xs md:text-sm text-white placeholder-slate-400 outline-none pr-7 font-mono"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowSignInPassword(!showSignInPassword)}
                 className="absolute right-3.5 text-slate-400 hover:text-emerald-400 transition-colors"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showSignInPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+
+            {/* Remember Me Options Row */}
+            <div className="w-full max-w-[290px] flex items-center justify-between px-2 mb-4">
+              <label className="flex items-center gap-2 text-slate-300 hover:text-white cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-0 focus:ring-offset-0 accent-emerald-500 cursor-pointer"
+                />
+                <span className="text-xs font-medium text-slate-300">Remember me</span>
+              </label>
+              <a
+                href="#forgot"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowForgotModal(true);
+                }}
+                className="text-xs font-medium text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                Forgot?
+              </a>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -372,7 +424,7 @@ export function AuthSwitch({
         <div className={`panel right-panel absolute md:relative bottom-0 left-0 w-full h-[26%] md:h-full md:bottom-auto flex flex-col items-center justify-center text-center px-6 md:px-10 z-20 transition-all duration-700 ease-in-out ${
           isSignUp 
             ? 'pointer-events-auto translate-y-0 md:translate-x-0 opacity-100' 
-            : 'pointer-events-none translate-y-48 md:translate-y-0 md:translate-x-[800px] opacity-0'
+            : 'pointer-events-none translate-y-48 md:-translate-y-0 md:-translate-x-[800px] opacity-0'
         }`}>
           <div className="content max-w-[260px] text-white">
             <h3 className="text-xl md:text-2xl font-black tracking-tight mb-1 md:mb-2 text-white">One of us?</h3>
@@ -389,6 +441,51 @@ export function AuthSwitch({
           </div>
         </div>
       </div>
+
+      {/* In-UI Alert Dialog for Password Reset */}
+      {showForgotModal && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all animate-in fade-in duration-200">
+          <div className="relative w-full max-w-[320px] bg-slate-900/95 border border-slate-700 rounded-3xl p-6 shadow-2xl text-center flex flex-col items-center animate-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setShowForgotModal(false)}
+              className="absolute top-3.5 right-3.5 w-7 h-7 rounded-full flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3 text-amber-400 shadow-inner">
+              <KeyRound className="w-6 h-6" />
+            </div>
+
+            <h3 className="text-base font-bold text-white mb-1.5">Reset Password</h3>
+            <p className="text-xs text-slate-300 leading-relaxed mb-3 text-center">
+              Please contact your <span className="text-amber-400 font-semibold">Super Admin</span> or system administrator to reset your account credentials.
+            </p>
+
+            <div className="w-full bg-slate-950/80 rounded-2xl p-3 border border-slate-800 text-[11px] text-slate-400 mb-4 text-left space-y-1">
+              <div className="font-semibold text-slate-300 text-xs">KeralaPG Support</div>
+              <div className="flex justify-between">
+                <span>Email:</span>
+                <span className="text-emerald-400 font-medium">support@keralapg.com</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Helpline:</span>
+                <span className="text-emerald-400 font-medium">+91 98470 00000</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowForgotModal(false)}
+              className="w-full h-9 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-full shadow-lg shadow-emerald-950/50 active:scale-95 transition-all cursor-pointer"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

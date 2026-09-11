@@ -6,6 +6,18 @@
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  /* Disable number input spin buttons / stepper arrows everywhere */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 /* Custom Scrollbars */
