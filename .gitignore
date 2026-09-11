@@ -6,3 +6,5 @@ dist/
 .env
 *.log
 .DS_Store
+CURRENT_STATUS_AND_SESSION_NOTES.md
+*SESSION_NOTES*.md
