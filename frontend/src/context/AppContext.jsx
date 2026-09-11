@@ -22,7 +22,14 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTabState] = useState('dashboard');
+  const [pageFilters, setPageFilters] = useState({});
+
+  const setActiveTab = (tab, filters = {}) => {
+    setPageFilters(filters || {});
+    setActiveTabState(tab);
+  };
+
   const [darkMode, setDarkMode] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [unreadNotifsCount, setUnreadNotifsCount] = useState(2);
@@ -164,6 +171,8 @@ export const AppProvider = ({ children }) => {
       switchRole,
       activeTab,
       setActiveTab,
+      pageFilters,
+      setPageFilters,
       darkMode,
       setDarkMode,
       toasts,

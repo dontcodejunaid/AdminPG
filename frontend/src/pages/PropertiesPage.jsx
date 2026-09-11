@@ -18,7 +18,8 @@ import {
   ExternalLink,
   Bed,
   Eye,
-  IndianRupee
+  IndianRupee,
+  RotateCcw
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { CustomSelect } from '../components/ui/select';
@@ -26,7 +27,7 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
-  const { showToast, currentUser, refreshTrigger, triggerRefresh } = useApp();
+  const { showToast, currentUser, refreshTrigger, triggerRefresh, pageFilters } = useApp();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPgId, setExpandedPgId] = useState(null);
@@ -37,6 +38,19 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
   const [selectedType, setSelectedType] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedVerification, setSelectedVerification] = useState('');
+  const [selectedAvailability, setSelectedAvailability] = useState('');
+
+  // Sync incoming navigation filters from Dashboard or Header
+  useEffect(() => {
+    if (pageFilters) {
+      if (pageFilters.status !== undefined) setSelectedStatus(pageFilters.status);
+      if (pageFilters.verificationStatus !== undefined) setSelectedVerification(pageFilters.verificationStatus);
+      if (pageFilters.availabilityStatus !== undefined) setSelectedAvailability(pageFilters.availabilityStatus);
+      if (pageFilters.city !== undefined) setSelectedCity(pageFilters.city);
+      if (pageFilters.type !== undefined) setSelectedType(pageFilters.type);
+      if (pageFilters.search !== undefined) setSearch(pageFilters.search);
+    }
+  }, [pageFilters]);
 
   // Load properties
   const fetchProperties = async () => {
@@ -48,6 +62,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
       if (selectedType) params.type = selectedType;
       if (selectedStatus) params.status = selectedStatus;
       if (selectedVerification) params.verificationStatus = selectedVerification;
+      if (selectedAvailability) params.availabilityStatus = selectedAvailability;
 
       const res = await api.getProperties(params);
       if (res.data) setProperties(res.data);
@@ -60,7 +75,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
 
   useEffect(() => {
     fetchProperties();
-  }, [refreshTrigger, search, selectedCity, selectedType, selectedStatus, selectedVerification]);
+  }, [refreshTrigger, search, selectedCity, selectedType, selectedStatus, selectedVerification, selectedAvailability]);
 
   // Quick Action Handlers
   const handleQuickUpdate = async (pgId, patch, message) => {
@@ -122,7 +137,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
 
       {/* Filter & Search Toolbar */}
       <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           
           {/* Search */}
           <div className="relative">
@@ -137,7 +152,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
           </div>
 
           {/* City Filter */}
-          <div className="w-36">
+          <div>
             <CustomSelect
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
@@ -150,7 +165,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
           </div>
 
           {/* Type Filter */}
-          <div className="w-40">
+          <div>
             <CustomSelect
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
@@ -165,21 +180,36 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
           </div>
 
           {/* Publish Status Filter */}
-          <div className="w-36">
+          <div>
             <CustomSelect
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               placeholder="All Statuses"
               options={[
                 { value: '', label: 'All Statuses' },
-                { value: 'Active', label: 'Active Only' },
-                { value: 'Inactive', label: 'Inactive Only' }
+                { value: 'Active', label: '🟢 Active Only' },
+                { value: 'Inactive', label: '🔴 Inactive Only' }
+              ]}
+            />
+          </div>
+
+          {/* Availability Filter */}
+          <div>
+            <CustomSelect
+              value={selectedAvailability}
+              onChange={(e) => setSelectedAvailability(e.target.value)}
+              placeholder="All Availability"
+              options={[
+                { value: '', label: 'All Availability' },
+                { value: 'Available', label: 'Available' },
+                { value: 'Limited', label: 'Limited' },
+                { value: 'Full', label: 'Full / Unavailable' }
               ]}
             />
           </div>
 
           {/* Verification Status */}
-          <div className="w-44">
+          <div>
             <CustomSelect
               value={selectedVerification}
               onChange={(e) => setSelectedVerification(e.target.value)}
@@ -194,6 +224,60 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
           </div>
 
         </div>
+
+        {/* Active Filter Badges & Reset */}
+        {(search || selectedCity || selectedType || selectedStatus || selectedVerification || selectedAvailability) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 text-slate-500 dark:text-slate-400">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">Active Filters:</span>
+              {selectedStatus && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 font-medium">
+                  Status: {selectedStatus}
+                </span>
+              )}
+              {selectedAvailability && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-medium">
+                  Availability: {selectedAvailability}
+                </span>
+              )}
+              {selectedVerification && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-medium">
+                  Verification: {selectedVerification}
+                </span>
+              )}
+              {selectedCity && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  City: {selectedCity}
+                </span>
+              )}
+              {selectedType && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  Type: {selectedType}
+                </span>
+              )}
+              {search && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  Search: "{search}"
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setSearch('');
+                setSelectedCity('');
+                setSelectedType('');
+                setSelectedStatus('');
+                setSelectedVerification('');
+                setSelectedAvailability('');
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-semibold transition-colors ml-auto"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Clear All Filters</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Property Cards List */}
