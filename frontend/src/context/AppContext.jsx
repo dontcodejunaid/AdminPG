@@ -122,7 +122,7 @@ export const AppProvider = ({ children }) => {
           const avatar = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
 
           try {
-            // Unify with existing database account (Super Admin, Admin, Staff, or Customer)
+            // 1. Try backend sync
             const res = await api.oauthSync({
               email: userEmail,
               name: fullName,
@@ -139,7 +139,82 @@ export const AppProvider = ({ children }) => {
             console.warn('OAuth sync endpoint fallback:', syncErr);
           }
 
-          // Fallback if backend sync had an issue
+          // 2. Direct Supabase Query (Serverless/Vercel resilient)
+          try {
+            if (supabase) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('email', userEmail.toLowerCase())
+                .maybeSingle();
+
+              if (profile) {
+                const isSuper = profile.role === 'Super Admin';
+                const isAdmin = profile.role === 'Admin';
+                const isStaff = profile.role === 'Staff';
+                const mappedProfile = {
+                  id: profile.id,
+                  authUserId: u.id,
+                  name: profile.name || fullName,
+                  email: profile.email,
+                  role: profile.role || 'Customer',
+                  phone: profile.phone || '',
+                  avatar: profile.avatar_url || avatar,
+                  status: profile.status || 'Active',
+                  permissions: profile.permissions || {
+                    canAddPG: isSuper || isAdmin || isStaff,
+                    canEditPG: isSuper || isAdmin || isStaff,
+                    canDeletePG: isSuper || isAdmin,
+                    canVerifyPG: isSuper || isAdmin || isStaff,
+                    canManageLocations: isSuper || isAdmin,
+                    canManageFacilities: isSuper || isAdmin,
+                    canManageEnquiries: true,
+                    canManageCustomers: isSuper || isAdmin,
+                    canModerateReports: isSuper || isAdmin,
+                    canManagePayments: isSuper,
+                    canManageCMS: isSuper || isAdmin,
+                    canManageBanners: isSuper || isAdmin,
+                    canManageUsers: isSuper
+                  }
+                };
+                login(mappedProfile, session.access_token);
+                return;
+              }
+            }
+          } catch (dbErr) {
+            console.warn('Direct Supabase profile lookup fallback:', dbErr);
+          }
+
+          // 3. Super admin guarantee for primary admin email
+          if (userEmail.toLowerCase() === 'baigjunaid187@gmail.com' || userEmail.toLowerCase() === 'superadmin@keralapg.com') {
+            const superUser = {
+              id: 'usr_super_junaid',
+              email: userEmail,
+              name: fullName || 'Junaid Baig',
+              role: 'Super Admin',
+              phone: '+91 98470 11111',
+              avatar: avatar,
+              permissions: {
+                canAddPG: true,
+                canEditPG: true,
+                canDeletePG: true,
+                canVerifyPG: true,
+                canManageLocations: true,
+                canManageFacilities: true,
+                canManageEnquiries: true,
+                canManageCustomers: true,
+                canModerateReports: true,
+                canManagePayments: true,
+                canManageCMS: true,
+                canManageBanners: true,
+                canManageUsers: true
+              }
+            };
+            login(superUser, session.access_token);
+            return;
+          }
+
+          // 4. Default fallback for standard new customer seekers
           const fallbackUser = {
             id: u.id,
             email: userEmail,
