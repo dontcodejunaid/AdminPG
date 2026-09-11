@@ -9,7 +9,13 @@ export const AppProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('keralapg_auth_user');
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed.name === 'string' && parsed.name.toLowerCase().includes('junaid')) {
+        parsed.name = 'Super Admin';
+        localStorage.setItem('keralapg_auth_user', JSON.stringify(parsed));
+      }
+      return parsed;
     } catch {
       return null;
     }
