@@ -90,7 +90,9 @@ export function App() {
       case 'notifications':
         return <NotificationsPage />;
       case 'users':
-        return <AdminUsersPage />;
+        return currentUser?.role === 'Super Admin' 
+          ? <AdminUsersPage /> 
+          : <DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />;
       default:
         return <DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />;
     }

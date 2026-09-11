@@ -173,10 +173,19 @@ export const AppProvider = ({ children }) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // Login Handler
+  // Enforce role-based access to tabs (e.g. only Super Admin can access 'users')
+  useEffect(() => {
+    if (activeTab === 'users' && currentUser?.role !== 'Super Admin') {
+      setActiveTabState('dashboard');
+    }
+  }, [activeTab, currentUser?.role]);
+
+  // Login Handler - Always opens dashboard by default
   const login = (userData, token) => {
     setCurrentUser(userData);
     setIsAuthenticated(true);
+    setActiveTabState('dashboard');
+    setPageFilters({});
     try {
       localStorage.setItem('keralapg_auth_user', JSON.stringify(userData));
       if (token) localStorage.setItem('keralapg_auth_token', token);
@@ -190,6 +199,8 @@ export const AppProvider = ({ children }) => {
   const logout = () => {
     setCurrentUser(null);
     setIsAuthenticated(false);
+    setActiveTabState('dashboard');
+    setPageFilters({});
     try {
       localStorage.removeItem('keralapg_auth_user');
       localStorage.removeItem('keralapg_auth_token');
