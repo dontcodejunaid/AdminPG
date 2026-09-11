@@ -7,7 +7,7 @@ import {
   CheckCircle2, 
   XCircle, 
   Clock, 
-  DollarSign, 
+  IndianRupee, 
   ArrowUpRight,
   ShieldCheck
 } from 'lucide-react';

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   MapPin, 
-  DollarSign, 
+  IndianRupee, 
   Image, 
   Sparkles, 
   Plus, 
@@ -289,7 +289,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <DollarSign className="w-4 h-4" />
+          <IndianRupee className="w-4 h-4" />
           <span>2. Rooms & Pricing ({formData.rooms.length})</span>
         </button>
 

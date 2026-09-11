@@ -6,7 +6,6 @@ import {
   Building2, 
   MapPin, 
   Sparkles, 
-  DollarSign,
   CheckCircle2
 } from 'lucide-react';
 import { api } from '../services/api';

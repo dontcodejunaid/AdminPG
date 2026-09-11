@@ -18,7 +18,7 @@ import {
   ExternalLink,
   Bed,
   Eye,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { CustomSelect } from '../components/ui/select';
@@ -357,7 +357,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <DollarSign className="w-3.5 h-3.5 text-brand-600" />
+                        <IndianRupee className="w-3.5 h-3.5 text-brand-600" />
                         Room & Pricing Breakdown (Module 3)
                       </h4>
                       
