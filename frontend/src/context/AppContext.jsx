@@ -92,18 +92,45 @@ export const AppProvider = ({ children }) => {
     }, 4000);
   };
 
-  // Supabase OAuth (Google Sign-In) session handler
+  // Supabase OAuth (Google Sign-In) session handler & account unifier
   useEffect(() => {
     if (isSupabaseConfigured() && supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
           const u = session.user;
-          const userObj = {
+          const userEmail = u.email;
+          const fullName = u.user_metadata?.full_name || u.user_metadata?.name || userEmail?.split('@')[0];
+          const avatar = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
+
+          try {
+            // Unify with existing database account (Super Admin, Admin, Staff, or Customer)
+            const res = await api.oauthSync({
+              email: userEmail,
+              name: fullName,
+              avatar: avatar,
+              authUserId: u.id
+            });
+
+            if (res.success && res.data) {
+              const matchedUser = res.data;
+              // Ensure name is clean
+              if (typeof matchedUser.name === 'string' && matchedUser.name.toLowerCase().includes('junaid')) {
+                matchedUser.name = 'Super Admin';
+              }
+              login(matchedUser, res.token || session.access_token);
+              return;
+            }
+          } catch (syncErr) {
+            console.warn('OAuth sync endpoint fallback:', syncErr);
+          }
+
+          // Fallback if backend sync had an issue
+          const fallbackUser = {
             id: u.id,
-            email: u.email,
-            name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0],
-            role: u.user_metadata?.role || 'Customer',
-            avatar: u.user_metadata?.avatar_url || '',
+            email: userEmail,
+            name: fullName,
+            role: 'Customer',
+            avatar: avatar,
             permissions: {
               canAddPG: false,
               canEditPG: false,
@@ -120,7 +147,7 @@ export const AppProvider = ({ children }) => {
               canManageUsers: false
             }
           };
-          login(userObj, session.access_token);
+          login(fallbackUser, session.access_token);
         }
       });
       return () => subscription?.unsubscribe();

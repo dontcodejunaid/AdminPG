@@ -114,6 +114,7 @@ export const api = {
 
   // Admin Users & RBAC & Auth
   login: (credentials) => request('/users/login', { method: 'POST', body: credentials }),
+  oauthSync: (data) => request('/users/oauth-sync', { method: 'POST', body: data }),
   register: (userData) => request('/users/register', { method: 'POST', body: userData }),
   changePassword: (data) => request('/users/change-password', { method: 'POST', body: data }),
   resetPassword: (data) => request('/users/reset-password', { method: 'POST', body: data }),

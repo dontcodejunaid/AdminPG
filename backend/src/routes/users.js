@@ -173,6 +173,80 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// POST /api/users/oauth-sync (Unified login for Google OAuth / Email matching)
+router.post('/oauth-sync', async (req, res) => {
+  try {
+    const { email, name, avatar, authUserId } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Check if an Admin / Super Admin / Staff user matches this email
+    const adminUsers = await store.findAll('adminUsers');
+    const adminUser = adminUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+    if (adminUser) {
+      const updated = await store.update('adminUsers', adminUser.id, {
+        lastLogin: new Date().toISOString(),
+        ...(avatar && !adminUser.avatar ? { avatar } : {})
+      });
+      return res.json({
+        success: true,
+        message: `Welcome back, ${adminUser.name}!`,
+        token: `keralapg_jwt_${adminUser.id}_${Date.now()}`,
+        roleType: 'admin',
+        data: updated || adminUser
+      });
+    }
+
+    // 2. Check if a Customer / Seeker matches this email
+    const customers = await store.findAll('customers');
+    const customer = customers.find(c => c.email?.toLowerCase() === cleanEmail);
+
+    if (customer) {
+      return res.json({
+        success: true,
+        message: `Welcome back, ${customer.name}!`,
+        token: `keralapg_user_jwt_${customer.id}_${Date.now()}`,
+        roleType: 'customer',
+        data: {
+          ...customer,
+          role: 'Customer'
+        }
+      });
+    }
+
+    // 3. New User: Provision a new customer profile automatically
+    const newCustomer = {
+      id: `cust_${uuidv4().substring(0, 6)}`,
+      authUserId: authUserId || null,
+      name: name?.trim() || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      phone: req.body.phone || '',
+      avatar: avatar || '',
+      city: 'Kochi',
+      dateJoined: new Date().toISOString().split('T')[0],
+      savedPgs: [],
+      totalEnquiries: 0,
+      totalPaid: 0,
+      role: 'Customer'
+    };
+
+    const created = await store.create('customers', newCustomer);
+    return res.status(201).json({
+      success: true,
+      message: `Welcome to KeralaPG, ${newCustomer.name}!`,
+      token: `keralapg_user_jwt_${created.id}_${Date.now()}`,
+      roleType: 'customer',
+      data: created
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /api/users (Super Admin adds Admin or Staff user)
 router.post('/', async (req, res) => {
   try {
