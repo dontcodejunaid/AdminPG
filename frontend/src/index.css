@@ -18,6 +18,23 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+
+  /* Default select & options UI theme styling */
+  select {
+    cursor: pointer;
+  }
+
+  select option {
+    background-color: #ffffff;
+    color: #1e293b;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .dark select option {
+    background-color: #0f172a;
+    color: #f8fafc;
+  }
 }
 
 /* Custom Scrollbars */

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { DynamicIcon, AVAILABLE_FACILITY_ICONS } from '../components/common/IconHelper';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -227,15 +228,11 @@ export const FacilitiesPage = () => {
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
               Category
             </label>
-            <select
+            <CustomSelect
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+              options={categories.map(cat => ({ value: cat, label: cat }))}
+            />
           </div>
 
           <div>

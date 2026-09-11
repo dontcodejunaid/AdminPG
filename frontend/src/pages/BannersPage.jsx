@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -308,15 +309,15 @@ export const BannersPage = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Placement Slot</label>
-              <select
+              <CustomSelect
                 value={formData.placement}
                 onChange={(e) => setFormData({ ...formData, placement: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Homepage Hero Top">Homepage Hero Top</option>
-                <option value="Search Results Header">Search Results Header</option>
-                <option value="City Spotlight Carousel">City Spotlight Carousel</option>
-              </select>
+                options={[
+                  { value: 'Homepage Hero Top', label: 'Homepage Hero Top' },
+                  { value: 'Search Results Header', label: 'Search Results Header' },
+                  { value: 'City Spotlight Carousel', label: 'City Spotlight Carousel' }
+                ]}
+              />
             </div>
           </div>
 

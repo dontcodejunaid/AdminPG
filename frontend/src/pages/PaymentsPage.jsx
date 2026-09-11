@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -179,16 +180,19 @@ export const PaymentsPage = () => {
           />
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none w-full sm:w-48"
-        >
-          <option value="">All Payment Statuses</option>
-          <option value="Success">Success Only</option>
-          <option value="Pending">Pending Only</option>
-          <option value="Failed">Failed Only</option>
-        </select>
+        <div className="w-full sm:w-48">
+          <CustomSelect
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            placeholder="All Payment Statuses"
+            options={[
+              { value: '', label: 'All Payment Statuses' },
+              { value: 'Success', label: 'Success Only' },
+              { value: 'Pending', label: 'Pending Only' },
+              { value: 'Failed', label: 'Failed Only' }
+            ]}
+          />
+        </div>
       </div>
 
       {/* Transactions Table */}
@@ -305,28 +309,28 @@ export const PaymentsPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Status</label>
-              <select
+              <CustomSelect
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-              >
-                <option value="Success">🟢 Success</option>
-                <option value="Pending">🟡 Pending</option>
-                <option value="Failed">🔴 Failed</option>
-              </select>
+                options={[
+                  { value: 'Success', label: '🟢 Success' },
+                  { value: 'Pending', label: '🟡 Pending' },
+                  { value: 'Failed', label: '🔴 Failed' }
+                ]}
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
-              <select
+              <CustomSelect
                 value={formData.paymentGateway}
                 onChange={(e) => setFormData({ ...formData, paymentGateway: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-              >
-                <option value="UPI / Razorpay">UPI / Razorpay</option>
-                <option value="UPI / PhonePe">UPI / PhonePe</option>
-                <option value="Google Pay">Google Pay</option>
-                <option value="Credit / Debit Card">Credit / Debit Card</option>
-              </select>
+                options={[
+                  { value: 'UPI / Razorpay', label: 'UPI / Razorpay' },
+                  { value: 'UPI / PhonePe', label: 'UPI / PhonePe' },
+                  { value: 'Google Pay', label: 'Google Pay' },
+                  { value: 'Credit / Debit Card', label: 'Credit / Debit Card' }
+                ]}
+              />
             </div>
           </div>
 

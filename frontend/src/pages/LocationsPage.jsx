@@ -11,6 +11,7 @@ import {
   Search
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -405,17 +406,12 @@ export const LocationsPage = () => {
         <form onSubmit={handleAddCity} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Select State *</label>
-            <select
+            <CustomSelect
               value={cityForm.stateName}
               onChange={(e) => setCityForm({ ...cityForm, stateName: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-              required
-            >
-              <option value="">Select State</option>
-              {allStates.map(st => (
-                <option key={st.id} value={st.name}>{st.name}</option>
-              ))}
-            </select>
+              placeholder="Select State"
+              options={allStates.map(st => ({ value: st.name, label: st.name }))}
+            />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">City Name *</label>
@@ -467,17 +463,12 @@ export const LocationsPage = () => {
         <form onSubmit={handleAddArea} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target City *</label>
-            <select
+            <CustomSelect
               value={areaForm.cityName}
               onChange={(e) => setAreaForm({ ...areaForm, cityName: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none font-semibold"
-              required
-            >
-              <option value="">Select City</option>
-              {allStates.flatMap(s => (s.cities || [])).map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
+              placeholder="Select City"
+              options={allStates.flatMap(s => (s.cities || [])).map(c => ({ value: c.name, label: c.name }))}
+            />
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Area / Locality Name *</label>

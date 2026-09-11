@@ -21,6 +21,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
+import { CustomSelect } from '../components/ui/select';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
@@ -136,49 +137,61 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
           </div>
 
           {/* City Filter */}
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All Cities</option>
-            {cities.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div className="w-36">
+            <CustomSelect
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              placeholder="All Cities"
+              options={[
+                { value: '', label: 'All Cities' },
+                ...cities.map(c => ({ value: c, label: c }))
+              ]}
+            />
+          </div>
 
           {/* Type Filter */}
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All PG Types</option>
-            <option value="Boys">Boys PG</option>
-            <option value="Girls">Girls PG / Hostel</option>
-            <option value="Co-living">Co-living Space</option>
-          </select>
+          <div className="w-40">
+            <CustomSelect
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              placeholder="All PG Types"
+              options={[
+                { value: '', label: 'All PG Types' },
+                { value: 'Boys', label: 'Boys PG' },
+                { value: 'Girls', label: 'Girls PG / Hostel' },
+                { value: 'Co-living', label: 'Co-living Space' }
+              ]}
+            />
+          </div>
 
           {/* Publish Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All Statuses</option>
-            <option value="Active">Active Only</option>
-            <option value="Inactive">Inactive Only</option>
-          </select>
+          <div className="w-36">
+            <CustomSelect
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              placeholder="All Statuses"
+              options={[
+                { value: '', label: 'All Statuses' },
+                { value: 'Active', label: 'Active Only' },
+                { value: 'Inactive', label: 'Inactive Only' }
+              ]}
+            />
+          </div>
 
           {/* Verification Status */}
-          <select
-            value={selectedVerification}
-            onChange={(e) => setSelectedVerification(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none"
-          >
-            <option value="">All Verifications</option>
-            <option value="Verified">Verified Only</option>
-            <option value="Pending">Pending Verification</option>
-            <option value="Not Verified">Not Verified</option>
-          </select>
+          <div className="w-44">
+            <CustomSelect
+              value={selectedVerification}
+              onChange={(e) => setSelectedVerification(e.target.value)}
+              placeholder="All Verifications"
+              options={[
+                { value: '', label: 'All Verifications' },
+                { value: 'Verified', label: 'Verified Only' },
+                { value: 'Pending', label: 'Pending Verification' },
+                { value: 'Not Verified', label: 'Not Verified' }
+              ]}
+            />
+          </div>
 
         </div>
       </div>
@@ -267,16 +280,18 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     <div className="flex flex-wrap items-center gap-2">
                       
                       {/* Availability Quick Toggle */}
-                      <select
-                        value={pg.availabilityStatus}
-                        onChange={(e) => handleQuickUpdate(pg.id, { availabilityStatus: e.target.value }, `Updated availability to ${e.target.value}`)}
-                        className="text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
-                        title="Quick change availability"
-                      >
-                        <option value="Available">Available</option>
-                        <option value="Limited">Limited</option>
-                        <option value="Full">Mark as Full</option>
-                      </select>
+                      <div className="w-28">
+                        <CustomSelect
+                          value={pg.availabilityStatus}
+                          onChange={(e) => handleQuickUpdate(pg.id, { availabilityStatus: e.target.value }, `Updated availability to ${e.target.value}`)}
+                          className="py-1 px-2 text-[11px]"
+                          options={[
+                            { value: 'Available', label: 'Available' },
+                            { value: 'Limited', label: 'Limited' },
+                            { value: 'Full', label: 'Full' }
+                          ]}
+                        />
+                      </div>
 
                       {/* Featured Quick Toggle */}
                       <button
