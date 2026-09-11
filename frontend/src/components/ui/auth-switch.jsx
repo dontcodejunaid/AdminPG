@@ -20,26 +20,34 @@ export function AuthSwitch({
   className = ""
 }) {
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
-  const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Sign In state
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+
+  // Sign Up state
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState("");
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Password requirements calculation
-  const reqLength = password.length >= 8;
-  const reqNumber = /[0-9]/.test(password);
-  const reqLower = /[a-z]/.test(password);
-  const reqUpper = /[A-Z]/.test(password);
+  // Password requirements calculation for Sign Up
+  const reqLength = signUpPassword.length >= 8;
+  const reqNumber = /[0-9]/.test(signUpPassword);
+  const reqLower = /[a-z]/.test(signUpPassword);
+  const reqUpper = /[A-Z]/.test(signUpPassword);
 
   const strengthScore = useMemo(() => {
     return [reqLength, reqNumber, reqLower, reqUpper].filter(Boolean).length;
   }, [reqLength, reqNumber, reqLower, reqUpper]);
 
   const getStrengthText = () => {
-    if (!password) return "Enter password";
+    if (!signUpPassword) return "Enter password";
     if (strengthScore <= 1) return "Weak password";
     if (strengthScore <= 2) return "Fair password";
     if (strengthScore === 3) return "Good password";
@@ -47,7 +55,7 @@ export function AuthSwitch({
   };
 
   const getStrengthColor = () => {
-    if (!password) return "bg-slate-700";
+    if (!signUpPassword) return "bg-slate-700";
     if (strengthScore <= 1) return "bg-rose-500";
     if (strengthScore <= 2) return "bg-orange-500";
     if (strengthScore === 3) return "bg-amber-500";
@@ -55,15 +63,15 @@ export function AuthSwitch({
   };
 
   const getStrengthTextColor = () => {
-    if (!password) return "text-slate-400";
+    if (!signUpPassword) return "text-slate-400";
     if (strengthScore <= 2) return "text-rose-400";
     if (strengthScore === 3) return "text-amber-400";
     return "text-emerald-400";
   };
 
-  // Password confirmation states
-  const isMatch = password.length > 0 && confirmPassword === password;
-  const hasMismatch = confirmPassword.length > 0 && !password.startsWith(confirmPassword);
+  // Password confirmation states for Sign Up
+  const isMatch = signUpPassword.length > 0 && signUpConfirmPassword === signUpPassword;
+  const hasMismatch = signUpConfirmPassword.length > 0 && !signUpPassword.startsWith(signUpConfirmPassword);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -71,7 +79,7 @@ export function AuthSwitch({
     setErrorMessage("");
     try {
       if (onLogin) {
-        const res = await onLogin(email, password);
+        const res = await onLogin(signInEmail, signInPassword);
         if (!res?.success) setErrorMessage(res?.message || "Login failed");
       }
     } catch (err) {
@@ -83,7 +91,7 @@ export function AuthSwitch({
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (confirmPassword && confirmPassword !== password) {
+    if (signUpConfirmPassword && signUpConfirmPassword !== signUpPassword) {
       setErrorMessage("Passwords do not match");
       return;
     }
@@ -91,7 +99,7 @@ export function AuthSwitch({
     setErrorMessage("");
     try {
       if (onSignUp) {
-        const res = await onSignUp(name, email, password);
+        const res = await onSignUp(signUpName, signUpEmail, signUpPassword);
         if (!res?.success) setErrorMessage(res?.message || "Sign up failed");
       }
     } catch (err) {
@@ -143,8 +151,8 @@ export function AuthSwitch({
                   type="text"
                   required
                   placeholder="Full Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={signUpName}
+                  onChange={(e) => setSignUpName(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none font-medium"
                 />
               </div>
@@ -156,8 +164,8 @@ export function AuthSwitch({
                   type="email"
                   required
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={signUpEmail}
+                  onChange={(e) => setSignUpEmail(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none font-medium"
                 />
               </div>
@@ -166,19 +174,19 @@ export function AuthSwitch({
               <div className="input-field w-full h-9 md:h-10 bg-[#1e293b] rounded-full px-3.5 flex items-center relative border border-slate-700 focus-within:border-emerald-500 transition-colors">
                 <Lock className="w-3.5 h-3.5 text-slate-400 mr-2.5 shrink-0" />
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showSignUpPassword ? "text" : "password"}
                   required
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={signUpPassword}
+                  onChange={(e) => setSignUpPassword(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none pr-7 font-mono"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowSignUpPassword(!showSignUpPassword)}
                   className="absolute right-3 text-slate-400 hover:text-emerald-400 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showSignUpPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
@@ -187,7 +195,7 @@ export function AuthSwitch({
                 <div className="h-1 w-full bg-slate-700 rounded-full overflow-hidden mb-0.5">
                   <div 
                     className={`h-full ${getStrengthColor()} transition-all duration-300 rounded-full`}
-                    style={{ width: password ? `${Math.max((strengthScore / 4) * 100, 15)}%` : '0%' }}
+                    style={{ width: signUpPassword ? `${Math.max((strengthScore / 4) * 100, 15)}%` : '0%' }}
                   />
                 </div>
                 
@@ -217,9 +225,9 @@ export function AuthSwitch({
 
               {/* Dot Track */}
               <div className="w-full h-7 md:h-8 bg-[#1e293b] rounded-full px-3 flex items-center justify-start gap-1 border border-slate-700 overflow-x-auto">
-                {password.length > 0 ? (
-                  password.split('').map((char, index) => {
-                    const typedChar = confirmPassword[index];
+                {signUpPassword.length > 0 ? (
+                  signUpPassword.split('').map((char, index) => {
+                    const typedChar = signUpConfirmPassword[index];
                     const isCharMatch = typedChar !== undefined && typedChar === char;
                     const isCharMismatch = typedChar !== undefined && typedChar !== char;
 
@@ -263,8 +271,8 @@ export function AuthSwitch({
                 <input
                   type="password"
                   placeholder="••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={signUpConfirmPassword}
+                  onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                   className="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none font-mono"
                 />
               </div>
@@ -303,27 +311,27 @@ export function AuthSwitch({
                 type="email"
                 required
                 placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={signInEmail}
+                onChange={(e) => setSignInEmail(e.target.value)}
                 className="w-full bg-transparent text-xs md:text-sm text-white placeholder-slate-400 outline-none font-medium"
               />
             </div>
             <div className="input-field max-w-[290px] w-full h-10 md:h-11 bg-[#1e293b] rounded-full px-4 flex items-center mb-4 relative border border-slate-700 focus-within:border-emerald-500">
               <Lock className="w-4 h-4 text-slate-400 mr-3 shrink-0" />
               <input
-                type={showPassword ? "text" : "password"}
+                type={showSignInPassword ? "text" : "password"}
                 required
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={signInPassword}
+                onChange={(e) => setSignInPassword(e.target.value)}
                 className="w-full bg-transparent text-xs md:text-sm text-white placeholder-slate-400 outline-none pr-7 font-mono"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowSignInPassword(!showSignInPassword)}
                 className="absolute right-3.5 text-slate-400 hover:text-emerald-400 transition-colors"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showSignInPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             <button
