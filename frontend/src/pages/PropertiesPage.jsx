@@ -355,7 +355,18 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     
                     {/* Status & Verification Badges */}
                     <div className="flex items-center gap-2">
-                      <Badge variant={pg.status}>{pg.status}</Badge>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickUpdate(
+                          pg.id, 
+                          { status: pg.status === 'Active' ? 'Inactive' : 'Active' }, 
+                          `Marked PG as ${pg.status === 'Active' ? 'Inactive' : 'Active'}`
+                        )}
+                        className="transition-transform active:scale-95"
+                        title="Click to toggle Active / Inactive status"
+                      >
+                        <Badge variant={pg.status}>{pg.status}</Badge>
+                      </button>
                       <Badge variant={pg.availabilityStatus}>{pg.availabilityStatus}</Badge>
                       <Badge variant={pg.verificationStatus}>{pg.verificationStatus}</Badge>
                     </div>
@@ -363,6 +374,19 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                     {/* Quick Admin Toggles & Actions */}
                     <div className="flex flex-wrap items-center gap-2">
                       
+                      {/* Publish Status Quick Toggle */}
+                      <div className="w-28">
+                        <CustomSelect
+                          value={pg.status}
+                          onChange={(e) => handleQuickUpdate(pg.id, { status: e.target.value }, `Marked as ${e.target.value}`)}
+                          className="py-1 px-2 text-[11px] font-bold"
+                          options={[
+                            { value: 'Active', label: '🟢 Active' },
+                            { value: 'Inactive', label: '🔴 Inactive' }
+                          ]}
+                        />
+                      </div>
+
                       {/* Availability Quick Toggle */}
                       <div className="w-28">
                         <CustomSelect
