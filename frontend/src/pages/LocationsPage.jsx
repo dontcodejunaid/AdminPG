@@ -163,7 +163,7 @@ export const LocationsPage = () => {
             onClick={() => setIsAddStateModalOpen(true)}
             className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            + Add State
+            Add State
           </button>
           <button
             onClick={() => {
@@ -172,7 +172,7 @@ export const LocationsPage = () => {
             }}
             className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            + Add City
+            Add City
           </button>
           <button
             onClick={() => {
@@ -181,7 +181,7 @@ export const LocationsPage = () => {
             }}
             className="px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all"
           >
-            + Add Area / Locality
+            Add Area / Locality
           </button>
         </div>
       </div>
@@ -200,7 +200,7 @@ export const LocationsPage = () => {
               onClick={() => setIsAddStateModalOpen(true)}
               className="text-[11px] font-bold text-brand-600 hover:underline"
             >
-              + New
+              Add State
             </button>
           </div>
 
@@ -249,7 +249,7 @@ export const LocationsPage = () => {
               }}
               className="text-[11px] font-bold text-sky-600 hover:underline"
             >
-              + Add City
+              Add City
             </button>
           </div>
 
@@ -312,7 +312,7 @@ export const LocationsPage = () => {
               }}
               className="text-[11px] font-bold text-purple-600 hover:underline"
             >
-              + Add Area
+              Add Area
             </button>
           </div>
 

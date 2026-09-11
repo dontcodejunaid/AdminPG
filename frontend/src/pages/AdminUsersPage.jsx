@@ -107,7 +107,7 @@ export const AdminUsersPage = () => {
             className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-600/20 flex items-center gap-2 transition-all self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add Team Member</span>
+            <span>Add Team Member</span>
           </button>
         )}
       </div>

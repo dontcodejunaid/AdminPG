@@ -97,7 +97,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
               className="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-brand-500/20 transition-all hover:scale-105"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Add New PG Property</span>
+              <span>Add New PG Property</span>
             </button>
             <button
               onClick={() => setActiveTab('enquiries')}

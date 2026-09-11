@@ -248,7 +248,7 @@ export const PagesCmsPage = () => {
                   className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Add FAQ</span>
+                  <span>Add FAQ</span>
                 </button>
                 <button
                   onClick={() => handleSave('faq', faqs)}

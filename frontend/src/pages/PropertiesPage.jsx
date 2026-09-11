@@ -114,7 +114,7 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
             className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 flex items-center gap-2 transition-all self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add New PG Property</span>
+            <span>Add New PG Property</span>
           </button>
         )}
       </div>

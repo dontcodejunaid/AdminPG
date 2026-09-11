@@ -166,7 +166,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white text-sm font-bold shadow-md shadow-brand-600/25 flex items-center justify-center gap-2 transition-all"
             >
               <Building2 className="w-4 h-4" />
-              <span>+ Add New PG Property</span>
+              <span>Add New PG Property</span>
             </button>
           </div>
         )}
