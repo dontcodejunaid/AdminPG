@@ -1,3 +1,4 @@
+// KeralaPG Admin API Server - Supabase Connected
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';

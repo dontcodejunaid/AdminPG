@@ -113,6 +113,67 @@
   ],
   "properties": [
     {
+      "id": "pg_1789365857222",
+      "name": "Royal Palms",
+      "slug": "royal-palms-1789365857222",
+      "type": "Boys",
+      "state": "Kerala",
+      "city": "Thiruvananthapuram",
+      "area": "Kazhakkoottam (Technopark)",
+      "fullAddress": "qwertyuiopasdfghjklzxcvbnm",
+      "mapUrl": "",
+      "description": "",
+      "contactNumber": "9945505665",
+      "whatsappNumber": "9945505665",
+      "photos": [],
+      "videoUrl": "",
+      "status": "Active",
+      "availabilityStatus": "Available",
+      "verificationStatus": "Verified",
+      "isFeatured": false,
+      "featuredOrder": 0,
+      "totalBeds": 14,
+      "availableBeds": 3,
+      "charges": {
+        "deposit": 5001,
+        "foodCharges": "Included (3 times daily)",
+        "electricityCharges": "As per meter",
+        "maintenanceCharges": 300,
+        "otherCharges": "None"
+      },
+      "rooms": [
+        {
+          "id": "r_1",
+          "type": "Single Sharing",
+          "rent": 12000,
+          "deposit": 8000,
+          "totalBeds": 4,
+          "availableBeds": 1,
+          "hasAC": true,
+          "hasAttachedBath": true
+        },
+        {
+          "id": "r_2",
+          "type": "2 Sharing",
+          "rent": 8500,
+          "deposit": 5001,
+          "totalBeds": 10,
+          "availableBeds": 2,
+          "hasAC": true,
+          "hasAttachedBath": true
+        }
+      ],
+      "facilities": [
+        "fac_food",
+        "fac_wifi",
+        "fac_ac",
+        "fac_wm",
+        "fac_cctv"
+      ],
+      "createdAt": "2026-09-14T06:04:17.222Z",
+      "updatedAt": "2026-09-14T06:04:17.222Z"
+    },
+    {
       "id": "pg_test_1",
       "name": "asdfg",
       "slug": "asdfg-123",

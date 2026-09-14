@@ -53,12 +53,8 @@ export const EnquiriesPage = () => {
   const fetchEnquiries = async () => {
     try {
       setLoading(true);
-      const params = {};
-      if (search) params.search = search;
-      if (statusFilter) params.status = statusFilter;
-
       const [enqRes, pgRes] = await Promise.all([
-        api.getEnquiries(params),
+        api.getEnquiries(),
         api.getProperties()
       ]);
       if (enqRes.data) setEnquiries(enqRes.data);
@@ -72,7 +68,7 @@ export const EnquiriesPage = () => {
 
   useEffect(() => {
     fetchEnquiries();
-  }, [search, statusFilter]);
+  }, []);
 
   const handleStatusChange = async (enquiryId, newStatus) => {
     try {
@@ -132,7 +128,31 @@ export const EnquiriesPage = () => {
     }
   };
 
-  const statuses = ['New', 'Contacted', 'Interested', 'Visited', 'Closed'];
+  const statuses = ['New', 'Contacted', 'Scheduled Visit', 'Converted', 'Lost'];
+
+  // Dynamic counts for each status
+  const statusCounts = {
+    all: enquiries.length,
+    ...statuses.reduce((acc, st) => {
+      acc[st] = enquiries.filter(e => e.status?.toLowerCase() === st.toLowerCase()).length;
+      return acc;
+    }, {})
+  };
+
+  // Filtered list for display
+  const filteredEnquiries = enquiries.filter(enq => {
+    if (statusFilter && enq.status?.toLowerCase() !== statusFilter.toLowerCase()) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const match =
+        enq.customerName?.toLowerCase().includes(q) ||
+        enq.customerPhone?.includes(q) ||
+        enq.pgName?.toLowerCase().includes(q) ||
+        enq.customerEmail?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -172,25 +192,35 @@ export const EnquiriesPage = () => {
           />
         </div>
 
-        {/* Pipeline Filter Tabs */}
+        {/* Pipeline Filter Tabs with Dynamic Live Counts */}
         <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
           <button
             onClick={() => setStatusFilter('')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
               statusFilter === '' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
             }`}
           >
-            All ({enquiries.length})
+            <span>All</span>
+            <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+              statusFilter === '' ? 'bg-white/20 dark:bg-slate-900/20' : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300'
+            }`}>
+              {statusCounts.all}
+            </span>
           </button>
           {statuses.map(st => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                 statusFilter === st ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
               }`}
             >
-              {st}
+              <span>{st}</span>
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+                statusFilter === st ? 'bg-white/20 dark:bg-slate-900/20' : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300'
+              }`}>
+                {statusCounts[st] || 0}
+              </span>
             </button>
           ))}
         </div>
@@ -199,9 +229,9 @@ export const EnquiriesPage = () => {
       {/* Leads Table */}
       {loading ? (
         <div className="py-12 text-center text-slate-400">Loading leads...</div>
-      ) : enquiries.length === 0 ? (
+      ) : filteredEnquiries.length === 0 ? (
         <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <p className="text-xs text-slate-500">No enquiries found</p>
+          <p className="text-xs text-slate-500">No enquiries found matching filter</p>
         </div>
       ) : (
         <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -218,7 +248,7 @@ export const EnquiriesPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {enquiries.map((enq) => (
+                {filteredEnquiries.map((enq) => (
                   <tr key={enq.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
