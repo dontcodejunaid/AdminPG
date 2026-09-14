@@ -146,6 +146,22 @@ class UnifiedStore {
     return this.setCollection('locations', locations);
   }
 
+  async markAllNotificationsRead() {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.markAllNotificationsRead();
+      } catch (err) {
+        console.warn('Supabase markAllNotificationsRead failed:', err.message);
+      }
+    }
+    const list = await this.getCollection('notifications');
+    if (Array.isArray(list)) {
+      const updated = list.map(n => ({ ...n, read: true }));
+      await this.setCollection('notifications', updated);
+    }
+    return true;
+  }
+
   // CMS specific get/update
   async getCMS() {
     if (supabaseStore.isConfigured()) {

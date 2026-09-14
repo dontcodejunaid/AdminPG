@@ -27,9 +27,7 @@ router.patch('/:id/read', async (req, res) => {
 // POST /api/notifications/mark-all-read
 router.post('/mark-all-read', async (req, res) => {
   try {
-    const list = await store.findAll('notifications');
-    const updated = list.map(n => ({ ...n, read: true }));
-    await store.setCollection('notifications', updated);
+    await store.markAllNotificationsRead();
     res.json({ success: true, message: 'All notifications marked as read' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

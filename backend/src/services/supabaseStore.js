@@ -179,6 +179,12 @@ function toDbFormat(data, table = '', isCreate = false) {
     }
   }
 
+  if (table === 'notifications') {
+    if (converted.timestamp && !converted.created_at) {
+      converted.created_at = converted.timestamp;
+    }
+  }
+
   // Filter keys strictly to known columns for the table if column schema is defined
   const validCols = VALID_COLUMNS[table];
   if (validCols) {
@@ -232,6 +238,11 @@ function fromDbFormat(data, table = '') {
 
   if (table === 'enquiries') {
     converted.adminNotes = converted.internalNotes || converted.adminNotes || '';
+  }
+
+  if (table === 'notifications') {
+    converted.timestamp = converted.createdAt || converted.created_at || new Date().toISOString();
+    converted.read = Boolean(converted.read);
   }
 
   return converted;
@@ -299,7 +310,9 @@ export const supabaseStore = {
 
     const dbPayload = toDbFormat(updates, table, false);
     delete dbPayload.id; // never overwrite primary key
-    dbPayload.updated_at = new Date().toISOString();
+    if (VALID_COLUMNS[table]?.has('updated_at')) {
+      dbPayload.updated_at = new Date().toISOString();
+    }
 
     const { data, error } = await supabase.from(table).update(dbPayload).eq('id', id).select().single();
     if (error) {
@@ -307,6 +320,21 @@ export const supabaseStore = {
       throw error;
     }
     return fromDbFormat(data, table);
+  },
+
+  async markAllNotificationsRead() {
+    if (!this.isConfigured()) return false;
+    try {
+      const { error } = await supabase.from('notifications').update({ read: true }).neq('id', 'non_existent_key');
+      if (error) {
+        console.error('Supabase markAllNotificationsRead error:', error.message);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Supabase markAllNotificationsRead error:', e);
+      return false;
+    }
   },
 
   async delete(collectionName, id) {

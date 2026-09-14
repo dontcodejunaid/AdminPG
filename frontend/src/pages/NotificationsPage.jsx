@@ -13,7 +13,7 @@ import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 export const NotificationsPage = () => {
-  const { showToast, setUnreadNotifsCount, setActiveTab } = useApp();
+  const { showToast, setUnreadNotifsCount, setActiveTab, triggerRefresh } = useApp();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,24 +38,32 @@ export const NotificationsPage = () => {
 
   const handleMarkAllRead = async () => {
     try {
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadNotifsCount(0);
       await api.markAllNotificationsRead();
       showToast('All notifications marked as read', 'success');
-      setUnreadNotifsCount(0);
+      triggerRefresh();
       fetchNotifs();
     } catch (err) {
       showToast('Failed to mark read', 'error');
+      fetchNotifs();
     }
   };
 
   const handleNotificationClick = async (notif) => {
     if (!notif.read) {
-      await api.markNotificationRead(notif.id);
+      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
+      try {
+        await api.markNotificationRead(notif.id);
+        triggerRefresh();
+      } catch (err) {
+        console.warn(err);
+      }
     }
     if (notif.link) {
       const tab = notif.link.replace('/', '');
       setActiveTab(tab);
     }
-    fetchNotifs();
   };
 
   const getIcon = (type) => {
@@ -122,7 +130,10 @@ export const NotificationsPage = () => {
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">{n.message}</p>
                   <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {new Date(n.timestamp).toLocaleString()}
+                    {(() => {
+                      const d = new Date(n.timestamp || n.createdAt || n.created_at);
+                      return isNaN(d.getTime()) ? 'Just now' : d.toLocaleString();
+                    })()}
                   </p>
                 </div>
               </div>
