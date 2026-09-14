@@ -135,6 +135,56 @@ class UnifiedStore {
     return this.getCollection('locations');
   }
 
+  async addState(data) {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.addState(data);
+      } catch (err) {
+        console.warn('Supabase addState failed:', err.message);
+      }
+    }
+  }
+
+  async addCity(data) {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.addCity(data);
+      } catch (err) {
+        console.warn('Supabase addCity failed:', err.message);
+      }
+    }
+  }
+
+  async addArea(data) {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.addArea(data);
+      } catch (err) {
+        console.warn('Supabase addArea failed:', err.message);
+      }
+    }
+  }
+
+  async deleteCity(cityId) {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.deleteCity(cityId);
+      } catch (err) {
+        console.warn('Supabase deleteCity failed:', err.message);
+      }
+    }
+  }
+
+  async deleteArea(data) {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.deleteArea(data);
+      } catch (err) {
+        console.warn('Supabase deleteArea failed:', err.message);
+      }
+    }
+  }
+
   async setLocations(locations) {
     if (supabaseStore.isConfigured()) {
       try {

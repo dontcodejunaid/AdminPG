@@ -53,6 +53,7 @@ router.post('/state', async (req, res) => {
     const { name, code, countryName = "India" } = req.body;
     if (!name) return res.status(400).json({ success: false, error: 'State name is required' });
 
+    await store.addState({ name, code, countryName });
     const locations = await store.getLocations();
     let country = locations.find(c => c.name.toLowerCase() === countryName.toLowerCase()) || locations[0];
 
@@ -65,10 +66,13 @@ router.post('/state', async (req, res) => {
       cities: []
     };
 
-    country.states.push(newState);
-    await store.setLocations(locations);
+    const existingState = country.states.find(s => s.name.toLowerCase() === name.toLowerCase());
+    if (!existingState) {
+      country.states.push(newState);
+      await store.setCollection('locations', locations);
+    }
 
-    res.status(201).json({ success: true, data: newState });
+    res.status(201).json({ success: true, data: existingState || newState });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -82,6 +86,7 @@ router.post('/city', async (req, res) => {
       return res.status(400).json({ success: false, error: 'State name and City name are required' });
     }
 
+    await store.addCity({ stateName, cityName, code, areas });
     const locations = await store.getLocations();
     let stateFound = null;
 
@@ -93,22 +98,22 @@ router.post('/city', async (req, res) => {
       }
     }
 
-    if (!stateFound) {
-      return res.status(404).json({ success: false, error: `State "${stateName}" not found. Please create the state first.` });
+    if (stateFound) {
+      if (!stateFound.cities) stateFound.cities = [];
+      const existingCity = stateFound.cities.find(ct => ct.name.toLowerCase() === cityName.toLowerCase());
+      if (!existingCity) {
+        const newCity = {
+          id: `city_${uuidv4().substring(0, 6)}`,
+          name: cityName,
+          code: code || cityName.substring(0, 3).toUpperCase(),
+          areas: Array.isArray(areas) ? areas : []
+        };
+        stateFound.cities.push(newCity);
+        await store.setCollection('locations', locations);
+      }
     }
 
-    if (!stateFound.cities) stateFound.cities = [];
-    const newCity = {
-      id: `city_${uuidv4().substring(0, 6)}`,
-      name: cityName,
-      code: code || cityName.substring(0, 3).toUpperCase(),
-      areas: Array.isArray(areas) ? areas : []
-    };
-
-    stateFound.cities.push(newCity);
-    await store.setLocations(locations);
-
-    res.status(201).json({ success: true, data: newCity });
+    res.status(201).json({ success: true, data: { name: cityName, code, areas } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -122,6 +127,7 @@ router.post('/area', async (req, res) => {
       return res.status(400).json({ success: false, error: 'City name and Area name are required' });
     }
 
+    await store.addArea({ cityName, areaName });
     const locations = await store.getLocations();
     let cityFound = null;
 
@@ -136,17 +142,15 @@ router.post('/area', async (req, res) => {
       if (cityFound) break;
     }
 
-    if (!cityFound) {
-      return res.status(404).json({ success: false, error: `City "${cityName}" not found.` });
+    if (cityFound) {
+      if (!cityFound.areas) cityFound.areas = [];
+      if (!cityFound.areas.includes(areaName)) {
+        cityFound.areas.push(areaName);
+        await store.setCollection('locations', locations);
+      }
     }
 
-    if (!cityFound.areas) cityFound.areas = [];
-    if (!cityFound.areas.includes(areaName)) {
-      cityFound.areas.push(areaName);
-      await store.setLocations(locations);
-    }
-
-    res.status(201).json({ success: true, data: { cityName, areaName, areas: cityFound.areas } });
+    res.status(201).json({ success: true, data: { cityName, areaName } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -156,8 +160,9 @@ router.post('/area', async (req, res) => {
 router.delete('/city/:cityId', async (req, res) => {
   try {
     const { cityId } = req.params;
-    const locations = await store.getLocations();
+    await store.deleteCity(cityId);
 
+    const locations = await store.getLocations();
     locations.forEach(c => {
       (c.states || []).forEach(st => {
         if (st.cities) {
@@ -166,7 +171,7 @@ router.delete('/city/:cityId', async (req, res) => {
       });
     });
 
-    await store.setLocations(locations);
+    await store.setCollection('locations', locations);
     res.json({ success: true, message: 'City deleted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -177,8 +182,9 @@ router.delete('/city/:cityId', async (req, res) => {
 router.delete('/area', async (req, res) => {
   try {
     const { cityName, areaName } = req.body;
-    const locations = await store.getLocations();
+    await store.deleteArea({ cityName, areaName });
 
+    const locations = await store.getLocations();
     locations.forEach(c => {
       (c.states || []).forEach(st => {
         (st.cities || []).forEach(ct => {
@@ -189,7 +195,7 @@ router.delete('/area', async (req, res) => {
       });
     });
 
-    await store.setLocations(locations);
+    await store.setCollection('locations', locations);
     res.json({ success: true, message: 'Area deleted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

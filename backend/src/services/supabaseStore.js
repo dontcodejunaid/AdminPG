@@ -379,11 +379,11 @@ export const supabaseStore = {
             name: state.name,
             code: state.code,
             type: 'state',
-            cities: cities.filter(c => c.state_id === state.id || c.state_name === state.name).map(city => ({
+            cities: cities.filter(c => c.state_id === state.id || c.state_name?.toLowerCase() === state.name?.toLowerCase()).map(city => ({
               id: city.id,
               name: city.name,
               code: city.code,
-              areas: areas.filter(a => a.city_id === city.id || a.city_name === city.name).map(a => a.name)
+              areas: areas.filter(a => a.city_id === city.id || a.city_name?.toLowerCase() === city.name?.toLowerCase()).map(a => a.name)
             }))
           }))
         }
@@ -391,6 +391,151 @@ export const supabaseStore = {
     } catch (err) {
       console.error('Supabase getLocations error:', err.message);
       return null;
+    }
+  },
+
+  async addState({ name, code, countryName = 'India' }) {
+    if (!this.isConfigured()) return null;
+    try {
+      const stateId = `state_${name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6) || Math.random().toString(36).substring(2, 8)}`;
+      const { data, error } = await supabase.from('locations_states').upsert([{
+        id: stateId,
+        name: name.trim(),
+        code: (code || name.substring(0, 2)).toUpperCase(),
+        country: countryName,
+        is_active: true
+      }]).select().single();
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('Supabase addState error:', err.message);
+      return null;
+    }
+  },
+
+  async addCity({ stateName, cityName, code, areas = [] }) {
+    if (!this.isConfigured()) return null;
+    try {
+      const { data: stateData } = await supabase
+        .from('locations_states')
+        .select('*')
+        .ilike('name', stateName.trim())
+        .maybeSingle();
+
+      let stateId = stateData?.id;
+      if (!stateId) {
+        stateId = `state_${stateName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6)}`;
+        await supabase.from('locations_states').insert([{
+          id: stateId,
+          name: stateName.trim(),
+          code: stateName.substring(0, 2).toUpperCase(),
+          country: 'India',
+          is_active: true
+        }]);
+      }
+
+      const cityId = `city_${cityName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6) || Math.random().toString(36).substring(2, 8)}`;
+      const cityPayload = {
+        id: cityId,
+        state_id: stateId,
+        state_name: stateName.trim(),
+        name: cityName.trim(),
+        code: (code || cityName.substring(0, 3)).toUpperCase(),
+        display_order: 99,
+        is_active: true
+      };
+
+      const { data: cityData, error: cityError } = await supabase
+        .from('locations_cities')
+        .upsert([cityPayload])
+        .select()
+        .single();
+
+      if (cityError) throw cityError;
+
+      if (Array.isArray(areas) && areas.length > 0) {
+        const areaRows = areas.map(a => {
+          const aName = typeof a === 'string' ? a.trim() : (a.name || '').trim();
+          return {
+            id: `area_${Math.random().toString(36).substring(2, 8)}`,
+            city_id: cityId,
+            city_name: cityName.trim(),
+            name: aName,
+            is_popular: true
+          };
+        }).filter(a => a.name);
+
+        if (areaRows.length > 0) {
+          await supabase.from('locations_areas').insert(areaRows);
+        }
+      }
+
+      return cityData;
+    } catch (err) {
+      console.error('Supabase addCity error:', err.message);
+      return null;
+    }
+  },
+
+  async addArea({ cityName, areaName }) {
+    if (!this.isConfigured()) return null;
+    try {
+      const { data: cityData } = await supabase
+        .from('locations_cities')
+        .select('*')
+        .ilike('name', cityName.trim())
+        .maybeSingle();
+
+      const cityId = cityData?.id || `city_${cityName.toLowerCase()}`;
+      const areaPayload = {
+        id: `area_${Math.random().toString(36).substring(2, 8)}`,
+        city_id: cityId,
+        city_name: cityName.trim(),
+        name: areaName.trim(),
+        is_popular: true
+      };
+
+      const { data, error } = await supabase
+        .from('locations_areas')
+        .insert([areaPayload])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('Supabase addArea error:', err.message);
+      return null;
+    }
+  },
+
+  async deleteCity(cityId) {
+    if (!this.isConfigured()) return null;
+    try {
+      await supabase.from('locations_areas').delete().eq('city_id', cityId);
+      const { error } = await supabase.from('locations_cities').delete().eq('id', cityId);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('Supabase deleteCity error:', err.message);
+      return false;
+    }
+  },
+
+  async deleteArea({ cityName, areaName }) {
+    if (!this.isConfigured()) return null;
+    try {
+      const { error } = await supabase
+        .from('locations_areas')
+        .delete()
+        .ilike('city_name', cityName.trim())
+        .ilike('name', areaName.trim());
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error('Supabase deleteArea error:', err.message);
+      return false;
     }
   },
 
@@ -403,7 +548,7 @@ export const supabaseStore = {
 
       (locations || []).forEach(country => {
         (country.states || []).forEach(state => {
-          const stateId = state.id || `state_${Math.random().toString(36).substring(2, 8)}`;
+          const stateId = state.id || `state_${state.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6)}`;
           stateRows.push({
             id: stateId,
             name: state.name,
@@ -413,7 +558,7 @@ export const supabaseStore = {
           });
 
           (state.cities || []).forEach((city, cityIdx) => {
-            const cityId = city.id || `city_${Math.random().toString(36).substring(2, 8)}`;
+            const cityId = city.id || `city_${city.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 6)}`;
             cityRows.push({
               id: cityId,
               state_id: stateId,
@@ -440,19 +585,14 @@ export const supabaseStore = {
         });
       });
 
-      // Clear existing locations in Supabase and replace with active dataset
-      await supabase.from('locations_areas').delete().neq('id', 'keep_none');
-      await supabase.from('locations_cities').delete().neq('id', 'keep_none');
-      await supabase.from('locations_states').delete().neq('id', 'keep_none');
-
       if (stateRows.length > 0) {
-        await supabase.from('locations_states').insert(stateRows);
+        await supabase.from('locations_states').upsert(stateRows);
       }
       if (cityRows.length > 0) {
-        await supabase.from('locations_cities').insert(cityRows);
+        await supabase.from('locations_cities').upsert(cityRows);
       }
       if (areaRows.length > 0) {
-        await supabase.from('locations_areas').insert(areaRows);
+        await supabase.from('locations_areas').upsert(areaRows);
       }
 
       return true;
