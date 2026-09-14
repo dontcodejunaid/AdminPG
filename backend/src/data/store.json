@@ -224,7 +224,28 @@
   "reports": [],
   "payments": [],
   "banners": [],
-  "notifications": [],
+  "notifications": [
+    {
+      "id": "notif_1789373118225",
+      "type": "report",
+      "title": "New Listing Report",
+      "message": "Report filed for Royal Palms Luxury PG: Wrong price",
+      "link": "/reported",
+      "read": true,
+      "metadata": {},
+      "createdAt": "2026-09-14T08:05:17.273745+00:00"
+    },
+    {
+      "id": "notif_1789367111013",
+      "type": "enquiry",
+      "title": "New Enquiry Added",
+      "message": "Rahul  enquiry for Royal Palms",
+      "link": "/enquiries",
+      "read": true,
+      "metadata": {},
+      "createdAt": "2026-09-14T06:25:10.019622+00:00"
+    }
+  ],
   "cmsPages": {
     "aboutUs": {
       "title": "About KeralaPG.com",
@@ -240,6 +261,60 @@
     }
   },
   "adminUsers": [
+    {
+      "id": "usr_77bebb",
+      "authUserId": "012e9b05-1db7-45f5-9756-71d7d7880d62",
+      "name": "Staff",
+      "email": "staff@gmail.com",
+      "password": "KeralaPG@123",
+      "passwordHash": "KeralaPG@123",
+      "role": "Staff",
+      "phone": "",
+      "status": "Active",
+      "lastLogin": "2026-09-14T08:25:11.217Z",
+      "permissions": {
+        "canAddPG": true,
+        "canEditPG": true,
+        "canDeletePG": false,
+        "canVerifyPG": false,
+        "canManageLocations": false,
+        "canManageFacilities": false,
+        "canManageEnquiries": true,
+        "canManageCustomers": false,
+        "canModerateReports": false,
+        "canManagePayments": false,
+        "canManageCMS": false,
+        "canManageBanners": false,
+        "canManageUsers": false
+      }
+    },
+    {
+      "id": "usr_383969",
+      "authUserId": "c23f95ae-b461-4026-814f-a3ac213206ed",
+      "name": "Mohammed Junaid Baig",
+      "email": "baigjunaid@gmail.com",
+      "password": "KeralaPG@123",
+      "passwordHash": "KeralaPG@123",
+      "role": "Admin",
+      "phone": "",
+      "status": "Active",
+      "lastLogin": "2026-09-14T08:19:45.631Z",
+      "permissions": {
+        "canAddPG": true,
+        "canEditPG": true,
+        "canDeletePG": true,
+        "canVerifyPG": true,
+        "canManageLocations": true,
+        "canManageFacilities": true,
+        "canManageEnquiries": true,
+        "canManageCustomers": true,
+        "canModerateReports": true,
+        "canManagePayments": false,
+        "canManageCMS": true,
+        "canManageBanners": true,
+        "canManageUsers": false
+      }
+    },
     {
       "id": "usr_1",
       "name": "Super Admin",
