@@ -90,7 +90,7 @@ export const PaymentsPage = () => {
       p.amount,
       p.status,
       p.paymentGateway,
-      new Date(p.date).toISOString()
+      new Date(p.date || p.createdAt || Date.now()).toISOString()
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
@@ -241,7 +241,7 @@ export const PaymentsPage = () => {
                       {tx.paymentGateway}
                     </td>
                     <td className="py-3.5 px-4 text-right text-slate-500 text-[11px]">
-                      {new Date(tx.date).toLocaleString()}
+                      {new Date(tx.date || tx.createdAt || Date.now()).toLocaleString()}
                     </td>
                   </tr>
                 ))}
