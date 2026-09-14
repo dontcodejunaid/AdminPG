@@ -71,9 +71,9 @@ const VALID_COLUMNS = {
 };
 
 // Convert camelCase object to snake_case for PostgreSQL
-function toDbFormat(data, table = '') {
+function toDbFormat(data, table = '', isCreate = false) {
   if (!data || typeof data !== 'object') return data;
-  if (Array.isArray(data)) return data.map(d => toDbFormat(d, table));
+  if (Array.isArray(data)) return data.map(d => toDbFormat(d, table, isCreate));
   const converted = {};
   for (const [key, value] of Object.entries(data)) {
     const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -88,52 +88,72 @@ function toDbFormat(data, table = '') {
   }
 
   if (table === 'properties') {
-    if (converted.contact_number && !converted.owner_phone) {
+    if (converted.contact_number !== undefined && converted.owner_phone === undefined) {
       converted.owner_phone = converted.contact_number;
     }
-    if (!converted.owner_phone) converted.owner_phone = '+91 98470 00000';
-    if (!converted.owner_name) converted.owner_name = converted.name || 'PG Caretaker';
-    if (!converted.full_address) converted.full_address = `${converted.area || 'Kakkanad'}, ${converted.city || 'Kochi'}`;
-    if (!converted.state) converted.state = 'Kerala';
-    if (!converted.city) converted.city = 'Kochi';
-    if (!converted.area) converted.area = 'Kakkanad';
-    if (!converted.slug) converted.slug = (converted.name || 'pg').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
-    if (converted.type === 'Co-living' || converted.type === 'co-living') converted.type = 'Coliving';
-    if (!['Boys', 'Girls', 'Coliving', 'Unisex'].includes(converted.type)) converted.type = 'Boys';
-    if (converted.verification_status === 'Not Verified' || converted.verification_status === 'not verified') {
-      converted.verification_status = 'Pending';
+    if (isCreate) {
+      if (!converted.owner_phone) converted.owner_phone = converted.contact_number || '+91 98470 00000';
+      if (!converted.owner_name) converted.owner_name = converted.name || 'PG Caretaker';
+      if (!converted.full_address) converted.full_address = `${converted.area || 'Kakkanad'}, ${converted.city || 'Kochi'}`;
+      if (!converted.state) converted.state = 'Kerala';
+      if (!converted.city) converted.city = 'Kochi';
+      if (!converted.area) converted.area = 'Kakkanad';
+      if (!converted.slug) converted.slug = (converted.name || 'pg').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+      if (!converted.type) converted.type = 'Boys';
+      if (!converted.verification_status) converted.verification_status = 'Pending';
+      if (!converted.status) converted.status = 'Active';
+      if (!converted.availability_status) converted.availability_status = 'Available';
+      if (!Array.isArray(converted.videos)) converted.videos = [];
+      if (!Array.isArray(converted.photos)) converted.photos = [];
+      if (!Array.isArray(converted.rooms)) converted.rooms = [];
+      if (!Array.isArray(converted.facilities)) converted.facilities = [];
+      if (!Array.isArray(converted.rules)) converted.rules = [];
+      if (converted.is_featured === undefined) converted.is_featured = false;
+      if (converted.featured_order === undefined) converted.featured_order = 0;
     }
-    if (!['Verified', 'Pending', 'Rejected'].includes(converted.verification_status)) {
-      converted.verification_status = 'Pending';
+
+    if (converted.type !== undefined) {
+      if (converted.type === 'Co-living' || converted.type === 'co-living') converted.type = 'Coliving';
+      if (!['Boys', 'Girls', 'Coliving', 'Unisex'].includes(converted.type)) converted.type = 'Boys';
     }
-    if (!['Active', 'Inactive', 'Draft'].includes(converted.status)) {
-      converted.status = 'Active';
+    if (converted.verification_status !== undefined) {
+      if (converted.verification_status === 'Not Verified' || converted.verification_status === 'not verified') {
+        converted.verification_status = 'Pending';
+      }
+      if (!['Verified', 'Pending', 'Rejected'].includes(converted.verification_status)) {
+        converted.verification_status = 'Pending';
+      }
     }
-    if (!['Available', 'Limited', 'Full'].includes(converted.availability_status)) {
-      converted.availability_status = 'Available';
+    if (converted.status !== undefined) {
+      if (!['Active', 'Inactive', 'Draft'].includes(converted.status)) {
+        converted.status = 'Active';
+      }
+    }
+    if (converted.availability_status !== undefined) {
+      if (!['Available', 'Limited', 'Full'].includes(converted.availability_status)) {
+        converted.availability_status = 'Available';
+      }
     }
     if (converted.charges && typeof converted.charges === 'object') {
       if (converted.charges.foodCharges && !converted.food_availability) {
         converted.food_availability = converted.charges.foodCharges;
       }
     }
-    if (converted.video_url || converted.videoUrl) {
-      const vUrl = converted.video_url || converted.videoUrl;
+    if (converted.video_url !== undefined || converted.videoUrl !== undefined) {
+      const vUrl = converted.video_url !== undefined ? converted.video_url : converted.videoUrl;
       if (!converted.videos || !Array.isArray(converted.videos) || converted.videos.length === 0) {
         converted.videos = vUrl ? [vUrl] : [];
       }
     }
-    if (!Array.isArray(converted.videos)) converted.videos = [];
-    if (!Array.isArray(converted.photos)) converted.photos = [];
-    if (!Array.isArray(converted.rooms)) converted.rooms = [];
-    if (!Array.isArray(converted.facilities)) converted.facilities = [];
-    if (!Array.isArray(converted.rules)) converted.rules = [];
-    if (converted.is_featured === undefined) converted.is_featured = false;
-    if (converted.featured_order === undefined) converted.featured_order = 0;
+    if (converted.videos !== undefined && !Array.isArray(converted.videos)) converted.videos = [];
+    if (converted.photos !== undefined && !Array.isArray(converted.photos)) converted.photos = [];
+    if (converted.rooms !== undefined && !Array.isArray(converted.rooms)) converted.rooms = [];
+    if (converted.facilities !== undefined && !Array.isArray(converted.facilities)) converted.facilities = [];
+    if (converted.rules !== undefined && !Array.isArray(converted.rules)) converted.rules = [];
   }
 
   if (table === 'enquiries') {
-    if (converted.admin_notes && !converted.internal_notes) {
+    if (converted.admin_notes !== undefined && converted.internal_notes === undefined) {
       converted.internal_notes = converted.admin_notes;
     }
     const statusMap = {
@@ -263,7 +283,7 @@ export const supabaseStore = {
     const table = COLLECTION_TABLE_MAP[collectionName];
     if (!table) return null;
 
-    const dbPayload = toDbFormat(item, table);
+    const dbPayload = toDbFormat(item, table, true);
     const { data, error } = await supabase.from(table).insert([dbPayload]).select().single();
     if (error) {
       console.error(`Supabase create error on table [${table}]:`, error.message);
@@ -277,7 +297,7 @@ export const supabaseStore = {
     const table = COLLECTION_TABLE_MAP[collectionName];
     if (!table) return null;
 
-    const dbPayload = toDbFormat(updates, table);
+    const dbPayload = toDbFormat(updates, table, false);
     delete dbPayload.id; // never overwrite primary key
     dbPayload.updated_at = new Date().toISOString();
 

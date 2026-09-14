@@ -42,6 +42,32 @@
               ]
             }
           ]
+        },
+        {
+          "id": "state_0b7d9b",
+          "name": "Karnataka",
+          "code": "KA",
+          "type": "state",
+          "cities": [
+            {
+              "id": "city_c211d2",
+              "name": "Bengaluru",
+              "code": "BLR",
+              "areas": [
+                "Electronic city",
+                "HSR"
+              ]
+            },
+            {
+              "id": "city_4d00e3",
+              "name": "Mysuru",
+              "code": "MYS",
+              "areas": [
+                "Hebbal",
+                "Bannimantap"
+              ]
+            }
+          ]
         }
       ]
     }
