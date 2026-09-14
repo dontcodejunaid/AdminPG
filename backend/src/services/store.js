@@ -185,7 +185,17 @@ class UnifiedStore {
     const locations = await this.getLocations();
     const reports = await this.findAll('reports');
     const payments = await this.findAll('payments');
-    const customers = await this.findAll('customers');
+    const [customers, profiles] = await Promise.all([
+      this.findAll('customers'),
+      this.findAll('adminUsers')
+    ]);
+
+    const seekerProfiles = (profiles || []).filter(p => p.role === 'Seeker' || p.role === 'Customer');
+    const uniqueCustomerKeys = new Set([
+      ...(customers || []).map(c => (c.email || c.phone || c.id).toLowerCase()),
+      ...seekerProfiles.map(sp => (sp.email || sp.phone || sp.id).toLowerCase())
+    ]);
+    const totalCustomers = uniqueCustomerKeys.size;
 
     const totalPgs = pgs.length;
     const activePgs = pgs.filter(p => p.status === 'Active').length;
@@ -221,7 +231,7 @@ class UnifiedStore {
       totalCities,
       totalEnquiries,
       todayEnquiries,
-      totalCustomers: customers.length,
+      totalCustomers,
       pendingReports,
       totalRevenue,
       recentPgs: pgs.slice(0, 5),

@@ -7,7 +7,43 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { search } = req.query;
-    let list = await store.findAll('customers');
+    const [customersList, profilesList] = await Promise.all([
+      store.findAll('customers'),
+      store.findAll('adminUsers')
+    ]);
+
+    const seekerProfiles = (profilesList || []).filter(
+      p => p.role === 'Seeker' || p.role === 'Customer'
+    );
+
+    // Merge seeker profiles that are not yet in customers list by email or phone
+    const mergedMap = new Map();
+
+    (customersList || []).forEach(c => {
+      const key = (c.email || c.phone || c.id).toLowerCase();
+      mergedMap.set(key, c);
+    });
+
+    seekerProfiles.forEach(sp => {
+      const key = (sp.email || sp.phone || sp.id).toLowerCase();
+      if (!mergedMap.has(key)) {
+        mergedMap.set(key, {
+          id: sp.id,
+          name: sp.name || 'Seeker',
+          email: sp.email || '',
+          phone: sp.phone || 'No phone',
+          city: sp.city || 'Kerala',
+          dateJoined: sp.createdAt ? sp.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
+          savedPgs: sp.savedPgs || [],
+          unlockedPgs: sp.unlockedPgs || [],
+          totalEnquiries: sp.totalEnquiries || 0,
+          totalPaid: sp.totalPaid || 0,
+          role: sp.role
+        });
+      }
+    });
+
+    let list = Array.from(mergedMap.values());
 
     if (search) {
       const q = search.toLowerCase();
