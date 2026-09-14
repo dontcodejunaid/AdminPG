@@ -24,7 +24,10 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
     Contacted: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
     Interested: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800',
     Visited: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
-    Closed: 'bg-brand-100 text-brand-800 border-brand-200 dark:bg-brand-950/80 dark:text-brand-300 dark:border-brand-800',
+    'Scheduled Visit': 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800 font-semibold',
+    Converted: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800 font-semibold',
+    Closed: 'bg-emerald-100 text-emerald-800 border-brand-200 dark:bg-brand-950/80 dark:text-brand-300 dark:border-brand-800',
+    Lost: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 font-semibold',
 
     // PG Types
     Boys: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 font-semibold',
