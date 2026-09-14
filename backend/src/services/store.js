@@ -135,6 +135,17 @@ class UnifiedStore {
     return this.getCollection('locations');
   }
 
+  async setLocations(locations) {
+    if (supabaseStore.isConfigured()) {
+      try {
+        await supabaseStore.setLocations(locations);
+      } catch (err) {
+        console.warn('Supabase setLocations failed:', err.message);
+      }
+    }
+    return this.setCollection('locations', locations);
+  }
+
   // CMS specific get/update
   async getCMS() {
     if (supabaseStore.isConfigured()) {

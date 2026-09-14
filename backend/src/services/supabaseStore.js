@@ -366,6 +366,74 @@ export const supabaseStore = {
     }
   },
 
+  async setLocations(locations) {
+    if (!this.isConfigured()) return null;
+    try {
+      const stateRows = [];
+      const cityRows = [];
+      const areaRows = [];
+
+      (locations || []).forEach(country => {
+        (country.states || []).forEach(state => {
+          const stateId = state.id || `state_${Math.random().toString(36).substring(2, 8)}`;
+          stateRows.push({
+            id: stateId,
+            name: state.name,
+            code: state.code || state.name.substring(0, 2).toUpperCase(),
+            country: country.name || 'India',
+            is_active: true
+          });
+
+          (state.cities || []).forEach((city, cityIdx) => {
+            const cityId = city.id || `city_${Math.random().toString(36).substring(2, 8)}`;
+            cityRows.push({
+              id: cityId,
+              state_id: stateId,
+              state_name: state.name,
+              name: city.name,
+              code: city.code || city.name.substring(0, 3).toUpperCase(),
+              display_order: cityIdx + 1,
+              is_active: true
+            });
+
+            (city.areas || []).forEach(area => {
+              const areaName = typeof area === 'string' ? area : area.name;
+              if (areaName) {
+                areaRows.push({
+                  id: `area_${Math.random().toString(36).substring(2, 8)}`,
+                  city_id: cityId,
+                  city_name: city.name,
+                  name: areaName,
+                  is_popular: true
+                });
+              }
+            });
+          });
+        });
+      });
+
+      // Clear existing locations in Supabase and replace with active dataset
+      await supabase.from('locations_areas').delete().neq('id', 'keep_none');
+      await supabase.from('locations_cities').delete().neq('id', 'keep_none');
+      await supabase.from('locations_states').delete().neq('id', 'keep_none');
+
+      if (stateRows.length > 0) {
+        await supabase.from('locations_states').insert(stateRows);
+      }
+      if (cityRows.length > 0) {
+        await supabase.from('locations_cities').insert(cityRows);
+      }
+      if (areaRows.length > 0) {
+        await supabase.from('locations_areas').insert(areaRows);
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Supabase setLocations error:', err.message);
+      return false;
+    }
+  },
+
   // CMS Content Adapter
   async getCMS() {
     if (!this.isConfigured()) return null;

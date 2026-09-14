@@ -7,7 +7,7 @@ const router = express.Router();
 // GET /api/locations
 router.get('/', async (req, res) => {
   try {
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
     res.json({ success: true, data: locations });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 // Helper flat list of all states, cities and areas for dropdowns
 router.get('/flat', async (req, res) => {
   try {
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
     const flatStates = [];
     const flatCities = [];
     const flatAreas = [];
@@ -53,7 +53,7 @@ router.post('/state', async (req, res) => {
     const { name, code, countryName = "India" } = req.body;
     if (!name) return res.status(400).json({ success: false, error: 'State name is required' });
 
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
     let country = locations.find(c => c.name.toLowerCase() === countryName.toLowerCase()) || locations[0];
 
     if (!country.states) country.states = [];
@@ -66,7 +66,7 @@ router.post('/state', async (req, res) => {
     };
 
     country.states.push(newState);
-    await store.setCollection('locations', locations);
+    await store.setLocations(locations);
 
     res.status(201).json({ success: true, data: newState });
   } catch (err) {
@@ -82,7 +82,7 @@ router.post('/city', async (req, res) => {
       return res.status(400).json({ success: false, error: 'State name and City name are required' });
     }
 
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
     let stateFound = null;
 
     for (const c of locations) {
@@ -106,7 +106,7 @@ router.post('/city', async (req, res) => {
     };
 
     stateFound.cities.push(newCity);
-    await store.setCollection('locations', locations);
+    await store.setLocations(locations);
 
     res.status(201).json({ success: true, data: newCity });
   } catch (err) {
@@ -122,7 +122,7 @@ router.post('/area', async (req, res) => {
       return res.status(400).json({ success: false, error: 'City name and Area name are required' });
     }
 
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
     let cityFound = null;
 
     for (const c of locations) {
@@ -143,7 +143,7 @@ router.post('/area', async (req, res) => {
     if (!cityFound.areas) cityFound.areas = [];
     if (!cityFound.areas.includes(areaName)) {
       cityFound.areas.push(areaName);
-      await store.setCollection('locations', locations);
+      await store.setLocations(locations);
     }
 
     res.status(201).json({ success: true, data: { cityName, areaName, areas: cityFound.areas } });
@@ -156,7 +156,7 @@ router.post('/area', async (req, res) => {
 router.delete('/city/:cityId', async (req, res) => {
   try {
     const { cityId } = req.params;
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
 
     locations.forEach(c => {
       (c.states || []).forEach(st => {
@@ -166,7 +166,7 @@ router.delete('/city/:cityId', async (req, res) => {
       });
     });
 
-    await store.setCollection('locations', locations);
+    await store.setLocations(locations);
     res.json({ success: true, message: 'City deleted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -177,7 +177,7 @@ router.delete('/city/:cityId', async (req, res) => {
 router.delete('/area', async (req, res) => {
   try {
     const { cityName, areaName } = req.body;
-    const locations = await store.findAll('locations');
+    const locations = await store.getLocations();
 
     locations.forEach(c => {
       (c.states || []).forEach(st => {
@@ -189,7 +189,7 @@ router.delete('/area', async (req, res) => {
       });
     });
 
-    await store.setCollection('locations', locations);
+    await store.setLocations(locations);
     res.json({ success: true, message: 'Area deleted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
