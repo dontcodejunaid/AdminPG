@@ -25,12 +25,23 @@ export const AppProvider = ({ children }) => {
     }
   });
 
-  const [activeTab, setActiveTabState] = useState('dashboard');
+  const [activeTab, setActiveTabState] = useState(() => {
+    try {
+      return localStorage.getItem('keralapg_active_tab') || 'dashboard';
+    } catch {
+      return 'dashboard';
+    }
+  });
   const [pageFilters, setPageFilters] = useState({});
 
   const setActiveTab = (tab, filters = {}) => {
     setPageFilters(filters || {});
     setActiveTabState(tab);
+    try {
+      localStorage.setItem('keralapg_active_tab', tab);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const [darkMode, setDarkMode] = useState(false);
@@ -132,7 +143,7 @@ export const AppProvider = ({ children }) => {
 
             if (res.success && res.data) {
               const matchedUser = res.data;
-              login(matchedUser, res.token || session.access_token);
+              login(matchedUser, res.token || session.access_token, true);
               return;
             }
           } catch (syncErr) {
@@ -177,7 +188,7 @@ export const AppProvider = ({ children }) => {
                     canManageUsers: isSuper
                   }
                 };
-                login(mappedProfile, session.access_token);
+                login(mappedProfile, session.access_token, true);
                 return;
               }
             }
@@ -210,7 +221,7 @@ export const AppProvider = ({ children }) => {
                 canManageUsers: true
               }
             };
-            login(superUser, session.access_token);
+            login(superUser, session.access_token, true);
             return;
           }
 
@@ -237,7 +248,7 @@ export const AppProvider = ({ children }) => {
               canManageUsers: false
             }
           };
-          login(fallbackUser, session.access_token);
+          login(fallbackUser, session.access_token, true);
         }
       });
       return () => subscription?.unsubscribe();
@@ -251,15 +262,18 @@ export const AppProvider = ({ children }) => {
   // Enforce role-based access to tabs (e.g. only Super Admin can access 'users')
   useEffect(() => {
     if (activeTab === 'users' && currentUser?.role !== 'Super Admin') {
-      setActiveTabState('dashboard');
+      setActiveTab('dashboard');
     }
   }, [activeTab, currentUser?.role]);
 
-  // Login Handler - Always opens dashboard by default
-  const login = (userData, token) => {
+  // Login Handler
+  const login = (userData, token, isSilentAuth = false) => {
     setCurrentUser(userData);
     setIsAuthenticated(true);
-    setActiveTabState('dashboard');
+    if (!isSilentAuth) {
+      const savedTab = localStorage.getItem('keralapg_active_tab') || 'dashboard';
+      setActiveTabState(savedTab);
+    }
     setPageFilters({});
     try {
       localStorage.setItem('keralapg_auth_user', JSON.stringify(userData));
@@ -267,7 +281,9 @@ export const AppProvider = ({ children }) => {
     } catch (e) {
       console.error('Storage error:', e);
     }
-    showToast(`Welcome back, ${userData.name}!`, 'success');
+    if (!isSilentAuth) {
+      showToast(`Welcome back, ${userData.name}!`, 'success');
+    }
   };
 
   // Logout Handler
@@ -279,6 +295,7 @@ export const AppProvider = ({ children }) => {
     try {
       localStorage.removeItem('keralapg_auth_user');
       localStorage.removeItem('keralapg_auth_token');
+      localStorage.removeItem('keralapg_active_tab');
     } catch (e) {
       console.error('Storage error:', e);
     }
