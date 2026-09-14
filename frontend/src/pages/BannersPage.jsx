@@ -21,6 +21,7 @@ export const BannersPage = () => {
   const { showToast, currentUser, triggerRefresh, confirm } = useApp();
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [availableCities, setAvailableCities] = useState(['All Cities', 'Kochi', 'Bangalore', 'Trivandrum', 'Kozhikode', 'Thrissur']);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,8 +53,23 @@ export const BannersPage = () => {
     }
   };
 
+  const fetchCities = async () => {
+    try {
+      const locRes = await api.getLocations();
+      if (locRes?.data && Array.isArray(locRes.data)) {
+        const cities = locRes.data.flatMap(s => (s.cities || []).map(c => c.name || c));
+        if (cities.length > 0) {
+          setAvailableCities(['All Cities', ...Array.from(new Set(cities))]);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch dynamic locations:', e);
+    }
+  };
+
   useEffect(() => {
     fetchBanners();
+    fetchCities();
   }, []);
 
   const handleOpenAdd = () => {
@@ -334,12 +350,10 @@ export const BannersPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target City</label>
-              <input
-                type="text"
-                value={formData.city}
+              <CustomSelect
+                value={formData.city || 'All Cities'}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="All Cities or Kochi / Bangalore"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                options={availableCities.map(c => ({ value: c, label: c }))}
               />
             </div>
             <div>
