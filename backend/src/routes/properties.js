@@ -163,6 +163,13 @@ router.post('/', async (req, res) => {
     };
 
     const created = await store.create('properties', newPg);
+
+    if (payload.city && payload.area) {
+      try {
+        await store.addArea({ cityName: payload.city, areaName: payload.area, stateName: payload.state });
+      } catch (e) {}
+    }
+
     res.status(201).json({ success: true, data: created });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -174,6 +181,13 @@ router.put('/:id', async (req, res) => {
   try {
     const updated = await store.update('properties', req.params.id, req.body);
     if (!updated) return res.status(404).json({ success: false, error: 'PG Not Found' });
+
+    if (req.body.city && req.body.area) {
+      try {
+        await store.addArea({ cityName: req.body.city, areaName: req.body.area, stateName: req.body.state });
+      } catch (e) {}
+    }
+
     res.json({ success: true, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

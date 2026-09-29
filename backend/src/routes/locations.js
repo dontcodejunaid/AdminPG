@@ -4,11 +4,59 @@ import { store } from '../services/store.js';
 
 const router = express.Router();
 
-// GET /api/locations
+// GET /api/locations (Dynamically merged with all property areas & cities)
 router.get('/', async (req, res) => {
   try {
     const locations = await store.getLocations();
-    res.json({ success: true, data: locations });
+    const properties = await store.findAll('properties');
+
+    // Dynamically clone and merge any missing states, cities, or areas present in properties
+    const merged = JSON.parse(JSON.stringify(locations || []));
+    if (merged.length === 0) {
+      merged.push({ id: 'loc_in', name: 'India', code: 'IN', states: [] });
+    }
+    const country = merged[0];
+    if (!country.states) country.states = [];
+
+    (properties || []).forEach(p => {
+      if (!p.state) return;
+      let stateObj = country.states.find(s => s.name?.toLowerCase() === p.state.toLowerCase());
+      if (!stateObj) {
+        stateObj = {
+          id: `state_${p.state.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+          name: p.state,
+          code: p.state.substring(0, 2).toUpperCase(),
+          type: 'state',
+          cities: []
+        };
+        country.states.push(stateObj);
+      }
+      if (!stateObj.cities) stateObj.cities = [];
+
+      if (p.city) {
+        let cityObj = stateObj.cities.find(c => c.name?.toLowerCase() === p.city.toLowerCase());
+        if (!cityObj) {
+          cityObj = {
+            id: `city_${p.city.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+            name: p.city,
+            code: p.city.substring(0, 3).toUpperCase(),
+            areas: []
+          };
+          stateObj.cities.push(cityObj);
+        }
+        if (!cityObj.areas) cityObj.areas = [];
+
+        if (p.area) {
+          const areaTrimmed = p.area.trim();
+          const exists = cityObj.areas.some(a => (typeof a === 'string' ? a : a.name)?.toLowerCase() === areaTrimmed.toLowerCase());
+          if (!exists) {
+            cityObj.areas.push(areaTrimmed);
+          }
+        }
+      }
+    });
+
+    res.json({ success: true, data: merged });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
