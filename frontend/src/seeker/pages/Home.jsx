@@ -21,6 +21,7 @@ import RoomDetailsModal from '../components/BookingFlow/RoomDetailsModal';
 import StayPlanModal from '../components/BookingFlow/StayPlanModal';
 import FindSpaceLogo from '../components/FindSpaceLogo';
 import { locations } from '../data/locationsData';
+import { transformDbProperty, registerDynamicFacilities } from '../data/pgListingsData';
 import { api } from '../../services/api';
 
 export default function Home({ onOpenBooking, onSelectRoom }) {
@@ -31,6 +32,14 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
 
   useEffect(() => {
     let isMounted = true;
+    api.getFacilities()
+      .then(res => {
+        if (res && res.data && isMounted) {
+          registerDynamicFacilities(res.data);
+        }
+      })
+      .catch(() => {});
+
     api.getProperties()
       .then(res => {
         if (res && res.data && isMounted) {
@@ -143,102 +152,173 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
     },
   ];
 
-  // Curated room plans preview
-  const featuredRooms = [
-    {
-      id: '1bhk-fully-furnished',
-      title: '1 BHK FULLY FURNISHED',
-      type: '1bhk',
-      price: getDbPrice('1 BHK', '₹18,000'),
-      period: 'month',
-      image: '/images/1r.jpeg',
-      images: aafa1BhkImages,
-      badge: '18k Rent • 18k Deposit',
-      desc: 'Aafa Suites Hotel Near By Infosys, 3rd Cross Rd, Krishna Reddy Layout, Electronic City. Fully furnished 1 BHK with hall, bed & kitchenette.',
-      highlights: ['18k Rent • 18k Deposit', 'Near By Infosys, Electronic City', '1 BHK Fully Furnished', 'Power Back Up & WiFi']
-    },
-    {
-      id: 'daily-special',
-      title: 'Daily Stay Special',
-      type: 'daily',
-      price: getDbPrice('Daily Stay', '₹499'),
-      period: 'day',
-      image: '/images/7pg.jpeg',
-      images: [
-        '/images/7pg.jpeg',
-        '/images/8pg.jpeg'
-      ],
-      badge: 'Breakfast Free',
-      desc: 'Clean furnished room + free hot Kerala breakfast (Puttu/Dosa/Idli) every morning near HCL Gate 2.',
-      highlights: ['Hot Kerala Breakfast', 'High-Speed WiFi', 'Near HCL Gate 2', 'Zero Security Deposit']
-    },
-    {
-      id: '1-sharing',
-      title: '1 Sharing (Private Suite)',
-      type: 'private',
-      price: getDbPrice('1 Sharing', '₹11,499'),
-      period: 'month',
-      image: '/images/1pg.jpeg',
-      images: [
-        '/images/1pg.jpeg',
-        '/images/8pg.jpeg'
-      ],
-      badge: '100% Private',
-      desc: 'Dedicated private single room with attached bath, study desk, power backup, and 3 times Kerala food.',
-      highlights: ['3x Daily Kerala Meals', 'Attached Western Bath', 'Power Back Up', 'High-Speed WiFi']
-    },
-    {
-      id: '2-sharing',
-      title: '2 Sharing (Twin Room)',
-      type: 'sharing',
-      price: getDbPrice('2 Sharing', '₹7,499'),
-      period: 'month',
-      image: '/images/7pg.jpeg',
-      images: [
-        '/images/7pg.jpeg',
-        '/images/8pg.jpeg'
-      ],
-      badge: 'Most Popular',
-      desc: 'Spacious twin sharing room with wardrobe storage, lounge access, washing machine, and 3 times meals.',
-      highlights: ['3x Daily Kerala Food', 'Lounge & Entertainment', 'Washing Machine', '24/7 Hot Water']
-    },
-    {
-      id: '3-sharing',
-      title: '3 Sharing (Triple Room)',
-      type: 'sharing',
-      price: getDbPrice('3 Sharing', '₹5,999'),
-      period: 'month',
-      image: '/images/3sharing.png',
-      images: [
-        '/images/3sharing.png',
-        '/images/8pg.jpeg'
-      ],
-      badge: 'Value Saver',
-      desc: 'Comfortable 3 sharing room setup in Sannidhi layout, Jigani with full facilities and caretaker support.',
-      highlights: ['3x Daily Kerala Food', 'Power Back Up', 'Self Cooking Area', 'High-Speed WiFi']
-    },
-    {
-      id: '4-sharing',
-      title: '4 Sharing (Quad Room)',
-      type: 'sharing',
-      price: getDbPrice('4 Sharing', '₹4,999'),
-      period: 'month',
-      image: '/images/4share.png',
-      images: [
-        '/images/4share.png',
-        '/images/8pg.jpeg'
-      ],
-      badge: 'Budget Saver',
-      desc: 'Affordable 4 sharing room with individual charging points, power backup, and 3 times fresh meals.',
-      highlights: ['3x Daily Kerala Meals', 'CCTV & Caretaker', 'Washing Machine', 'WiFi & Power Backup']
+  // Curated room plans dynamically derived from Admin database properties
+  const featuredRooms = useMemo(() => {
+    if (dbProps && dbProps.length > 0) {
+      // Prioritize featured properties, then by featuredOrder or creation
+      const sorted = [...dbProps].sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return (Number(a.featuredOrder) || 0) - (Number(b.featuredOrder) || 0);
+      });
+
+      return sorted.map((p, idx) => {
+        const transformed = transformDbProperty(p);
+        const nameLower = (p.name || '').toLowerCase();
+        const descLower = (p.description || '').toLowerCase();
+        const is1BHK = nameLower.includes('1bhk') || nameLower.includes('1 bhk') || descLower.includes('1bhk') || transformed.roomType === '1bhk';
+        const isDaily = nameLower.includes('daily') || descLower.includes('daily') || (p.charges?.dayRate && !p.rent);
+        
+        let type = 'sharing';
+        if (is1BHK) type = '1bhk';
+        else if (isDaily) type = 'daily';
+        else if (transformed.sharing === 1 || transformed.roomType === 'single' || nameLower.includes('1 sharing') || nameLower.includes('single') || nameLower.includes('private')) type = 'private';
+        else type = 'sharing';
+
+        const photos = (Array.isArray(p.photos) && p.photos.length > 0)
+          ? p.photos
+          : [
+              is1BHK ? '/images/1r.jpeg' : isDaily ? '/images/7pg.jpeg' : `/images/${((idx % 8) + 1)}pg.jpeg`
+            ];
+
+        const defaultBadge = is1BHK ? '18k Rent • 18k Deposit' : (isDaily ? 'Breakfast Free' : (type === 'private' ? '100% Private' : 'Most Popular'));
+        const badge = p.badge || transformed.badge || defaultBadge;
+
+        const defaultHighlights = is1BHK
+          ? ['18k Rent • 18k Deposit', 'Near By Infosys, Electronic City', '1 BHK Fully Furnished', 'Power Back Up & WiFi']
+          : isDaily
+          ? ['Hot Kerala Breakfast', 'High-Speed WiFi', 'Near HCL Gate 2', 'Zero Security Deposit']
+          : [
+              '3x Daily Kerala Meals',
+              'Attached Western Bath',
+              'Power Back Up & Wi-Fi',
+              'Washing Machine & CCTV'
+            ];
+
+        const highlights = (Array.isArray(p.highlights) && p.highlights.length > 0)
+          ? p.highlights
+          : (p.tagline ? [p.tagline, ...(transformed.facilities || []).slice(0, 3)] : defaultHighlights);
+
+        const priceDisplay = isDaily
+          ? (p.charges?.dayRate ? `₹${Number(p.charges.dayRate).toLocaleString('en-IN')}` : (transformed.stayRates?.dayDisplay || '₹499'))
+          : transformed.priceDisplay;
+
+        return {
+          id: p.id || `prop-${idx}`,
+          title: p.name || 'Curated Living Sanctuary',
+          type,
+          price: priceDisplay,
+          period: isDaily ? 'day' : 'month',
+          image: photos[0],
+          images: photos,
+          badge,
+          desc: p.description || p.fullAddress || p.area || 'Premium coliving sanctuary with homestyle Kerala dining, high-speed Wi-Fi, and 24/7 caretaker support.',
+          highlights,
+          rawProperty: p,
+          transformed,
+        };
+      });
     }
-  ];
+
+    // Fallback if dbProps hasn't finished loading
+    return [
+      {
+        id: '1bhk-fully-furnished',
+        title: '1 BHK FULLY FURNISHED',
+        type: '1bhk',
+        price: '₹18,000',
+        period: 'month',
+        image: '/images/1r.jpeg',
+        images: aafa1BhkImages,
+        badge: '18k Rent • 18k Deposit',
+        desc: 'Aafa Suites Hotel Near By Infosys, 3rd Cross Rd, Krishna Reddy Layout, Electronic City. Fully furnished 1 BHK with hall, bed & kitchenette.',
+        highlights: ['18k Rent • 18k Deposit', 'Near By Infosys, Electronic City', '1 BHK Fully Furnished', 'Power Back Up & WiFi']
+      },
+      {
+        id: 'daily-special',
+        title: 'Daily Stay Special',
+        type: 'daily',
+        price: '₹499',
+        period: 'day',
+        image: '/images/7pg.jpeg',
+        images: [
+          '/images/7pg.jpeg',
+          '/images/8pg.jpeg'
+        ],
+        badge: 'Breakfast Free',
+        desc: 'Clean furnished room + free hot Kerala breakfast (Puttu/Dosa/Idli) every morning near HCL Gate 2.',
+        highlights: ['Hot Kerala Breakfast', 'High-Speed WiFi', 'Near HCL Gate 2', 'Zero Security Deposit']
+      },
+      {
+        id: '1-sharing',
+        title: '1 Sharing (Private Suite)',
+        type: 'private',
+        price: '₹11,499',
+        period: 'month',
+        image: '/images/1pg.jpeg',
+        images: [
+          '/images/1pg.jpeg',
+          '/images/8pg.jpeg'
+        ],
+        badge: '100% Private',
+        desc: 'Dedicated private single room with attached bath, study desk, power backup, and 3 times Kerala food.',
+        highlights: ['3x Daily Kerala Meals', 'Attached Western Bath', 'Power Back Up', 'High-Speed WiFi']
+      },
+      {
+        id: '2-sharing',
+        title: '2 Sharing (Twin Room)',
+        type: 'sharing',
+        price: '₹7,499',
+        period: 'month',
+        image: '/images/7pg.jpeg',
+        images: [
+          '/images/7pg.jpeg',
+          '/images/8pg.jpeg'
+        ],
+        badge: 'Most Popular',
+        desc: 'Spacious twin sharing room with wardrobe storage, lounge access, washing machine, and 3 times meals.',
+        highlights: ['3x Daily Kerala Food', 'Lounge & Entertainment', 'Washing Machine', '24/7 Hot Water']
+      },
+      {
+        id: '3-sharing',
+        title: '3 Sharing (Triple Room)',
+        type: 'sharing',
+        price: '₹5,999',
+        period: 'month',
+        image: '/images/3sharing.png',
+        images: [
+          '/images/3sharing.png',
+          '/images/8pg.jpeg'
+        ],
+        badge: 'Value Saver',
+        desc: 'Comfortable 3 sharing room setup in Sannidhi layout, Jigani with full facilities and caretaker support.',
+        highlights: ['3x Daily Kerala Food', 'Power Back Up', 'Self Cooking Area', 'High-Speed WiFi']
+      },
+      {
+        id: '4-sharing',
+        title: '4 Sharing (Quad Room)',
+        type: 'sharing',
+        price: '₹4,999',
+        period: 'month',
+        image: '/images/4share.png',
+        images: [
+          '/images/4share.png',
+          '/images/8pg.jpeg'
+        ],
+        badge: 'Budget Saver',
+        desc: 'Affordable 4 sharing room with individual charging points, power backup, and 3 times fresh meals.',
+        highlights: ['3x Daily Kerala Meals', 'CCTV & Caretaker', 'Washing Machine', 'WiFi & Power Backup']
+      }
+    ];
+  }, [dbProps]);
 
   const filteredFeaturedRooms = roomCategoryTab === 'all'
     ? featuredRooms
     : roomCategoryTab === 'sharing'
-    ? featuredRooms.filter((r) => r.type === 'sharing')
-    : featuredRooms.filter((r) => r.type === roomCategoryTab);
+    ? featuredRooms.filter((r) => r.type === 'sharing' || (r.transformed?.sharing && r.transformed.sharing > 1))
+    : roomCategoryTab === 'daily'
+    ? featuredRooms.filter((r) => r.type === 'daily' || r.period === 'day')
+    : featuredRooms.filter((r) => r.type === roomCategoryTab || (roomCategoryTab === 'private' && (r.type === '1bhk' || r.type === 'private')));
 
   // FAQ Accordion Data
   const faqs = [
@@ -370,7 +450,11 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.35, delay: idx * 0.04 }}
               className="glass-card glass-card-hover rounded-3xl p-5 border border-white/10 flex flex-col justify-between group overflow-hidden cursor-pointer"
-              onClick={() => onSelectRoom && onSelectRoom(room)}
+              onClick={() => {
+                const roomObj = room.transformed || (room.rawProperty ? transformDbProperty(room.rawProperty) : room);
+                setSelectedRoomForDetails(roomObj);
+                if (onSelectRoom) onSelectRoom(roomObj);
+              }}
             >
               <div>
                 <div className="relative h-48 sm:h-52 rounded-2xl overflow-hidden mb-4 border border-white/10 bg-[#080d1a]">
@@ -419,8 +503,12 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
                 </div>
 
                 <button
-                  onClick={() => onOpenBooking(room.title)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4A64A] to-amber-500 text-[#0B1220] font-bold text-xs shadow-md shadow-[#D4A64A]/25 hover:scale-105 transition-all whitespace-nowrap shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const roomObj = room.transformed || (room.rawProperty ? transformDbProperty(room.rawProperty) : room);
+                    setSelectedRoomForPlan(roomObj);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4A64A] to-amber-500 text-[#0B1220] font-bold text-xs shadow-md shadow-[#D4A64A]/25 hover:scale-105 transition-all whitespace-nowrap shrink-0 cursor-pointer"
                   data-cursor="expand"
                 >
                   Book Now
