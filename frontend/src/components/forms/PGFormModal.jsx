@@ -45,6 +45,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
   // Custom highlight input state
   const [newHighlight, setNewHighlight] = useState('');
+  const [isCustomArea, setIsCustomArea] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -261,9 +262,28 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
   }, [isOpen, pgToEdit]);
 
   // Derived filtered cities and areas based on selected state and city
-  const filteredCities = flatLocations.cities.filter(c => c.state?.toLowerCase() === formData.state?.toLowerCase());
-  const currentCityObj = flatLocations.cities.find(c => c.name?.toLowerCase() === formData.city?.toLowerCase());
-  const filteredAreas = currentCityObj ? (currentCityObj.areas || []) : [];
+  const filteredCities = (flatLocations.cities || []).filter(c => !formData.state || c.state?.toLowerCase() === formData.state?.toLowerCase());
+  const currentCityObj = (flatLocations.cities || []).find(c => c.name?.toLowerCase() === formData.city?.toLowerCase());
+  const cityAreas = currentCityObj ? (currentCityObj.areas || []) : [];
+  const allKnownAreas = (flatLocations.areas || []).map(a => typeof a === 'string' ? a : a.name);
+  const baseAreas = cityAreas.length > 0 ? cityAreas : allKnownAreas;
+  const uniqueAreas = Array.from(new Set([
+    ...baseAreas,
+    formData.area,
+    'Electronic City Phase 1',
+    'Electronic City Phase 2',
+    'Jigani Industrial Area',
+    'Kakkanad',
+    'Infopark',
+    'Kaloor',
+    'Edapally',
+    'Whitefield',
+    'Marathahalli',
+    'HSR Layout',
+    'Koramangala',
+    'BTM Layout',
+    'Ramanagaram'
+  ].filter(Boolean)));
 
   // Add a new room sharing type
   const handleAddRoom = () => {
@@ -647,20 +667,34 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Area / Locality</label>
-                <input
-                  list="area-list"
-                  type="text"
-                  value={formData.area}
-                  onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                  placeholder="e.g. Kakkanad or Electronic City"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-                />
-                <datalist id="area-list">
-                  {filteredAreas.map(a => (
-                    <option key={a} value={a} />
-                  ))}
-                </datalist>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">Area / Locality</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomArea(!isCustomArea)}
+                    className="text-[10px] text-brand-600 dark:text-brand-400 hover:underline cursor-pointer font-medium"
+                  >
+                    {isCustomArea ? 'Select from list' : '+ Type custom'}
+                  </button>
+                </div>
+                {isCustomArea ? (
+                  <input
+                    type="text"
+                    value={formData.area}
+                    onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                    placeholder="Type custom locality name..."
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none font-medium"
+                    autoFocus
+                  />
+                ) : (
+                  <CustomSelect
+                    value={formData.area}
+                    placeholder="Select Area / Locality"
+                    searchable={true}
+                    onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                    options={uniqueAreas.map(a => ({ value: a, label: a }))}
+                  />
+                )}
               </div>
             </div>
           </div>

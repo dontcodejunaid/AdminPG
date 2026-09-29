@@ -219,9 +219,20 @@ export const CustomSelect = ({
 
           {/* Options List */}
           <div className="space-y-0.5 overflow-y-auto" style={{ maxHeight: `${coords.maxHeight - (searchable ? 55 : 15)}px` }}>
-            {filteredOptions.length === 0 ? (
+            {searchTerm.trim() && !normalizedOptions.some(o => o.label.toLowerCase() === searchTerm.trim().toLowerCase()) && (
+              <button
+                type="button"
+                onClick={() => handleSelect(searchTerm.trim())}
+                className="w-full flex items-center justify-between px-3 py-2 mb-1 rounded-xl text-xs text-left bg-brand-50/60 hover:bg-brand-50 dark:bg-brand-950/40 dark:hover:bg-brand-950/70 text-brand-700 dark:text-brand-300 font-semibold border border-dashed border-brand-300 dark:border-brand-700 transition-all cursor-pointer"
+              >
+                <span className="truncate">Use &ldquo;{searchTerm.trim()}&rdquo;</span>
+                <span className="text-[10px] text-brand-500 font-mono">+ Select</span>
+              </button>
+            )}
+
+            {filteredOptions.length === 0 && !searchTerm.trim() ? (
               <div className="p-3 text-center text-xs text-slate-400">
-                No matching options
+                No options available
               </div>
             ) : (
               filteredOptions.map((opt) => {
