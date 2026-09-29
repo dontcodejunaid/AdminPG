@@ -261,28 +261,18 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     }
   }, [isOpen, pgToEdit]);
 
-  // Derived filtered cities and areas based on selected state and city
+  // Derived filtered cities and areas based on selected state and city completely from database
   const filteredCities = (flatLocations.cities || []).filter(c => !formData.state || c.state?.toLowerCase() === formData.state?.toLowerCase());
   const currentCityObj = (flatLocations.cities || []).find(c => c.name?.toLowerCase() === formData.city?.toLowerCase());
   const cityAreas = currentCityObj ? (currentCityObj.areas || []) : [];
+  const cityFilteredAreas = (flatLocations.areas || [])
+    .filter(a => !formData.city || (typeof a === 'object' && a.city?.toLowerCase() === formData.city?.toLowerCase()))
+    .map(a => typeof a === 'string' ? a : a.name);
   const allKnownAreas = (flatLocations.areas || []).map(a => typeof a === 'string' ? a : a.name);
-  const baseAreas = cityAreas.length > 0 ? cityAreas : allKnownAreas;
+  const baseAreas = cityAreas.length > 0 ? cityAreas : (cityFilteredAreas.length > 0 ? cityFilteredAreas : allKnownAreas);
   const uniqueAreas = Array.from(new Set([
     ...baseAreas,
     formData.area,
-    'Electronic City Phase 1',
-    'Electronic City Phase 2',
-    'Jigani Industrial Area',
-    'Kakkanad',
-    'Infopark',
-    'Kaloor',
-    'Edapally',
-    'Whitefield',
-    'Marathahalli',
-    'HSR Layout',
-    'Koramangala',
-    'BTM Layout',
-    'Ramanagaram'
   ].filter(Boolean)));
 
   // Add a new room sharing type

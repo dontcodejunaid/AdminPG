@@ -14,31 +14,81 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Helper flat list of all states, cities and areas for dropdowns
+// Helper flat list of all states, cities and areas for dropdowns (dynamically aggregated from Locations database & Properties)
 router.get('/flat', async (req, res) => {
   try {
     const locations = await store.getLocations();
-    const flatStates = [];
-    const flatCities = [];
+    const properties = await store.findAll('properties');
     const flatAreas = [];
 
-    locations.forEach(country => {
+    const stateMap = new Map();
+    const cityMap = new Map();
+    const areaSet = new Set();
+
+    (locations || []).forEach(country => {
       (country.states || []).forEach(state => {
-        flatStates.push({ id: state.id, name: state.name, country: country.name });
+        if (state.name && !stateMap.has(state.name.toLowerCase())) {
+          stateMap.set(state.name.toLowerCase(), { id: state.id, name: state.name, country: country.name });
+        }
         (state.cities || []).forEach(city => {
-          flatCities.push({ id: city.id, name: city.name, state: state.name, country: country.name, areas: city.areas || [] });
+          if (city.name && !cityMap.has(`${state.name}_${city.name}`.toLowerCase())) {
+            cityMap.set(`${state.name}_${city.name}`.toLowerCase(), {
+              id: city.id,
+              name: city.name,
+              state: state.name,
+              country: country.name,
+              areas: city.areas || []
+            });
+          }
           (city.areas || []).forEach(area => {
-            flatAreas.push({ name: area, city: city.name, state: state.name });
+            if (area) {
+              const key = `${state.name}_${city.name}_${area}`.toLowerCase();
+              if (!areaSet.has(key)) {
+                areaSet.add(key);
+                flatAreas.push({ name: area, city: city.name, state: state.name });
+              }
+            }
           });
         });
       });
     });
 
+    // Dynamically include any states, cities, or areas present on existing properties in database
+    (properties || []).forEach(p => {
+      if (p.state && !stateMap.has(p.state.toLowerCase())) {
+        stateMap.set(p.state.toLowerCase(), { id: `st_${Date.now()}_${Math.random()}`, name: p.state, country: 'India' });
+      }
+      if (p.city) {
+        const cityKey = `${p.state || ''}_${p.city}`.toLowerCase();
+        if (!cityMap.has(cityKey)) {
+          cityMap.set(cityKey, {
+            id: `ct_${Date.now()}_${Math.random()}`,
+            name: p.city,
+            state: p.state || '',
+            country: 'India',
+            areas: p.area ? [p.area] : []
+          });
+        } else if (p.area) {
+          const cObj = cityMap.get(cityKey);
+          if (!cObj.areas.includes(p.area)) {
+            cObj.areas.push(p.area);
+          }
+        }
+      }
+      if (p.area) {
+        const aKey = `${p.state || ''}_${p.city || ''}_${p.area}`.toLowerCase();
+        if (!areaSet.has(aKey)) {
+          areaSet.add(aKey);
+          flatAreas.push({ name: p.area, city: p.city || '', state: p.state || '' });
+        }
+      }
+    });
+
     res.json({
       success: true,
       data: {
-        states: flatStates,
-        cities: flatCities,
+        states: Array.from(stateMap.values()),
+        cities: Array.from(cityMap.values()),
         areas: flatAreas
       }
     });
