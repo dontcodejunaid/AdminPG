@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from './context/AppContext';
-import { Sidebar } from './components/layout/Sidebar';
-import { Header } from './components/layout/Header';
+import { AdminLayout } from './components/layout/AdminLayout';
 import { ToastContainer } from './components/common/Toast';
-import { PGFormModal } from './components/forms/PGFormModal';
 
 // Auth
 import { LoginPage } from './pages/LoginPage';
 
-import { SeekerPortalPage } from './pages/SeekerPortalPage';
+// Unified Seeker Application (Customer / Public Website)
+import { SeekerApp } from './seeker/SeekerApp';
 
-// Pages for all 15 modules
+// Admin Modules
 import { DashboardHome } from './pages/DashboardHome';
 import { PropertiesPage } from './pages/PropertiesPage';
 import { LocationsPage } from './pages/LocationsPage';
@@ -27,29 +27,20 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
 
 export function App() {
-  const { activeTab, isAuthenticated, currentUser } = useApp();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, currentUser } = useApp();
   const [isPgModalOpen, setIsPgModalOpen] = useState(false);
   const [pgToEdit, setPgToEdit] = useState(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // If user is not signed in, show the Universal Login Page
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
-
-  // Check if user is an Admin vs Seeker/Customer
-  const roleLower = (currentUser?.role || '').toLowerCase().trim();
-  const isAdminRole = roleLower === 'super admin' || roleLower === 'admin' || roleLower === 'staff' || roleLower === 'property manager';
-  const isCustomerUser = !isAdminRole || ['seeker', 'customer', 'user', 'pg seeker', 'tenant', 'guest'].includes(roleLower);
-
-  if (isCustomerUser) {
-    return (
-      <>
-        <SeekerPortalPage />
-        <ToastContainer />
-      </>
-    );
-  }
+  // Redirect legacy hash '#admin' to '/admin'
+  useEffect(() => {
+    if (window.location.hash === '#admin') {
+      window.location.hash = '';
+      navigate('/admin', { replace: true });
+    }
+  }, [navigate]);
 
   const handleOpenNewPg = () => {
     setPgToEdit(null);
@@ -61,73 +52,65 @@ export function App() {
     setIsPgModalOpen(true);
   };
 
-  const renderActivePage = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />;
-      case 'properties':
-        return <PropertiesPage onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />;
-      case 'locations':
-        return <LocationsPage />;
-      case 'facilities':
-        return <FacilitiesPage />;
-      case 'verifications':
-        return <VerificationPage onEditPg={handleOpenEditPg} />;
-      case 'enquiries':
-        return <EnquiriesPage />;
-      case 'customers':
-        return <CustomersPage />;
-      case 'reported':
-        return <ReportedPage onEditPg={handleOpenEditPg} />;
-      case 'featured':
-        return <FeaturedPage onEditPg={handleOpenEditPg} />;
-      case 'payments':
-        return <PaymentsPage />;
-      case 'cms':
-        return <PagesCmsPage />;
-      case 'banners':
-        return <BannersPage />;
-      case 'notifications':
-        return <NotificationsPage />;
-      case 'users':
-        return currentUser?.role === 'Super Admin' 
-          ? <AdminUsersPage /> 
-          : <DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />;
-      default:
-        return <DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex">
-      {/* Sidebar Navigation */}
-      <Sidebar
-        isMobileOpen={isMobileMenuOpen}
-        setIsMobileOpen={setIsMobileMenuOpen}
-        onOpenNewPgModal={handleOpenNewPg}
-      />
+    <>
+      <Routes>
+        {/* Admin Portal Hierarchy */}
+        <Route
+          path="/admin"
+          element={
+            <AdminLayout
+              onOpenNewPg={handleOpenNewPg}
+              onEditPg={handleOpenEditPg}
+              isPgModalOpen={isPgModalOpen}
+              setIsPgModalOpen={setIsPgModalOpen}
+              pgToEdit={pgToEdit}
+            />
+          }
+        >
+          <Route index element={<DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />} />
+          <Route path="dashboard" element={<DashboardHome onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />} />
+          <Route path="properties" element={<PropertiesPage onOpenNewPgModal={handleOpenNewPg} onEditPg={handleOpenEditPg} />} />
+          <Route path="locations" element={<LocationsPage />} />
+          <Route path="facilities" element={<FacilitiesPage />} />
+          <Route path="verifications" element={<VerificationPage onEditPg={handleOpenEditPg} />} />
+          <Route path="enquiries" element={<EnquiriesPage />} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="reported" element={<ReportedPage onEditPg={handleOpenEditPg} />} />
+          <Route path="featured" element={<FeaturedPage onEditPg={handleOpenEditPg} />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="cms" element={<PagesCmsPage />} />
+          <Route path="banners" element={<BannersPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+        </Route>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
-        <Header
-          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-          onOpenNewPgModal={handleOpenNewPg}
+        {/* Dedicated Login Route */}
+        <Route
+          path="/login"
+          element={<LoginPage onClose={() => navigate('/admin')} />}
         />
 
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
-          {renderActivePage()}
-        </main>
-      </div>
+        {/* All Seeker Public Portal Routes */}
+        <Route
+          path="/*"
+          element={<SeekerApp onOpenAuthModal={() => setIsAuthModalOpen(true)} />}
+        />
+      </Routes>
 
-      {/* Global PG Form Modal (Add / Edit) */}
-      <PGFormModal
-        isOpen={isPgModalOpen}
-        onClose={() => setIsPgModalOpen(false)}
-        pgToEdit={pgToEdit}
-      />
+      {/* Global Auth Modal for popup sign-in */}
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full h-full max-h-screen">
+            <LoginPage onClose={() => setIsAuthModalOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Toast Notifications */}
       <ToastContainer />
-    </div>
+    </>
   );
 }
+
+export default App;

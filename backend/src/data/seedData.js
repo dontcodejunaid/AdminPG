@@ -89,6 +89,242 @@ export const initialSeedData = {
 
   properties: [
     {
+      id: "blr-aafa-1bhk",
+      name: "1 BHK FULLY FURNISHED",
+      slug: "1-bhk-fully-furnished-electronic-city-infosys",
+      type: "Co-living",
+      state: "Karnataka",
+      city: "Bengaluru",
+      area: "Electronic City Phase 1",
+      fullAddress: "Aafa Suites Hotel Near By Infosys, 3rd Cross Rd, Krishna Reddy Layout, Electronic City, Konappana Agrahara, Karnataka 560100",
+      mapUrl: "https://maps.google.com/?q=Aafa+Suites+Hotel+Electronic+City+Infosys",
+      description: "1 BHK Fully Furnished luxury suite located at Aafa Suites Hotel Near By Infosys, Electronic City. Comes with furnished hall, master bedroom, kitchenette, 100% power backup, 1Gbps dual Wi-Fi, and premium coliving facilities.",
+      contactNumber: "+91 99000 82615",
+      whatsappNumber: "+91 81500 82433",
+      photos: [
+        "/images/1r.jpeg", "/images/2r.jpeg", "/images/3r.jpeg", "/images/4r.jpeg",
+        "/images/5r.jpeg", "/images/6r.jpeg", "/images/7r.jpeg", "/images/8r.jpeg",
+        "/images/9r.jpeg", "/images/10r.jpeg", "/images/11r.jpeg", "/images/12r.jpeg",
+        "/images/13r.jpeg", "/images/14r.jpeg", "/images/15r.jpeg"
+      ],
+      videoUrl: "",
+      status: "Active",
+      availabilityStatus: "Available",
+      verificationStatus: "Verified",
+      isFeatured: true,
+      featuredOrder: 1,
+      totalBeds: 12,
+      availableBeds: 4,
+      charges: {
+        deposit: 18000,
+        foodCharges: "3 Times Kerala Food Available",
+        electricityCharges: "Included in monthly plan",
+        maintenanceCharges: 0,
+        otherCharges: "None"
+      },
+      rooms: [
+        { id: "r_1bhk_suite", type: "1 BHK Private Suite", rent: 18000, deposit: 18000, totalBeds: 1, availableBeds: 1, hasAC: true, hasAttachedBath: true }
+      ],
+      facilities: ["fac_food", "fac_wifi", "fac_ac", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_attach_bath", "fac_power"],
+      createdAt: "2026-09-01T09:00:00.000Z",
+      updatedAt: "2026-09-29T12:00:00.000Z"
+    },
+    {
+      id: "blr-aafa-1",
+      name: "Aafa Coliving - 1 Sharing (Private Suite)",
+      slug: "aafa-coliving-1-sharing-private-suite-jigani",
+      type: "Co-living",
+      state: "Karnataka",
+      city: "Bengaluru",
+      area: "Near HCL Gate no 2, Sannidhi layout, Jigani",
+      fullAddress: "Near HCL Gate no 2, Sannidhi layout, Jigani, Bengaluru, Karnataka",
+      mapUrl: "https://maps.google.com/?q=Sannidhi+Layout+Jigani+Bengaluru",
+      description: "Premium private coliving sanctuary near HCL Gate 2 with attached western washroom, workstation desk, and full access to community amenities, 3x Kerala food included.",
+      contactNumber: "+91 99000 82615",
+      whatsappNumber: "+91 81500 82433",
+      photos: [
+        "/images/1pg.jpeg",
+        "/images/8pg.jpeg"
+      ],
+      videoUrl: "",
+      status: "Active",
+      availabilityStatus: "Available",
+      verificationStatus: "Verified",
+      isFeatured: true,
+      featuredOrder: 2,
+      totalBeds: 10,
+      availableBeds: 2,
+      charges: {
+        deposit: 11499,
+        foodCharges: "3 Times Kerala Food Included",
+        electricityCharges: "Sub-meter as per usage",
+        maintenanceCharges: 0,
+        otherCharges: "None"
+      },
+      rooms: [
+        { id: "r_aafa_single", type: "Single Sharing", rent: 11499, deposit: 11499, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
+      ],
+      facilities: ["fac_food", "fac_wifi", "fac_ac", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_attach_bath", "fac_power"],
+      createdAt: "2026-09-01T09:00:00.000Z",
+      updatedAt: "2026-09-29T12:00:00.000Z"
+    },
+    {
+      id: "blr-aafa-2",
+      name: "Aafa Coliving - 2 Sharing (Twin Room)",
+      slug: "aafa-coliving-2-sharing-twin-room-jigani",
+      type: "Co-living",
+      state: "Karnataka",
+      city: "Bengaluru",
+      area: "Near HCL Gate no 2, Sannidhi layout, Jigani",
+      fullAddress: "Near HCL Gate no 2, Sannidhi layout, Jigani, Bengaluru, Karnataka",
+      mapUrl: "https://maps.google.com/?q=Sannidhi+Layout+Jigani+Bengaluru",
+      description: "Spacious 2 sharing room with personal wardrobes, study spaces, attached bath, and 3x daily Kerala homestyle meals included.",
+      contactNumber: "+91 99000 82615",
+      whatsappNumber: "+91 81500 82433",
+      photos: [
+        "/images/2pg.jpeg",
+        "/images/8pg.jpeg"
+      ],
+      videoUrl: "",
+      status: "Active",
+      availabilityStatus: "Available",
+      verificationStatus: "Verified",
+      isFeatured: true,
+      featuredOrder: 3,
+      totalBeds: 24,
+      availableBeds: 6,
+      charges: {
+        deposit: 7499,
+        foodCharges: "3 Times Kerala Meals Included",
+        electricityCharges: "Included",
+        maintenanceCharges: 0,
+        otherCharges: "None"
+      },
+      rooms: [
+        { id: "r_aafa_twin", type: "2 Sharing", rent: 7499, deposit: 7499, totalBeds: 24, availableBeds: 6, hasAC: true, hasAttachedBath: true }
+      ],
+      facilities: ["fac_food", "fac_wifi", "fac_ac", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_attach_bath", "fac_power"],
+      createdAt: "2026-09-01T09:00:00.000Z",
+      updatedAt: "2026-09-29T12:00:00.000Z"
+    },
+    {
+      id: "blr-aafa-3",
+      name: "Aafa Coliving - 3 Sharing (Triple Room)",
+      slug: "aafa-coliving-3-sharing-triple-room-jigani",
+      type: "Co-living",
+      state: "Karnataka",
+      city: "Bengaluru",
+      area: "Near HCL Gate no 2, Sannidhi layout, Jigani",
+      fullAddress: "Near HCL Gate no 2, Sannidhi layout, Jigani, Bengaluru, Karnataka",
+      mapUrl: "https://maps.google.com/?q=Sannidhi+Layout+Jigani+Bengaluru",
+      description: "Comfortable triple sharing room with individual wardrobes, high speed WiFi, power backup, and 3x daily Kerala meals.",
+      contactNumber: "+91 99000 82615",
+      whatsappNumber: "+91 81500 82433",
+      photos: [
+        "/images/3pg.jpeg",
+        "/images/8pg.jpeg"
+      ],
+      videoUrl: "",
+      status: "Active",
+      availabilityStatus: "Available",
+      verificationStatus: "Verified",
+      isFeatured: true,
+      featuredOrder: 4,
+      totalBeds: 18,
+      availableBeds: 5,
+      charges: {
+        deposit: 6499,
+        foodCharges: "3 Times Kerala Meals Included",
+        electricityCharges: "Included",
+        maintenanceCharges: 0,
+        otherCharges: "None"
+      },
+      rooms: [
+        { id: "r_aafa_triple", type: "3 Sharing", rent: 6499, deposit: 6499, totalBeds: 18, availableBeds: 5, hasAC: false, hasAttachedBath: true }
+      ],
+      facilities: ["fac_food", "fac_wifi", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_attach_bath", "fac_power"],
+      createdAt: "2026-09-01T09:00:00.000Z",
+      updatedAt: "2026-09-29T12:00:00.000Z"
+    },
+    {
+      id: "blr-aafa-4",
+      name: "Aafa Coliving - 4 Sharing (Quad Room)",
+      slug: "aafa-coliving-4-sharing-quad-room-jigani",
+      type: "Co-living",
+      state: "Karnataka",
+      city: "Bengaluru",
+      area: "Near HCL Gate no 2, Sannidhi layout, Jigani",
+      fullAddress: "Near HCL Gate no 2, Sannidhi layout, Jigani, Bengaluru, Karnataka",
+      mapUrl: "https://maps.google.com/?q=Sannidhi+Layout+Jigani+Bengaluru",
+      description: "Budget saver 4 sharing room with attached bathroom, study tables, dual fiber WiFi, and 3 times homestyle Kerala meals.",
+      contactNumber: "+91 99000 82615",
+      whatsappNumber: "+91 81500 82433",
+      photos: [
+        "/images/4pg.jpeg",
+        "/images/8pg.jpeg"
+      ],
+      videoUrl: "",
+      status: "Active",
+      availabilityStatus: "Available",
+      verificationStatus: "Verified",
+      isFeatured: true,
+      featuredOrder: 5,
+      totalBeds: 16,
+      availableBeds: 4,
+      charges: {
+        deposit: 5499,
+        foodCharges: "3 Times Kerala Meals Included",
+        electricityCharges: "Included",
+        maintenanceCharges: 0,
+        otherCharges: "None"
+      },
+      rooms: [
+        { id: "r_aafa_quad", type: "4 Sharing", rent: 5499, deposit: 5499, totalBeds: 16, availableBeds: 4, hasAC: false, hasAttachedBath: true }
+      ],
+      facilities: ["fac_food", "fac_wifi", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_attach_bath", "fac_power"],
+      createdAt: "2026-09-01T09:00:00.000Z",
+      updatedAt: "2026-09-29T12:00:00.000Z"
+    },
+    {
+      id: "blr-aafa-daily",
+      name: "Daily Stay Special ⭐",
+      slug: "daily-stay-special-aafa-coliving",
+      type: "Co-living",
+      state: "Karnataka",
+      city: "Bengaluru",
+      area: "Near HCL Gate no 2, Sannidhi layout, Jigani",
+      fullAddress: "Near HCL Gate no 2, Sannidhi layout, Jigani, Bengaluru, Karnataka",
+      mapUrl: "https://maps.google.com/?q=Sannidhi+Layout+Jigani+Bengaluru",
+      description: "Clean furnished daily accommodation with free hot Kerala breakfast every morning (Puttu/Dosa/Idli), high-speed Wi-Fi, and 24/7 power backup.",
+      contactNumber: "+91 99000 82615",
+      whatsappNumber: "+91 81500 82433",
+      photos: [
+        "/images/7pg.jpeg",
+        "/images/8pg.jpeg"
+      ],
+      videoUrl: "",
+      status: "Active",
+      availabilityStatus: "Available",
+      verificationStatus: "Verified",
+      isFeatured: true,
+      featuredOrder: 6,
+      totalBeds: 8,
+      availableBeds: 3,
+      charges: {
+        deposit: 0,
+        foodCharges: "Free Daily Breakfast Included",
+        electricityCharges: "Included",
+        maintenanceCharges: 0,
+        otherCharges: "None"
+      },
+      rooms: [
+        { id: "r_aafa_daily", type: "Daily Stay Special", rent: 499, deposit: 0, totalBeds: 8, availableBeds: 3, hasAC: false, hasAttachedBath: true }
+      ],
+      facilities: ["fac_food", "fac_wifi", "fac_wm", "fac_cctv", "fac_housekeep", "fac_hotwater", "fac_parking", "fac_power"],
+      createdAt: "2026-09-01T09:00:00.000Z",
+      updatedAt: "2026-09-29T12:00:00.000Z"
+    },
+    {
       id: "pg_101",
       name: "Malabar Luxury Executive PG for Men",
       slug: "malabar-luxury-executive-pg-men-kakkanad",

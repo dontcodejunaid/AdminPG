@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Menu, 
   Search, 
@@ -29,6 +30,7 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
     unreadNotifsCount, 
     setActiveTab 
   } = useApp();
+  const navigate = useNavigate();
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -100,6 +102,11 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
   const handleSelectResult = (tab) => {
     setActiveTab(tab);
     setIsSearchOpen(false);
+    if (!tab || tab === 'dashboard') {
+      navigate('/admin');
+    } else {
+      navigate(`/admin/${tab}`);
+    }
   };
 
   return (
@@ -303,7 +310,10 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
 
         {/* Notifications Icon */}
         <button
-          onClick={() => setActiveTab('notifications')}
+          onClick={() => {
+            setActiveTab('notifications');
+            navigate('/admin/notifications');
+          }}
           className="relative p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           title="Notifications"
         >
@@ -349,6 +359,15 @@ export const Header = ({ onOpenMobileMenu, onOpenNewPgModal }) => {
               </div>
 
               <div className="pt-1.5 space-y-1">
+                <Link
+                  to="/"
+                  onClick={() => setProfileDropdownOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>View Seeker Website</span>
+                </Link>
+
                 <button
                   onClick={() => {
                     setProfileDropdownOpen(false);

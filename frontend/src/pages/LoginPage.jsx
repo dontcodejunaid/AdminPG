@@ -1,16 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { AuthSwitch } from '@/components/ui/auth-switch';
 
-export const LoginPage = () => {
+export const LoginPage = ({ onClose }) => {
   const { login } = useApp();
+  const navigate = useNavigate();
 
   const handleLogin = async (email, password) => {
     try {
       const res = await api.login({ email, password });
       if (res.success && res.data) {
         login(res.data, res.token);
+        const roleLower = (res.data?.role || '').toLowerCase().trim();
+        const isAdminRole = ['super admin', 'admin', 'staff', 'property manager'].includes(roleLower);
+        if (isAdminRole) {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+        if (onClose) onClose();
         return { success: true };
       }
       return { success: false, message: res.error || 'Invalid credentials' };
@@ -26,10 +36,12 @@ export const LoginPage = () => {
         email,
         phone: '',
         password,
-        city: 'Kochi'
+        city: 'Bengaluru'
       });
       if (res.success && res.data) {
         login(res.data, res.token);
+        navigate('/');
+        if (onClose) onClose();
         return { success: true };
       }
       return { success: false, message: res.error || 'Registration failed' };
@@ -64,6 +76,16 @@ export const LoginPage = () => {
             </span>
           </div>
         </div>
+
+        <button
+          onClick={() => {
+            if (onClose) onClose();
+            navigate('/');
+          }}
+          className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-all flex items-center gap-1.5"
+        >
+          <span>← Back to Website</span>
+        </button>
       </header>
 
       {/* Main Authentication Centerpiece */}

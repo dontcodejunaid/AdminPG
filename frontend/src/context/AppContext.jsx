@@ -287,7 +287,14 @@ export const AppProvider = ({ children }) => {
   };
 
   // Logout Handler
-  const logout = () => {
+  const logout = async () => {
+    try {
+      if (isSupabaseConfigured() && supabase) {
+        await supabase.auth.signOut();
+      }
+    } catch (e) {
+      console.warn('Supabase signout:', e);
+    }
     setCurrentUser(null);
     setIsAuthenticated(false);
     setActiveTabState('dashboard');
@@ -296,10 +303,19 @@ export const AppProvider = ({ children }) => {
       localStorage.removeItem('keralapg_auth_user');
       localStorage.removeItem('keralapg_auth_token');
       localStorage.removeItem('keralapg_active_tab');
+      // Clear Supabase session keys
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('sb-') || k.includes('supabase')) {
+          localStorage.removeItem(k);
+        }
+      });
     } catch (e) {
       console.error('Storage error:', e);
     }
     showToast('Logged out successfully', 'info');
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+      window.location.href = '/';
+    }
   };
 
   // Switch Role Helper for Testing RBAC

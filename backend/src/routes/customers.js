@@ -7,25 +7,26 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { search } = req.query;
-    const [customersList, profilesList] = await Promise.all([
+    const [customersList, profilesList, enquiriesList] = await Promise.all([
       store.findAll('customers'),
-      store.findAll('adminUsers')
+      store.findAll('adminUsers'),
+      store.findAll('enquiries')
     ]);
 
     const seekerProfiles = (profilesList || []).filter(
       p => p.role === 'Seeker' || p.role === 'Customer'
     );
 
-    // Merge seeker profiles that are not yet in customers list by email or phone
+    // Merge seeker profiles and enquiries that are not yet in customers list by email or phone
     const mergedMap = new Map();
 
     (customersList || []).forEach(c => {
-      const key = (c.email || c.phone || c.id).toLowerCase();
-      mergedMap.set(key, c);
+      const key = (c.email || c.phone || c.id).toLowerCase().trim();
+      mergedMap.set(key, { ...c });
     });
 
     seekerProfiles.forEach(sp => {
-      const key = (sp.email || sp.phone || sp.id).toLowerCase();
+      const key = (sp.email || sp.phone || sp.id).toLowerCase().trim();
       if (!mergedMap.has(key)) {
         mergedMap.set(key, {
           id: sp.id,
@@ -40,6 +41,35 @@ router.get('/', async (req, res) => {
           totalPaid: sp.totalPaid || 0,
           role: sp.role
         });
+      }
+    });
+
+    // Also include unique leads from booking enquiries
+    (enquiriesList || []).forEach(enq => {
+      const email = enq.customerEmail || enq.email || '';
+      const phone = enq.customerPhone || enq.phone || '';
+      const name = enq.customerName || enq.name || 'Enquiry Lead';
+      const key = (email || phone || enq.id).toLowerCase().trim();
+
+      if (key) {
+        if (mergedMap.has(key)) {
+          const existing = mergedMap.get(key);
+          existing.totalEnquiries = (existing.totalEnquiries || 0) + 1;
+        } else {
+          mergedMap.set(key, {
+            id: `enq_lead_${enq.id}`,
+            name,
+            email,
+            phone: phone || 'No phone',
+            city: enq.city || 'Kerala',
+            dateJoined: enq.createdAt ? enq.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
+            savedPgs: enq.pgId ? [enq.pgId] : [],
+            unlockedPgs: [],
+            totalEnquiries: 1,
+            totalPaid: 0,
+            role: 'Seeker'
+          });
+        }
       }
     });
 
