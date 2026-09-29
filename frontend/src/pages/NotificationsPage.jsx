@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
   CheckCheck, 
@@ -14,6 +15,7 @@ import { useApp } from '../context/AppContext';
 
 export const NotificationsPage = () => {
   const { showToast, setUnreadNotifsCount, setActiveTab, triggerRefresh } = useApp();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,6 +65,11 @@ export const NotificationsPage = () => {
     if (notif.link) {
       const tab = notif.link.replace('/', '');
       setActiveTab(tab);
+      if (!tab || tab === 'dashboard') {
+        navigate('/admin');
+      } else {
+        navigate(`/admin/${tab}`);
+      }
     }
   };
 

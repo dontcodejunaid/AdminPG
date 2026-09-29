@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -16,38 +17,39 @@ import {
   ShieldAlert,
   ChevronRight,
   ExternalLink,
-  LogOut
+  LogOut,
+  Globe
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => {
   const { activeTab, setActiveTab, currentUser, unreadNotifsCount, logout } = useApp();
-
+  const location = useLocation();
 
   // Define all navigation items with role restrictions
   const allNavItems = [
-    { id: 'dashboard', label: 'Dashboard Home', icon: LayoutDashboard, category: 'Overview', moduleNum: '1', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'dashboard', path: '/admin/dashboard', label: 'Dashboard Home', icon: LayoutDashboard, category: 'Overview', moduleNum: '1', roles: ['Super Admin', 'Admin', 'Staff'] },
     
     // Core Property Ops
-    { id: 'properties', label: 'PG Management', icon: Building2, category: 'Properties', moduleNum: '2 & 3', highlight: true, roles: ['Super Admin', 'Admin', 'Staff'] },
-    { id: 'locations', label: 'Locations (City/Area)', icon: MapPin, category: 'Properties', moduleNum: '4', roles: ['Super Admin', 'Admin'] },
-    { id: 'facilities', label: 'Facilities & Amenities', icon: ListChecks, category: 'Properties', moduleNum: '5', roles: ['Super Admin', 'Admin'] },
-    { id: 'verifications', label: 'Verification Hub', icon: BadgeCheck, category: 'Properties', moduleNum: '6', roles: ['Super Admin', 'Admin', 'Staff'] },
-    { id: 'featured', label: 'Featured PGs', icon: Star, category: 'Properties', moduleNum: '10', roles: ['Super Admin', 'Admin'] },
+    { id: 'properties', path: '/admin/properties', label: 'PG Management', icon: Building2, category: 'Properties', moduleNum: '2 & 3', highlight: true, roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'locations', path: '/admin/locations', label: 'Locations (City/Area)', icon: MapPin, category: 'Properties', moduleNum: '4', roles: ['Super Admin', 'Admin'] },
+    { id: 'facilities', path: '/admin/facilities', label: 'Facilities & Amenities', icon: ListChecks, category: 'Properties', moduleNum: '5', roles: ['Super Admin', 'Admin'] },
+    { id: 'verifications', path: '/admin/verifications', label: 'Verification Hub', icon: BadgeCheck, category: 'Properties', moduleNum: '6', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'featured', path: '/admin/featured', label: 'Featured PGs', icon: Star, category: 'Properties', moduleNum: '10', roles: ['Super Admin', 'Admin'] },
 
     // Leads & CRM
-    { id: 'enquiries', label: 'Customer Enquiries', icon: MessageSquareText, category: 'Growth & CRM', moduleNum: '7', roles: ['Super Admin', 'Admin', 'Staff'] },
-    { id: 'customers', label: 'Customer Registry', icon: Users, category: 'Growth & CRM', moduleNum: '8', roles: ['Super Admin', 'Admin'] },
-    { id: 'payments', label: 'Payments & ₹19 Log', icon: CreditCard, category: 'Growth & CRM', moduleNum: '11', roles: ['Super Admin', 'Admin'] },
+    { id: 'enquiries', path: '/admin/enquiries', label: 'Customer Enquiries', icon: MessageSquareText, category: 'Growth & CRM', moduleNum: '7', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'customers', path: '/admin/customers', label: 'Customer Registry', icon: Users, category: 'Growth & CRM', moduleNum: '8', roles: ['Super Admin', 'Admin'] },
+    { id: 'payments', path: '/admin/payments', label: 'Payments & ₹19 Log', icon: CreditCard, category: 'Growth & CRM', moduleNum: '11', roles: ['Super Admin', 'Admin'] },
 
     // Moderation & Marketing
-    { id: 'reported', label: 'Reported Listings', icon: AlertOctagon, category: 'Trust & Safety', moduleNum: '9', roles: ['Super Admin', 'Admin'] },
-    { id: 'banners', label: 'Banners & Ads', icon: ImageIcon, category: 'Marketing', moduleNum: '13', roles: ['Super Admin', 'Admin'] },
-    { id: 'cms', label: 'Pages & Content', icon: FileText, category: 'Marketing', moduleNum: '12', roles: ['Super Admin', 'Admin'] },
+    { id: 'reported', path: '/admin/reported', label: 'Reported Listings', icon: AlertOctagon, category: 'Trust & Safety', moduleNum: '9', roles: ['Super Admin', 'Admin'] },
+    { id: 'banners', path: '/admin/banners', label: 'Banners & Ads', icon: ImageIcon, category: 'Marketing', moduleNum: '13', roles: ['Super Admin', 'Admin'] },
+    { id: 'cms', path: '/admin/cms', label: 'Pages & Content', icon: FileText, category: 'Marketing', moduleNum: '12', roles: ['Super Admin', 'Admin'] },
 
     // System
-    { id: 'notifications', label: 'Activity & Alerts', icon: Bell, category: 'System', moduleNum: '14', roles: ['Super Admin', 'Admin', 'Staff'] },
-    { id: 'users', label: 'Admin Users & Roles', icon: ShieldAlert, category: 'System', moduleNum: '15', roles: ['Super Admin'] }
+    { id: 'notifications', path: '/admin/notifications', label: 'Activity & Alerts', icon: Bell, category: 'System', moduleNum: '14', roles: ['Super Admin', 'Admin', 'Staff'] },
+    { id: 'users', path: '/admin/users', label: 'Admin Users & Roles', icon: ShieldAlert, category: 'System', moduleNum: '15', roles: ['Super Admin'] }
   ];
 
   const currentRole = currentUser?.role || 'Super Admin';
@@ -80,13 +82,13 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
         {/* Brand Header with Emblem Logo */}
         <div className="h-20 px-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-brand-50/30 dark:bg-brand-950/20">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md border border-brand-200/60 dark:border-slate-700 flex-shrink-0">
+            <Link to="/" className="h-11 w-11 rounded-2xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md border border-brand-200/60 dark:border-slate-700 flex-shrink-0 hover:scale-105 transition-transform" title="Go to Website">
               <img
                 src="/logo.png"
                 alt="KeralaPG Logo"
                 className="h-full w-full object-contain"
               />
-            </div>
+            </Link>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-base tracking-tight text-brand-900 dark:text-white">
@@ -103,8 +105,22 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
           </div>
         </div>
 
+        {/* Public Website Switcher Pill */}
+        <div className="px-4 pt-3 pb-1">
+          <Link
+            to="/"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#D4A64A]/10 hover:bg-[#D4A64A]/20 border border-[#D4A64A]/30 text-[#D4A64A] text-xs font-bold transition-all shadow-sm group"
+          >
+            <div className="flex items-center gap-2">
+              <Globe className="w-3.5 h-3.5" />
+              <span>← View Live Website</span>
+            </div>
+            <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+          </Link>
+        </div>
+
         {/* Navigation List */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-5">
           {categories.map(cat => {
             const items = navItems.filter(item => item.category === cat);
             if (items.length === 0) return null;
@@ -116,11 +132,12 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
                 </h4>
                 {items.map(item => {
                   const Icon = item.icon;
-                  const isActive = activeTab === item.id;
+                  const isActive = location.pathname === item.path || (item.id === 'dashboard' && location.pathname === '/admin');
                   
                   return (
-                    <button
+                    <NavLink
                       key={item.id}
+                      to={item.path}
                       onClick={() => {
                         setActiveTab(item.id);
                         setIsMobileOpen(false);
@@ -150,7 +167,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
                           </span>
                         )}
                       </div>
-                    </button>
+                    </NavLink>
                   );
                 })}
               </div>
@@ -159,7 +176,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
         </div>
 
         {/* Quick PG Add CTA */}
-        {currentUser.permissions.canAddPG && (
+        {currentUser?.permissions?.canAddPG && (
           <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
             <button
               onClick={() => onOpenNewPgModal()}
@@ -196,8 +213,8 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen, onOpenNewPgModal }) => 
           </button>
         </div>
 
-
       </aside>
     </>
   );
 };
+

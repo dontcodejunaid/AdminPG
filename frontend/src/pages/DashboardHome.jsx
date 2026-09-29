@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Building2, 
   CheckCircle2, 
@@ -12,10 +13,10 @@ import {
   Plus, 
   ArrowUpRight, 
   Phone, 
-  MessageCircle,
-  ExternalLink,
-  ChevronRight,
-  Eye
+  MessageCircle, 
+  ExternalLink, 
+  ChevronRight, 
+  Eye 
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { api } from '../services/api';
@@ -23,8 +24,18 @@ import { useApp } from '../context/AppContext';
 
 export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
   const { setActiveTab, refreshTrigger } = useApp();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const handleNavigate = (tab, filter = {}) => {
+    setActiveTab(tab, filter);
+    if (!tab || tab === 'dashboard') {
+      navigate('/admin');
+    } else {
+      navigate(`/admin/${tab}`);
+    }
+  };
 
   useEffect(() => {
     async function fetchStats() {
@@ -100,7 +111,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
               <span>Add New PG Property</span>
             </button>
             <button
-              onClick={() => setActiveTab('enquiries')}
+              onClick={() => handleNavigate('enquiries')}
               className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm border border-white/10 transition-colors"
             >
               View Leads CRM
@@ -119,7 +130,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
           return (
             <div
               key={i}
-              onClick={() => setActiveTab(card.tab, card.filter || {})}
+              onClick={() => handleNavigate(card.tab, card.filter || {})}
               className="group cursor-pointer p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-brand-500/50 transition-all flex flex-col justify-between"
             >
               <div className="flex items-start justify-between">
@@ -159,7 +170,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
               <p className="text-[11px] text-slate-500">Live listings on KeralaPG.com portal</p>
             </div>
             <button
-              onClick={() => setActiveTab('properties')}
+              onClick={() => handleNavigate('properties')}
               className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1"
             >
               <span>View All PGs</span>
@@ -232,7 +243,7 @@ export const DashboardHome = ({ onOpenNewPgModal, onEditPg }) => {
               <p className="text-[11px] text-slate-500">Real-time customer contact requests</p>
             </div>
             <button
-              onClick={() => setActiveTab('enquiries')}
+              onClick={() => handleNavigate('enquiries')}
               className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline"
             >
               CRM Pipeline

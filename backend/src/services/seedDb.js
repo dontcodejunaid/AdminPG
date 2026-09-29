@@ -81,56 +81,54 @@ export async function seedSupabaseDb() {
     }
 
     // 4. Check Properties
-    const { data: props } = await supabase.from('properties').select('id');
-    if (!props || props.length === 0) {
-      console.log('Inserting Properties...');
-      const propRows = initialSeedData.properties.map(p => {
-        let normalizedType = p.type;
-        if (normalizedType === 'Co-living' || normalizedType === 'Co-Living') normalizedType = 'Coliving';
-        if (normalizedType === 'Male') normalizedType = 'Boys';
-        if (normalizedType === 'Female') normalizedType = 'Girls';
+    // 4. Check & Upsert Properties
+    console.log('Inserting & Syncing Properties...');
+    const propRows = initialSeedData.properties.map(p => {
+      let normalizedType = p.type;
+      if (normalizedType === 'Co-living' || normalizedType === 'Co-Living') normalizedType = 'Coliving';
+      if (normalizedType === 'Male') normalizedType = 'Boys';
+      if (normalizedType === 'Female') normalizedType = 'Girls';
 
-        let normVerification = p.verificationStatus || 'Pending';
-        if (normVerification === 'Not Verified') normVerification = 'Pending';
+      let normVerification = p.verificationStatus || 'Pending';
+      if (normVerification === 'Not Verified') normVerification = 'Pending';
 
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          type: normalizedType || 'Boys',
-          status: p.status || 'Active',
-          availability_status: p.availabilityStatus || 'Available',
-          verification_status: normVerification,
-          is_featured: Boolean(p.isFeatured),
-          featured_order: p.featuredOrder || 0,
-          state: p.state || 'Kerala',
-          city: p.city,
-          area: p.area,
-          full_address: p.fullAddress || '',
-          landmark: p.landmark || '',
-          pincode: p.pincode || '',
-          map_url: p.mapUrl || '',
-          description: p.description || '',
-          notice_period: p.noticePeriod || '30 Days',
-          gate_closing_time: p.gateClosingTime || '10:30 PM',
-          food_availability: p.foodAvailability || 'Included in Rent',
-          rules: p.rules || [],
-          rooms: p.rooms || [],
-          facilities: p.facilities || [],
-          photos: p.photos || [],
-          videos: p.videoUrl ? [p.videoUrl] : (p.videos || []),
-          owner_name: p.ownerName || p.owner?.name || 'Property Manager',
-          owner_phone: p.ownerPhone || p.contactNumber || '+91 98470 12345',
-          whatsapp_number: p.whatsappNumber || p.contactNumber || '+91 98470 12345',
-          owner_email: p.ownerEmail || '',
-          view_count: p.viewCount || 0,
-          inquiry_count: p.inquiryCount || 0,
-          unlock_count: p.unlockCount || 0
-        };
-      });
-      const { error: propErr } = await supabase.from('properties').upsert(propRows, { onConflict: 'id' });
-      if (propErr) console.error('Property insert error:', propErr);
-    }
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        type: normalizedType || 'Boys',
+        status: p.status || 'Active',
+        availability_status: p.availabilityStatus || 'Available',
+        verification_status: normVerification,
+        is_featured: Boolean(p.isFeatured),
+        featured_order: p.featuredOrder || 0,
+        state: p.state || 'Kerala',
+        city: p.city,
+        area: p.area,
+        full_address: p.fullAddress || '',
+        landmark: p.landmark || '',
+        pincode: p.pincode || '',
+        map_url: p.mapUrl || '',
+        description: p.description || '',
+        notice_period: p.noticePeriod || '30 Days',
+        gate_closing_time: p.gateClosingTime || '10:30 PM',
+        food_availability: p.foodAvailability || 'Included in Rent',
+        rules: p.rules || [],
+        rooms: p.rooms || [],
+        facilities: p.facilities || [],
+        photos: p.photos || [],
+        videos: p.videoUrl ? [p.videoUrl] : (p.videos || []),
+        owner_name: p.ownerName || p.owner?.name || 'Property Manager',
+        owner_phone: p.ownerPhone || p.contactNumber || '+91 98470 12345',
+        whatsapp_number: p.whatsappNumber || p.contactNumber || '+91 98470 12345',
+        owner_email: p.ownerEmail || '',
+        view_count: p.viewCount || 0,
+        inquiry_count: p.inquiryCount || 0,
+        unlock_count: p.unlockCount || 0
+      };
+    });
+    const { error: propErr } = await supabase.from('properties').upsert(propRows, { onConflict: 'id' });
+    if (propErr) console.error('Property insert error:', propErr);
 
     // 5. Check Enquiries
     const { data: enqs } = await supabase.from('enquiries').select('id');
