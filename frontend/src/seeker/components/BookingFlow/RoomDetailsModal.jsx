@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import useScrollLock from '../../hooks/useScrollLock';
+import { formatFacilityName } from '../../data/pgListingsData';
 
 const all8Images = [
   "/images/1pg.jpeg",
@@ -394,16 +395,14 @@ export default function RoomDetailsModal({
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
                 {facilitiesList.map((facility, i) => {
-                  const resolvedName = typeof facility === 'string' && facility.startsWith('fac_')
-                    ? (facility.replace(/^fac_/, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
-                    : facility;
+                  const resolvedName = formatFacilityName(facility);
                   return (
                     <div
                       key={i}
                       className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-[#FAF7F0] font-medium"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span className="capitalize">{resolvedName}</span>
+                      <span>{resolvedName}</span>
                     </div>
                   );
                 })}

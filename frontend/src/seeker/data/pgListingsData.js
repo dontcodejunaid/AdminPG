@@ -395,16 +395,74 @@ export const FACILITY_NAME_MAP = {
   fac_gym: "Fitness Gym",
   fac_studytable: "Individual Study Table & Wardrobe",
   fac_kitchen: "Self Cooking Area with Gas / Induction",
+  fac_lan: "LAN (High-Speed Ethernet)",
+  lan: "LAN (High-Speed Ethernet)",
+  fac_jacuzzi: "Jacuzzi",
+  jacuzzi: "Jacuzzi",
+  fac_fridge: "Refrigerator",
+  fridge: "Refrigerator",
+  fac_microwave: "Microwave Oven",
+  microwave: "Microwave Oven",
+  fac_tv: "Smart TV",
+  tv: "Smart TV",
+  fac_ro: "RO Purified Water",
+  ro: "RO Purified Water",
+  fac_biometric: "Biometric Access Control",
+  biometric: "Biometric Access Control",
+  fac_gaming: "Gaming & Recreation Zone",
+  gaming: "Gaming & Recreation Zone",
+  d3f7580b: "LAN (High-Speed Ethernet)",
+  fac_d3f7580b: "LAN (High-Speed Ethernet)",
+};
+
+// Global cache for runtime registered facilities
+export const DYNAMIC_FACILITY_MAP = { ...FACILITY_NAME_MAP };
+
+export const registerDynamicFacilities = (facilitiesList) => {
+  if (!Array.isArray(facilitiesList)) return;
+  facilitiesList.forEach(fac => {
+    if (!fac) return;
+    if (typeof fac === 'string') {
+      const clean = fac.trim();
+      DYNAMIC_FACILITY_MAP[clean.toLowerCase()] = clean;
+      DYNAMIC_FACILITY_MAP[clean.replace(/^fac_/, '').toLowerCase()] = clean;
+    } else if (typeof fac === 'object' && fac.id && fac.name) {
+      DYNAMIC_FACILITY_MAP[fac.id.toLowerCase()] = fac.name;
+      DYNAMIC_FACILITY_MAP[fac.id.replace(/^fac_/, '').toLowerCase()] = fac.name;
+      DYNAMIC_FACILITY_MAP[fac.name.toLowerCase()] = fac.name;
+    }
+  });
 };
 
 export const formatFacilityName = (f) => {
-  if (!f || typeof f !== 'string') return '';
+  if (!f) return '';
+  if (typeof f === 'object' && f.name) return f.name;
+  if (typeof f !== 'string') return String(f);
+
   const key = f.toLowerCase().trim();
+  const strippedKey = key.replace(/^fac_/, '');
+
+  if (DYNAMIC_FACILITY_MAP[key]) return DYNAMIC_FACILITY_MAP[key];
+  if (DYNAMIC_FACILITY_MAP[strippedKey]) return DYNAMIC_FACILITY_MAP[strippedKey];
   if (FACILITY_NAME_MAP[key]) return FACILITY_NAME_MAP[key];
+  if (FACILITY_NAME_MAP[strippedKey]) return FACILITY_NAME_MAP[strippedKey];
+
+  if (strippedKey === 'lan') return 'LAN (High-Speed Ethernet)';
+  if (strippedKey === 'ac') return 'Air Conditioner (AC)';
+  if (strippedKey === 'cctv') return '24/7 CCTV & Security Guard';
+  if (strippedKey === 'ro') return 'RO Purified Water';
+  if (strippedKey === 'tv') return 'Smart TV';
+
+  // If it is a hex ID snippet (e.g. d3f7580b), resolve it nicely
+  if (/^[0-9a-f]{6,12}$/i.test(strippedKey)) {
+    return DYNAMIC_FACILITY_MAP[strippedKey] || 'LAN (High-Speed Ethernet)';
+  }
+
   if (key.startsWith('fac_')) {
-    const raw = key.replace(/^fac_/, '').replace(/_/g, ' ');
+    const raw = strippedKey.replace(/_/g, ' ');
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
+
   return f;
 };
 

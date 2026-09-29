@@ -4,6 +4,48 @@ import { store } from '../services/store.js';
 
 const router = express.Router();
 
+// Helper to resolve facility IDs to human-readable names
+const resolveFacilities = async (list) => {
+  try {
+    const allFacs = await store.findAll('facilities');
+    const facMap = {
+      lan: 'LAN',
+      fac_lan: 'LAN',
+      d3f7580b: 'LAN',
+      fac_d3f7580b: 'LAN',
+    };
+    (allFacs || []).forEach(f => {
+      if (f.id && f.name) {
+        facMap[f.id] = f.name;
+        facMap[f.id.toLowerCase()] = f.name;
+        facMap[f.id.replace(/^fac_/, '')] = f.name;
+        facMap[f.id.replace(/^fac_/, '').toLowerCase()] = f.name;
+      }
+      if (f.name) {
+        facMap[f.name.toLowerCase()] = f.name;
+      }
+    });
+
+    return list.map(p => {
+      const resolvedFacilities = (p.facilities || []).map(f => {
+        if (!f) return '';
+        if (typeof f === 'object' && f.name) return f.name;
+        const lookup = String(f).trim();
+        const found = facMap[lookup] || facMap[lookup.toLowerCase()] || facMap[lookup.replace(/^fac_/, '').toLowerCase()];
+        return found || lookup;
+      }).filter(Boolean);
+
+      return {
+        ...p,
+        facilities: resolvedFacilities,
+        rawFacilities: p.facilities || []
+      };
+    });
+  } catch (e) {
+    return list;
+  }
+};
+
 // GET /api/properties
 router.get('/', async (req, res) => {
   try {
@@ -27,7 +69,8 @@ router.get('/', async (req, res) => {
       );
     }
 
-    res.json({ success: true, count: list.length, data: list });
+    const resolvedList = await resolveFacilities(list);
+    res.json({ success: true, count: resolvedList.length, data: resolvedList });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -38,7 +81,8 @@ router.get('/:id', async (req, res) => {
   try {
     const pg = await store.findById('properties', req.params.id);
     if (!pg) return res.status(404).json({ success: false, error: 'PG Not Found' });
-    res.json({ success: true, data: pg });
+    const [resolvedPg] = await resolveFacilities([pg]);
+    res.json({ success: true, data: resolvedPg });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

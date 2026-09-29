@@ -303,11 +303,31 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
   };
 
   // Add Custom Facility Tag
-  const handleAddCustomFacility = () => {
+  const handleAddCustomFacility = async () => {
     if (!newCustomFacility.trim()) return;
     const tag = newCustomFacility.trim();
-    if (!formData.facilities.includes(tag)) {
-      setFormData(prev => ({ ...prev, facilities: [...prev.facilities, tag] }));
+    
+    // Check if it already exists in availableFacilities
+    const existing = availableFacilities.find(
+      f => f.name?.toLowerCase() === tag.toLowerCase() || f.id?.toLowerCase() === tag.toLowerCase()
+    );
+
+    if (existing) {
+      if (!formData.facilities.includes(existing.id) && !formData.facilities.includes(existing.name)) {
+        setFormData(prev => ({ ...prev, facilities: [...prev.facilities, existing.id] }));
+      }
+    } else {
+      try {
+        const res = await api.createFacility({ name: tag, icon: 'Sparkles', category: 'Custom' });
+        if (res && res.data) {
+          setAvailableFacilities(prev => [...prev, res.data]);
+          setFormData(prev => ({ ...prev, facilities: [...prev.facilities, res.data.id] }));
+        } else {
+          setFormData(prev => ({ ...prev, facilities: [...prev.facilities, tag] }));
+        }
+      } catch (err) {
+        setFormData(prev => ({ ...prev, facilities: [...prev.facilities, tag] }));
+      }
     }
     setNewCustomFacility('');
   };

@@ -6,7 +6,7 @@ import {
   CheckCircle2, Calendar, MessageSquare, RotateCcw
 } from 'lucide-react';
 import useScrollLock from '../hooks/useScrollLock';
-import { pgListings, citiesList, transformDbProperty, matchLocation } from '../data/pgListingsData';
+import { pgListings, citiesList, transformDbProperty, matchLocation, registerDynamicFacilities } from '../data/pgListingsData';
 import SimpleFilterCard from './SimpleFilterCard';
 import { api } from '../../services/api';
 
@@ -24,6 +24,14 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
 
   useEffect(() => {
     let isMounted = true;
+    api.getFacilities()
+      .then((res) => {
+        if (res && res.data && isMounted) {
+          registerDynamicFacilities(res.data);
+        }
+      })
+      .catch(() => {});
+
     api.getProperties()
       .then((res) => {
         if (res && res.data && isMounted) {

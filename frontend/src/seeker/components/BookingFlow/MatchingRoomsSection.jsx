@@ -17,7 +17,7 @@ import {
   Flame,
   Check,
 } from 'lucide-react';
-import { allEnrichedListings, transformDbProperty, matchLocation } from '../../data/pgListingsData';
+import { allEnrichedListings, transformDbProperty, matchLocation, registerDynamicFacilities } from '../../data/pgListingsData';
 import { api } from '../../../services/api';
 
 export default function MatchingRoomsSection({
@@ -37,9 +37,17 @@ export default function MatchingRoomsSection({
 }) {
   const [dbListings, setDbListings] = useState([]);
 
-  // Fetch live properties from database API
+  // Fetch live properties & facilities from database API
   useEffect(() => {
     let isMounted = true;
+    api.getFacilities()
+      .then((res) => {
+        if (res && res.data && isMounted) {
+          registerDynamicFacilities(res.data);
+        }
+      })
+      .catch(() => {});
+
     api.getProperties()
       .then((res) => {
         if (res && res.data && res.data.length > 0 && isMounted) {
