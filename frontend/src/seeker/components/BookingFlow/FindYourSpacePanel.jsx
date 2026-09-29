@@ -192,7 +192,8 @@ export default function FindYourSpacePanel({
                 <option value="Kochi">Kochi (InfoPark)</option>
                 <option value="Thiruvananthapuram">Thiruvananthapuram (Technopark)</option>
                 <option value="Kozhikode">Kozhikode (Cyberpark)</option>
-                <option value="Mysuru">Mysuru / Karnataka</option>
+                <option value="Ramanagara">Ramanagara (Ghousia / Town)</option>
+                <option value="Mysuru">Mysuru (Heritage City)</option>
                 <option value="Coimbatore">Coimbatore (TIDEL Park)</option>
                 <option value="Chennai">Chennai (OMR)</option>
                 <option value="Hyderabad">Hyderabad (Hitec City)</option>

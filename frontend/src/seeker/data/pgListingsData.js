@@ -349,21 +349,22 @@ export const matchLocation = (property, searchLocation) => {
   const name = (property.name || property.pgName || '').toLowerCase().trim();
   const combined = `${city} ${area} ${address} ${name}`;
 
-  // Cluster Mapping for cities and tech corridor synonyms
+  // Cluster Mapping for distinct cities and tech corridor synonyms
   const clusterMap = {
-    bengaluru: ['bengaluru', 'bangalore', 'blr', 'electronic city', 'jigani', 'infosys', 'sannidhi', 'hsr', 'koramangala', 'whitefield', 'marathahalli', 'btm', 'bellandur', 'indiranagar', 'karnataka'],
+    bengaluru: ['bengaluru', 'bangalore', 'blr', 'electronic city', 'jigani', 'infosys', 'sannidhi', 'hsr', 'koramangala', 'whitefield', 'marathahalli', 'btm', 'bellandur', 'indiranagar', 'sarjapur'],
     kochi: ['kochi', 'cochin', 'cok', 'kakkanad', 'infopark', 'edappally', 'kaloor', 'palarivattom', 'vyttila', 'mg road', 'ernakulam'],
     thiruvananthapuram: ['thiruvananthapuram', 'trivandrum', 'trv', 'technopark', 'kazhakkoottam', 'karyavattom', 'pattom', 'palayam', 'sreekaryam', 'vellayambalam'],
     kozhikode: ['kozhikode', 'calicut', 'ccj', 'cyberpark', 'hilite', 'mavoor', 'nadakkavu'],
-    hyderabad: ['hyderabad', 'hitec city', 'gachibowli', 'kondapur', 'madhapur', 'telangana'],
-    chennai: ['chennai', 'madras', 'omr', 'velachery', 'guindy', 'sholinganallur', 'adyar', 'tamil nadu'],
+    mysuru: ['mysuru', 'mysore', 'vijayanagar', 'kuvempunagar', 'gokulam', 'chamundi'],
+    ramanagara: ['ramanagara', 'ramanagaram', 'ghousia', 'channapatna', 'bidadi'],
+    hyderabad: ['hyderabad', 'hitec city', 'gachibowli', 'kondapur', 'madhapur'],
+    chennai: ['chennai', 'madras', 'omr', 'velachery', 'guindy', 'sholinganallur', 'adyar'],
     coimbatore: ['coimbatore', 'kovai', 'tidel', 'peelamedu', 'saravanampatti', 'gandhipuram', 'rs puram'],
-    mysuru: ['mysuru', 'mysore', 'ramanagara', 'mandya'],
-    pune: ['pune', 'hinjawadi', 'wakad', 'baner', 'maharashtra']
+    pune: ['pune', 'hinjawadi', 'wakad', 'baner']
   };
 
   // Direct substring check
-  if (combined.includes(target) || target.includes(city) || (area && target.includes(area))) {
+  if (combined.includes(target) || (city && target.includes(city)) || (area && target.includes(area))) {
     return true;
   }
 
