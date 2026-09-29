@@ -12,7 +12,17 @@ import {
   MessageSquare, 
   Layers,
   Video,
-  Info
+  Info,
+  Sparkles,
+  Star,
+  Compass,
+  Calendar,
+  Clock,
+  ShieldCheck,
+  Tag,
+  Eye,
+  Camera,
+  ExternalLink
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { DynamicIcon } from '../common/IconHelper';
@@ -28,39 +38,63 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
   const [flatLocations, setFlatLocations] = useState({ states: [], cities: [], areas: [] });
   const [availableFacilities, setAvailableFacilities] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'rooms' | 'facilities' | 'media'
+  const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'rates' | 'rooms' | 'facilities' | 'highlights' | 'media'
+
+  // Custom facility input state
+  const [newCustomFacility, setNewCustomFacility] = useState('');
+
+  // Custom highlight input state
+  const [newHighlight, setNewHighlight] = useState('');
 
   // Form State
   const [formData, setFormData] = useState({
     name: '',
     type: 'Boys',
-    state: 'Kerala',
-    city: 'Kochi',
-    area: 'Kakkanad',
+    state: 'Karnataka',
+    city: 'Bengaluru',
+    area: 'Electronic City Phase 1',
     fullAddress: '',
+    direction: '',
     mapUrl: '',
+    badge: 'Move-In Ready',
+    rating: 4.9,
+    reviewsCount: 140,
     description: '',
     contactNumber: '',
     whatsappNumber: '',
+    alternatePhone: '',
     photos: [],
     videoUrl: '',
+    virtualTourUrl: '',
     status: 'Active',
     availabilityStatus: 'Available',
-    verificationStatus: 'Pending',
+    verificationStatus: 'Verified',
     isFeatured: false,
     featuredOrder: 0,
     charges: {
       deposit: 5001,
-      foodCharges: 'Included (3 times daily)',
-      electricityCharges: 'As per sub-meter',
+      foodCharges: 'Included (3 times Kerala food)',
+      electricityCharges: 'Included / As per sub-meter',
       maintenanceCharges: 300,
-      otherCharges: 'None'
+      otherCharges: 'None',
+      dayRate: 499,
+      dayBenefit: 'Free hot Kerala breakfast • Zero deposit',
+      weekRate: 2199,
+      weekBenefit: 'Homestyle breakfast & dinner • Flexible lease',
+      monthRate: 7499,
+      monthBenefit: '3x Kerala meals daily + evening chai • Full access',
     },
     rooms: [
-      { id: 'r_1', type: 'Single Sharing', rent: 12000, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
-      { id: 'r_2', type: '2 Sharing', rent: 8500, deposit: 5001, totalBeds: 10, availableBeds: 3, hasAC: true, hasAttachedBath: true }
+      { id: 'r_1', type: 'Single Sharing', rent: 11499, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
+      { id: 'r_2', type: '2 Sharing', rent: 7499, deposit: 5001, totalBeds: 10, availableBeds: 3, hasAC: true, hasAttachedBath: true }
     ],
-    facilities: ['fac_food', 'fac_wifi', 'fac_ac', 'fac_wm', 'fac_cctv']
+    facilities: ['fac_food', 'fac_wifi', 'fac_ac', 'fac_wm', 'fac_cctv', 'fac_hotwater', 'fac_power'],
+    highlights: [
+      '3 Times Kerala Food Included',
+      'Power Back Up & High-Speed WiFi',
+      'CCTV & 24/7 Caretaker',
+      'Washing Machine & 24/7 Hot Water'
+    ]
   });
 
   // Load locations & facilities on mount
@@ -80,33 +114,61 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     if (isOpen) {
       loadMetadata();
       if (pgToEdit) {
+        const initialCharges = {
+          deposit: pgToEdit.charges?.deposit ?? 0,
+          foodCharges: pgToEdit.charges?.foodCharges || 'Included (3 times Kerala food)',
+          electricityCharges: pgToEdit.charges?.electricityCharges || 'Included',
+          maintenanceCharges: pgToEdit.charges?.maintenanceCharges ?? 0,
+          otherCharges: pgToEdit.charges?.otherCharges || 'None',
+          dayRate: pgToEdit.charges?.dayRate || pgToEdit.stayRates?.day || 499,
+          dayBenefit: pgToEdit.charges?.dayBenefit || pgToEdit.stayBenefits?.day || 'Free hot Kerala breakfast • Zero deposit',
+          weekRate: pgToEdit.charges?.weekRate || pgToEdit.stayRates?.week || 2199,
+          weekBenefit: pgToEdit.charges?.weekBenefit || pgToEdit.stayBenefits?.week || 'Homestyle breakfast & dinner • Flexible lease',
+          monthRate: pgToEdit.charges?.monthRate || pgToEdit.stayRates?.month || pgToEdit.rent || 7499,
+          monthBenefit: pgToEdit.charges?.monthBenefit || pgToEdit.stayBenefits?.month || '3x Kerala meals daily + evening chai • Full access',
+        };
+
         setFormData({
           ...pgToEdit,
-          charges: {
-            deposit: pgToEdit.charges?.deposit || 0,
-            foodCharges: pgToEdit.charges?.foodCharges || 'Included',
-            electricityCharges: pgToEdit.charges?.electricityCharges || 'Included',
-            maintenanceCharges: pgToEdit.charges?.maintenanceCharges || 0,
-            otherCharges: pgToEdit.charges?.otherCharges || 'None'
-          },
-          rooms: pgToEdit.rooms || [],
-          facilities: pgToEdit.facilities || [],
-          photos: pgToEdit.photos || []
+          direction: pgToEdit.direction || pgToEdit.landmark || pgToEdit.fullAddress || '',
+          badge: pgToEdit.badge || 'Move-In Ready',
+          rating: Number(pgToEdit.rating) || 4.9,
+          reviewsCount: Number(pgToEdit.reviewsCount) || 140,
+          alternatePhone: pgToEdit.alternatePhone || '',
+          virtualTourUrl: pgToEdit.virtualTourUrl || '',
+          charges: initialCharges,
+          rooms: Array.isArray(pgToEdit.rooms) && pgToEdit.rooms.length > 0 ? pgToEdit.rooms : [
+            { id: 'r_1', type: 'Single Sharing', rent: 11499, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true }
+          ],
+          facilities: Array.isArray(pgToEdit.facilities) ? pgToEdit.facilities : [],
+          highlights: Array.isArray(pgToEdit.highlights) && pgToEdit.highlights.length > 0 ? pgToEdit.highlights : [
+            '3 Times Kerala Food Included',
+            'Power Back Up & High-Speed WiFi',
+            'CCTV & 24/7 Caretaker',
+            'Washing Machine & 24/7 Hot Water'
+          ],
+          photos: Array.isArray(pgToEdit.photos) ? pgToEdit.photos : []
         });
       } else {
         setFormData({
           name: '',
           type: 'Boys',
-          state: 'Kerala',
-          city: 'Kochi',
-          area: 'Kakkanad',
+          state: 'Karnataka',
+          city: 'Bengaluru',
+          area: 'Electronic City Phase 1',
           fullAddress: '',
+          direction: '',
           mapUrl: '',
+          badge: 'Move-In Ready',
+          rating: 4.9,
+          reviewsCount: 140,
           description: '',
           contactNumber: '',
           whatsappNumber: '',
+          alternatePhone: '',
           photos: [],
           videoUrl: '',
+          virtualTourUrl: '',
           status: 'Active',
           availabilityStatus: 'Available',
           verificationStatus: 'Verified',
@@ -114,16 +176,28 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           featuredOrder: 0,
           charges: {
             deposit: 5001,
-            foodCharges: 'Included (3 times daily)',
-            electricityCharges: 'As per meter',
+            foodCharges: 'Included (3 times Kerala food)',
+            electricityCharges: 'Included / As per meter',
             maintenanceCharges: 300,
-            otherCharges: 'None'
+            otherCharges: 'None',
+            dayRate: 499,
+            dayBenefit: 'Free hot Kerala breakfast • Zero deposit',
+            weekRate: 2199,
+            weekBenefit: 'Homestyle breakfast & dinner • Flexible lease',
+            monthRate: 7499,
+            monthBenefit: '3x Kerala meals daily + evening chai • Full access',
           },
           rooms: [
-            { id: 'r_1', type: 'Single Sharing', rent: 12000, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
-            { id: 'r_2', type: '2 Sharing', rent: 8500, deposit: 5001, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
+            { id: 'r_1', type: 'Single Sharing', rent: 11499, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
+            { id: 'r_2', type: '2 Sharing', rent: 7499, deposit: 5001, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
           ],
-          facilities: ['fac_food', 'fac_wifi', 'fac_ac', 'fac_wm', 'fac_cctv']
+          facilities: ['fac_food', 'fac_wifi', 'fac_ac', 'fac_wm', 'fac_cctv', 'fac_hotwater', 'fac_power'],
+          highlights: [
+            '3 Times Kerala Food Included',
+            'Power Back Up & High-Speed WiFi',
+            'CCTV & 24/7 Caretaker',
+            'Washing Machine & 24/7 Hot Water'
+          ]
         });
       }
     }
@@ -139,7 +213,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     const newRoom = {
       id: `r_${Date.now()}`,
       type: '3 Sharing',
-      rent: 7000,
+      rent: 5999,
       deposit: 4000,
       totalBeds: 6,
       availableBeds: 2,
@@ -171,6 +245,27 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     });
   };
 
+  // Add Custom Facility Tag
+  const handleAddCustomFacility = () => {
+    if (!newCustomFacility.trim()) return;
+    const tag = newCustomFacility.trim();
+    if (!formData.facilities.includes(tag)) {
+      setFormData(prev => ({ ...prev, facilities: [...prev.facilities, tag] }));
+    }
+    setNewCustomFacility('');
+  };
+
+  // Highlights handlers
+  const handleAddHighlight = () => {
+    if (!newHighlight.trim()) return;
+    setFormData(prev => ({ ...prev, highlights: [...prev.highlights, newHighlight.trim()] }));
+    setNewHighlight('');
+  };
+
+  const handleRemoveHighlight = (index) => {
+    setFormData(prev => ({ ...prev, highlights: prev.highlights.filter((_, i) => i !== index) }));
+  };
+
   // Add / Remove Photo URLs
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const handleAddPhoto = () => {
@@ -178,6 +273,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     setFormData(prev => ({ ...prev, photos: [...prev.photos, newPhotoUrl.trim()] }));
     setNewPhotoUrl('');
   };
+
   const handlePhotoFiles = (event) => {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
@@ -192,8 +288,18 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     }).catch(() => showToast('Could not read one or more photos', 'error'));
     event.target.value = '';
   };
+
   const handleRemovePhoto = (index) => {
     setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== index) }));
+  };
+
+  const handleSetPrimaryPhoto = (index) => {
+    if (index === 0) return;
+    setFormData(prev => {
+      const photoToMove = prev.photos[index];
+      const rest = prev.photos.filter((_, i) => i !== index);
+      return { ...prev, photos: [photoToMove, ...rest] };
+    });
   };
 
   // Submit Handler
@@ -201,10 +307,12 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     e.preventDefault();
     if (!formData.name.trim()) {
       showToast('Please enter the PG Name', 'error');
+      setActiveTab('basic');
       return;
     }
     if (!formData.contactNumber.trim()) {
       showToast('Please provide a contact phone number', 'error');
+      setActiveTab('basic');
       return;
     }
 
@@ -214,8 +322,14 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
       const totalBeds = formData.rooms.reduce((sum, r) => sum + (Number(r.totalBeds) || 0), 0);
       const availableBeds = formData.rooms.reduce((sum, r) => sum + (Number(r.availableBeds) || 0), 0);
 
+      const dayRate = Number(formData.charges.dayRate) || 499;
+      const weekRate = Number(formData.charges.weekRate) || 2199;
+      const monthRate = Number(formData.charges.monthRate) || (formData.rooms[0]?.rent ? Number(formData.rooms[0].rent) : 7499);
+
       const payload = {
         ...formData,
+        rating: Number(formData.rating) || 4.9,
+        reviewsCount: Number(formData.reviewsCount) || 140,
         rooms: formData.rooms.map(r => ({
           ...r,
           rent: Number(r.rent) || 0,
@@ -226,7 +340,20 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         charges: {
           ...formData.charges,
           deposit: Number(formData.charges.deposit) || 0,
-          maintenanceCharges: Number(formData.charges.maintenanceCharges) || 0
+          maintenanceCharges: Number(formData.charges.maintenanceCharges) || 0,
+          dayRate,
+          weekRate,
+          monthRate,
+        },
+        stayRates: {
+          day: dayRate,
+          week: weekRate,
+          month: monthRate
+        },
+        stayBenefits: {
+          day: formData.charges.dayBenefit || 'Free hot Kerala breakfast • Zero deposit',
+          week: formData.charges.weekBenefit || 'Homestyle breakfast & dinner • Flexible lease',
+          month: formData.charges.monthBenefit || '3x Kerala meals daily + evening chai • Full access',
         },
         totalBeds,
         availableBeds
@@ -256,7 +383,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
       onClose={onClose}
       size="xl"
       title={isEditing ? `Edit Property: ${formData.name || 'PG'}` : 'Add New PG / Property'}
-      subtitle="Configure property details, room sharings, pricing, dynamic locations, and amenities"
+      subtitle="Configure property details, stay rates, multi-sharing options, facilities, directions and media"
       footer={
         <>
           <button
@@ -272,67 +399,93 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             disabled={loading}
             className="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition-all disabled:opacity-50"
           >
-            {loading ? 'Saving...' : (isEditing ? 'Save Changes' : 'Publish PG Property')}
+            {loading ? 'Saving...' : (isEditing ? 'Save All Changes' : 'Publish PG Property')}
           </button>
         </>
       }
     >
       {/* Navigation Tabs inside Modal */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 mb-4 gap-2">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 mb-4 gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab('basic')}
-          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'basic' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <Building2 className="w-4 h-4" />
-          <span>1. Basic Info & Location</span>
+          <Building2 className="w-3.5 h-3.5" />
+          <span>1. Basic & Directions</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('rates')}
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'rates' 
+              ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <Calendar className="w-3.5 h-3.5" />
+          <span>2. Stay Plans & Rates</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('rooms')}
-          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'rooms' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <IndianRupee className="w-4 h-4" />
-          <span>2. Rooms & Pricing ({formData.rooms.length})</span>
+          <IndianRupee className="w-3.5 h-3.5" />
+          <span>3. Rooms ({formData.rooms.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('facilities')}
-          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'facilities' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <ListChecks className="w-4 h-4" />
-          <span>3. Facilities ({formData.facilities.length})</span>
+          <ListChecks className="w-3.5 h-3.5" />
+          <span>4. Facilities ({formData.facilities.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('highlights')}
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'highlights' 
+              ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>5. Highlights & Badges</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('media')}
-          className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'media' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          <Image className="w-4 h-4" />
-          <span>4. Photos & Media</span>
+          <Image className="w-3.5 h-3.5" />
+          <span>6. Photos & Media ({formData.photos.length})</span>
         </button>
       </div>
 
-      {/* TAB 1: BASIC INFO & DYNAMIC LOCATION */}
+      {/* TAB 1: BASIC INFO & DYNAMIC LOCATION & DIRECTIONS */}
       {activeTab === 'basic' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -371,9 +524,9 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-brand-600" />
-                Dynamic Location Hierarchy (No Hardcoded Cities)
+                Location Hierarchy & Locality
               </span>
-              <span className="text-[11px] text-slate-400">Fed from Locations Manager</span>
+              <span className="text-[11px] text-slate-400">Searchable across Seeker portal</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -416,18 +569,21 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             </div>
           </div>
 
+          {/* Direction & Full Address */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Full Address
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-amber-500" />
+                Direction / Landmark (Shown in Room Details Direction Banner)
               </label>
-              <textarea
-                rows={2}
-                value={formData.fullAddress}
-                onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
-                placeholder="Door No, Street name, Landmark, Pincode"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+              <input
+                type="text"
+                value={formData.direction}
+                onChange={(e) => setFormData({ ...formData, direction: e.target.value })}
+                placeholder="e.g. Near HCL Gate no 2, Sannidhi layout, Jigani or Opposite Infopark"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none font-medium"
               />
+              <p className="text-[10px] text-slate-400 mt-1">Appears directly as "Direction: [your text]" in the room modal</p>
             </div>
 
             <div>
@@ -441,22 +597,35 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 placeholder="https://maps.google.com/?q=..."
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
               />
-              <p className="text-[11px] text-slate-400 mt-1">Helps students navigate directly via Google Maps app</p>
+              <p className="text-[10px] text-slate-400 mt-1">Helps students navigate directly via Google Maps app</p>
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Full Physical Address
+            </label>
+            <textarea
+              rows={2}
+              value={formData.fullAddress}
+              onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
+              placeholder="Door No, Street name, Landmark, Pincode"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+            />
+          </div>
+
           {/* Contact Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-brand-600" />
-                Contact Phone Number *
+                Primary Contact Phone *
               </label>
               <input
                 type="text"
                 value={formData.contactNumber}
                 onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
-                placeholder="+91 98470 00000"
+                placeholder="+91 99000 82615"
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
                 required
               />
@@ -471,7 +640,21 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                 type="text"
                 value={formData.whatsappNumber}
                 onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                placeholder="+91 98470 00000 (Defaults to contact number)"
+                placeholder="+91 81500 82433"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-500" />
+                Alternate / Desk Phone
+              </label>
+              <input
+                type="text"
+                value={formData.alternatePhone}
+                onChange={(e) => setFormData({ ...formData, alternatePhone: e.target.value })}
+                placeholder="+91 94455 05665"
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
               />
             </div>
@@ -532,132 +715,153 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Description & Highlights
+              Full Description
             </label>
             <textarea
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe nearby landmarks, food options, room ambience, and rules..."
+              placeholder="Describe nearby landmarks, food menu, room ambience, and house rules..."
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
             />
           </div>
         </div>
       )}
 
-      {/* TAB 2: ROOM & PRICING MANAGEMENT */}
-      {activeTab === 'rooms' && (
+      {/* TAB 2: STAY PLANS & RATES (DAILY, WEEKLY, MONTHLY & CHARGES) */}
+      {activeTab === 'rates' && (
         <div className="space-y-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Multi-Room Sharings & Pricing
-              </h4>
-              <p className="text-[11px] text-slate-500">Add different room types (Single, 2 sharing, 3 sharing, etc.) with custom rates</p>
-            </div>
-            <button
-              type="button"
-              onClick={handleAddRoom}
-              className="px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 text-xs font-bold flex items-center gap-1.5 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Room Type</span>
-            </button>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-brand-600" />
+              Stay Plans Pricing & Custom Benefits
+            </h4>
+            <p className="text-[11px] text-slate-500">Configure the 3 stay duration options displayed directly to seekers</p>
           </div>
 
-          {/* Rooms List */}
-          <div className="space-y-3">
-            {formData.rooms.map((room, idx) => (
-              <div key={room.id || idx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5 text-brand-600" />
-                    Room Option #{idx + 1}
-                  </span>
-                  {formData.rooms.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveRoom(room.id)}
-                      className="text-rose-500 hover:text-rose-700 p-1 text-xs"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sharing Type</label>
-                    <CustomSelect
-                      value={room.type}
-                      onChange={(e) => handleRoomChange(room.id, 'type', e.target.value)}
-                      options={[
-                        { value: 'Single Sharing', label: 'Single Sharing' },
-                        { value: 'Single Studio', label: 'Single Studio' },
-                        { value: '2 Sharing', label: '2 Sharing' },
-                        { value: '3 Sharing', label: '3 Sharing' },
-                        { value: '4 Sharing', label: '4 Sharing' },
-                        { value: 'Dormitory', label: 'Dormitory' }
-                      ]}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Monthly Rent (₹)</label>
-                    <input
-                      type="number"
-                      value={room.rent ?? ''}
-                      onChange={(e) => handleRoomChange(room.id, 'rent', e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-brand-600 dark:text-brand-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Total Beds</label>
-                    <input
-                      type="number"
-                      value={room.totalBeds ?? ''}
-                      onChange={(e) => handleRoomChange(room.id, 'totalBeds', e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Available Beds</label>
-                    <input
-                      type="number"
-                      value={room.availableBeds ?? ''}
-                      onChange={(e) => handleRoomChange(room.id, 'availableBeds', e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-xs pt-1">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={room.hasAC}
-                      onChange={(e) => handleRoomChange(room.id, 'hasAC', e.target.checked)}
-                      className="rounded text-brand-600 focus:ring-brand-500"
-                    />
-                    <span>AC Room</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={room.hasAttachedBath}
-                      onChange={(e) => handleRoomChange(room.id, 'hasAttachedBath', e.target.checked)}
-                      className="rounded text-brand-600 focus:ring-brand-500"
-                    />
-                    <span>Attached Bathroom</span>
-                  </label>
-                </div>
+          {/* 3 Stay Plans Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Daily Stay Option */}
+            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  Day Stay
+                </span>
+                <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold">Daily Rate</span>
               </div>
-            ))}
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Rate (₹ / Day)</label>
+                <input
+                  type="number"
+                  value={formData.charges.dayRate ?? ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, dayRate: e.target.value === '' ? '' : Number(e.target.value) }
+                  })}
+                  placeholder="499"
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-amber-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Included Benefit Text</label>
+                <input
+                  type="text"
+                  value={formData.charges.dayBenefit || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, dayBenefit: e.target.value }
+                  })}
+                  placeholder="Free hot Kerala breakfast • Zero deposit"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                />
+              </div>
+            </div>
+
+            {/* Weekly Stay Option */}
+            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                  Weekly Stay
+                </span>
+                <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">7-Day Rate</span>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Rate (₹ / Week)</label>
+                <input
+                  type="number"
+                  value={formData.charges.weekRate ?? ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, weekRate: e.target.value === '' ? '' : Number(e.target.value) }
+                  })}
+                  placeholder="2199"
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Included Benefit Text</label>
+                <input
+                  type="text"
+                  value={formData.charges.weekBenefit || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, weekBenefit: e.target.value }
+                  })}
+                  placeholder="Homestyle breakfast & dinner • Flexible lease"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                />
+              </div>
+            </div>
+
+            {/* Monthly Stay Option */}
+            <div className="p-3.5 rounded-xl border border-brand-300 dark:border-brand-700/60 bg-brand-50/40 dark:bg-brand-950/20 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-brand-700 dark:text-brand-300 flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5 text-brand-600 fill-brand-600" />
+                  Monthly (Best Value)
+                </span>
+                <span className="text-[10px] font-mono text-brand-600 font-bold">Standard</span>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Rate (₹ / Month)</label>
+                <input
+                  type="number"
+                  value={formData.charges.monthRate ?? ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, monthRate: e.target.value === '' ? '' : Number(e.target.value) }
+                  })}
+                  placeholder="7499"
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-brand-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Included Benefit Text</label>
+                <input
+                  type="text"
+                  value={formData.charges.monthBenefit || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, monthBenefit: e.target.value }
+                  })}
+                  placeholder="3x Kerala meals daily + evening chai • Full access"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                />
+              </div>
+            </div>
+
           </div>
 
-          {/* Charges Policy Section */}
+          {/* Charges & Security Deposit Policy */}
           <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 space-y-3">
             <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
               Deposit & Additional Charges Policy
@@ -666,7 +870,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Security Deposit (₹)
+                  Default Security Deposit (₹)
                 </label>
                 <input
                   type="number"
@@ -681,7 +885,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Food Policy
+                  Food Policy Description
                 </label>
                 <input
                   type="text"
@@ -690,14 +894,14 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     ...formData,
                     charges: { ...formData.charges, foodCharges: e.target.value }
                   })}
-                  placeholder="e.g. Included / ₹3,000 optional"
+                  placeholder="e.g. Included (3 times daily) / Optional"
                   className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Electricity Charges
+                  Electricity Policy
                 </label>
                 <input
                   type="text"
@@ -706,7 +910,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     ...formData,
                     charges: { ...formData.charges, electricityCharges: e.target.value }
                   })}
-                  placeholder="e.g. As per meter / Included"
+                  placeholder="e.g. Included / As per sub-meter"
                   className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 />
               </div>
@@ -748,30 +952,170 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         </div>
       )}
 
-      {/* TAB 3: DYNAMIC FACILITIES */}
+      {/* TAB 3: ROOM & PRICING MANAGEMENT */}
+      {activeTab === 'rooms' && (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Multi-Room Sharings & Bed Inventory
+              </h4>
+              <p className="text-[11px] text-slate-500">Configure individual sharing options (Single, 2 sharing, 3 sharing, 4 sharing, 1 BHK, 2 BHK, etc.)</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddRoom}
+              className="px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Sharing Option</span>
+            </button>
+          </div>
+
+          {/* Rooms List */}
+          <div className="space-y-3">
+            {formData.rooms.map((room, idx) => (
+              <div key={room.id || idx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5 text-brand-600" />
+                    Room Option #{idx + 1}
+                  </span>
+                  {formData.rooms.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRoom(room.id)}
+                      className="text-rose-500 hover:text-rose-700 p-1 text-xs cursor-pointer"
+                      title="Remove Room Option"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sharing Type</label>
+                    <input
+                      type="text"
+                      value={room.type || ''}
+                      onChange={(e) => handleRoomChange(room.id, 'type', e.target.value)}
+                      placeholder="e.g. 2 Sharing"
+                      className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Monthly Rent (₹)</label>
+                    <input
+                      type="number"
+                      value={room.rent ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'rent', e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-brand-600 dark:text-brand-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Deposit (₹)</label>
+                    <input
+                      type="number"
+                      value={room.deposit ?? ''}
+                      onChange={(e) => handleRoomChange(room.id, 'deposit', e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full mt-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Available / Total Beds</label>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <input
+                        type="number"
+                        placeholder="Avail"
+                        value={room.availableBeds ?? ''}
+                        onChange={(e) => handleRoomChange(room.id, 'availableBeds', e.target.value === '' ? '' : Number(e.target.value))}
+                        className="w-1/2 px-2 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-emerald-600"
+                      />
+                      <span className="text-slate-400">/</span>
+                      <input
+                        type="number"
+                        placeholder="Total"
+                        value={room.totalBeds ?? ''}
+                        onChange={(e) => handleRoomChange(room.id, 'totalBeds', e.target.value === '' ? '' : Number(e.target.value))}
+                        className="w-1/2 px-2 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 text-xs pt-1">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={room.hasAC}
+                      onChange={(e) => handleRoomChange(room.id, 'hasAC', e.target.checked)}
+                      className="rounded text-brand-600 focus:ring-brand-500"
+                    />
+                    <span>AC Room</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={room.hasAttachedBath}
+                      onChange={(e) => handleRoomChange(room.id, 'hasAttachedBath', e.target.checked)}
+                      className="rounded text-brand-600 focus:ring-brand-500"
+                    />
+                    <span>Attached Bathroom</span>
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: DYNAMIC FACILITIES */}
       {activeTab === 'facilities' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 Select Available Amenities & Facilities
               </h4>
-              <p className="text-[11px] text-slate-500">Check all amenities available at this PG. New facilities can be added anytime in Facilities Manager.</p>
+              <p className="text-[11px] text-slate-500">Check all amenities available at this PG. You can also add custom facility tags.</p>
             </div>
-            <span className="text-xs font-bold text-brand-600 dark:text-brand-400">
+            <span className="text-xs font-bold text-brand-600 dark:text-brand-400 shrink-0">
               {formData.facilities.length} Selected
             </span>
           </div>
 
+          {/* Add Custom Facility tag */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newCustomFacility}
+              onChange={(e) => setNewCustomFacility(e.target.value)}
+              placeholder="Add custom facility (e.g. EV Charging Station, Table Tennis, Swimming Pool)"
+              className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleAddCustomFacility}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Tag</span>
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {availableFacilities.map(fac => {
-              const isSelected = formData.facilities.includes(fac.id);
+              const isSelected = formData.facilities.includes(fac.id) || formData.facilities.includes(fac.name);
               return (
                 <button
                   key={fac.id}
                   type="button"
                   onClick={() => toggleFacility(fac.id)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border text-left text-xs transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border text-left text-xs transition-all cursor-pointer ${
                     isSelected 
                       ? 'border-brand-500 bg-brand-50/80 text-brand-900 dark:bg-brand-950/60 dark:text-brand-200 shadow-sm font-semibold' 
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300'
@@ -792,71 +1136,212 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         </div>
       )}
 
-      {/* TAB 4: PHOTOS & MEDIA */}
-      {activeTab === 'media' && (
+      {/* TAB 5: HIGHLIGHTS & BADGES */}
+      {activeTab === 'highlights' && (
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Add Photo
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Highlight Badges & Key Feature Bullets
+            </h4>
+            <p className="text-[11px] text-slate-500">These bullet points and badges are prominently showcased on Seeker room cards and modals</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
+                <Tag className="w-3 h-3 text-brand-600" />
+                Badge Label
+              </label>
+              <input
+                type="text"
+                value={formData.badge}
+                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                placeholder="e.g. 18k Rent • 18k Deposit, Most Popular"
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-amber-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                Display Rating
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                max="5"
+                value={formData.rating}
+                onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
+                Reviews Count
+              </label>
+              <input
+                type="number"
+                value={formData.reviewsCount}
+                onChange={(e) => setFormData({ ...formData, reviewsCount: Number(e.target.value) })}
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold"
+              />
+            </div>
+          </div>
+
+          {/* Highlights List */}
+          <div className="space-y-3">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Bullet Highlights ({formData.highlights.length})
             </label>
+
             <div className="flex gap-2">
               <input
                 type="text"
-                value={newPhotoUrl}
-                onChange={(e) => setNewPhotoUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/... or hosted image link"
+                value={newHighlight}
+                onChange={(e) => setNewHighlight(e.target.value)}
+                placeholder="e.g. 3 Times Kerala Food Included, 100% Power Back Up"
                 className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
               />
               <button
                 type="button"
-                onClick={handleAddPhoto}
-                className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl"
+                onClick={handleAddHighlight}
+                className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer shrink-0"
               >
-                Add URL
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Bullet</span>
               </button>
             </div>
-            <label className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer">
-              <Plus className="w-3.5 h-3.5" />
-              Choose from device
-              <input type="file" accept="image/*" multiple onChange={handlePhotoFiles} className="sr-only" />
-            </label>
-          </div>
 
-          {/* Photos Grid */}
-          <div className="space-y-2">
-            <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Photo Gallery ({formData.photos.length})
-            </h5>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {formData.photos.map((url, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 aspect-video bg-slate-100 dark:bg-slate-800">
-                  <img src={url} alt={`PG Photo ${idx + 1}`} className="w-full h-full object-cover" />
+            <div className="space-y-2">
+              {formData.highlights.map((hl, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{hl}</span>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => handleRemovePhoto(idx)}
-                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Remove Photo"
+                    onClick={() => handleRemoveHighlight(idx)}
+                    className="text-rose-500 hover:text-rose-700 p-1 cursor-pointer"
+                    title="Remove highlight"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: PHOTOS & MEDIA */}
+      {activeTab === 'media' && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Add Photo by URL or Device Upload
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newPhotoUrl}
+                onChange={(e) => setNewPhotoUrl(e.target.value)}
+                placeholder="https://images.unsplash.com/... or image link"
+                className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAddPhoto}
+                className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl cursor-pointer"
+              >
+                Add URL
+              </button>
+            </div>
+            <label className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer transition-colors">
+              <Camera className="w-3.5 h-3.5 text-brand-600" />
+              Upload Photos from device
+              <input type="file" accept="image/*" multiple onChange={handlePhotoFiles} className="sr-only" />
+            </label>
+          </div>
+
+          {/* Photos Grid */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Photo Gallery ({formData.photos.length}) — First photo is used as Primary Cover
+              </h5>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {formData.photos.map((url, idx) => (
+                <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 aspect-video bg-slate-100 dark:bg-slate-800">
+                  <img src={url} alt={`PG Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                  
+                  {/* Primary Badge */}
+                  {idx === 0 && (
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-brand-600 text-white text-[10px] font-bold shadow-md">
+                      Cover Image
+                    </span>
+                  )}
+
+                  {/* Actions Overlay */}
+                  <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    {idx !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleSetPrimaryPhoto(idx)}
+                        className="px-2 py-1 rounded-md bg-brand-600 hover:bg-brand-500 text-white text-[10px] font-bold cursor-pointer"
+                        title="Set as primary cover photo"
+                      >
+                        Set Cover
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(idx)}
+                      className="p-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white cursor-pointer"
+                      title="Remove Photo"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
             {!formData.photos.length && <p className="text-xs text-slate-400">No photos added yet.</p>}
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-              <Video className="w-3.5 h-3.5 text-rose-500" />
-              Property Video Walkthrough URL (YouTube / Drive)
-            </label>
-            <input
-              type="text"
-              value={formData.videoUrl}
-              onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
-            />
+          {/* Video & 3D Tour Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                <Video className="w-3.5 h-3.5 text-rose-500" />
+                Property Video Walkthrough URL (YouTube / Drive)
+              </label>
+              <input
+                type="text"
+                value={formData.videoUrl}
+                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+                3D Virtual Tour / Matterport Link
+              </label>
+              <input
+                type="text"
+                value={formData.virtualTourUrl}
+                onChange={(e) => setFormData({ ...formData, virtualTourUrl: e.target.value })}
+                placeholder="https://my.matterport.com/show/?m=..."
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
       )}

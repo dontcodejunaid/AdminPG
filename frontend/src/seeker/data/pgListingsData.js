@@ -380,6 +380,34 @@ export const matchLocation = (property, searchLocation) => {
   return false;
 };
 
+export const FACILITY_NAME_MAP = {
+  fac_food: "3 Times Kerala Food",
+  fac_wifi: "High-Speed Wi-Fi (100+ Mbps)",
+  fac_ac: "Air Conditioner (AC)",
+  fac_wm: "Automatic Washing Machine",
+  fac_cctv: "24/7 CCTV & Security Guard",
+  fac_housekeep: "Daily Housekeeping",
+  fac_hotwater: "24x7 Geyser / Hot Water",
+  fac_parking: "2 & 4 Wheeler Parking",
+  fac_lift: "Elevator / Lift",
+  fac_attach_bath: "Attached Bathroom",
+  fac_power: "Full Power Backup (Generator / Inverter)",
+  fac_gym: "Fitness Gym",
+  fac_studytable: "Individual Study Table & Wardrobe",
+  fac_kitchen: "Self Cooking Area with Gas / Induction",
+};
+
+export const formatFacilityName = (f) => {
+  if (!f || typeof f !== 'string') return '';
+  const key = f.toLowerCase().trim();
+  if (FACILITY_NAME_MAP[key]) return FACILITY_NAME_MAP[key];
+  if (key.startsWith('fac_')) {
+    const raw = key.replace(/^fac_/, '').replace(/_/g, ' ');
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+  return f;
+};
+
 export const transformDbProperty = (p) => {
   const nameLower = (p.name || '').toLowerCase();
   const descLower = (p.description || '').toLowerCase();
@@ -506,21 +534,52 @@ export const transformDbProperty = (p) => {
     return `/${trimmed}`;
   });
 
-  const dayRate = is1BHK ? 1199 : (sharing === 1 ? 799 : (sharing === 2 ? 499 : (sharing === 3 ? 399 : 349)));
-  const weekRate = is1BHK ? 4999 : (sharing === 1 ? 3499 : (sharing === 2 ? 2199 : (sharing === 3 ? 1799 : 1499)));
+  const customDayRate = Number(p.charges?.dayRate) || Number(p.stayRates?.day);
+  const customWeekRate = Number(p.charges?.weekRate) || Number(p.stayRates?.week);
+  const customMonthRate = Number(p.charges?.monthRate) || Number(p.stayRates?.month);
+
+  const dayRate = customDayRate || (is1BHK ? 1199 : (sharing === 1 ? 799 : (sharing === 2 ? 499 : (sharing === 3 ? 399 : 349))));
+  const weekRate = customWeekRate || (is1BHK ? 4999 : (sharing === 1 ? 3499 : (sharing === 2 ? 2199 : (sharing === 3 ? 1799 : 1499))));
+  const monthRate = customMonthRate || minRent;
 
   const mainRoomType = is1BHK ? '1bhk' : (is2BHK ? '2bhk' : (sharing === 1 ? 'single' : 'shared'));
   const mainRoomTypeLabel = is1BHK ? '1 BHK' : (is2BHK ? '2 BHK' : (sharing === 1 ? 'Single Room' : 'Shared Room'));
+
+  const rawFacilities = (p.facilities && Array.isArray(p.facilities) && p.facilities.length > 0)
+    ? p.facilities
+    : ["fac_food", "fac_wifi", "fac_ac", "fac_wm", "fac_cctv", "fac_hotwater", "fac_power"];
+
+  const resolvedFacilities = rawFacilities.map(formatFacilityName);
+
+  const resolvedHighlights = (Array.isArray(p.highlights) && p.highlights.length > 0)
+    ? p.highlights
+    : [
+        "3 Times Kerala Food Included",
+        "Power Back Up & High-Speed WiFi",
+        "CCTV & 24/7 Caretaker",
+        "Washing Machine & 24/7 Hot Water"
+      ];
+
+  const phone1 = p.contactNumber || p.owner_phone || "9900082615";
+  const phone2 = p.whatsappNumber || p.whatsapp_number || p.alternatePhone || p.contactNumber || "8150082433";
+  const phones = Array.from(new Set([phone1, phone2].filter(Boolean)));
+
+  const badgeText = p.badge || (is1BHK ? "18k Rent • 18k Deposit" : `${sharing} Sharing • Move-In Ready`);
 
   return {
     id: p.id || p.slug,
     name: p.name,
     pgName: p.name,
     city: p.city || "Bengaluru",
-    area: p.full_address || p.fullAddress || p.area || "Bengaluru",
-    direction: p.map_url || p.mapUrl || p.fullAddress || "",
-    phones: [p.owner_phone || p.contactNumber || "9900082615", p.whatsapp_number || p.whatsappNumber || "8150082433"],
-    contact: p.owner_phone || p.contactNumber || "9900082615",
+    area: p.area || p.full_address || p.fullAddress || "Bengaluru",
+    fullAddress: p.fullAddress || p.full_address || p.area || "",
+    direction: p.direction || p.landmark || p.fullAddress || p.area || p.mapUrl || "",
+    landmark: p.landmark || p.direction || "",
+    mapUrl: p.mapUrl || p.map_url || "",
+    phones,
+    contact: phone1,
+    contactNumber: phone1,
+    whatsappNumber: phone2,
     genderType: normalizedGender,
     genderLabel: p.type || (normalizedGender === 'boys' ? "Gents PG" : normalizedGender === 'girls' ? "Ladies PG" : "Coliving"),
     sharing,
@@ -529,54 +588,39 @@ export const transformDbProperty = (p) => {
     roomTypeLabel: mainRoomTypeLabel,
     availableSharings: Array.from(availableSharings),
     availableRoomTypes: Array.from(availableRoomTypes),
-    price: minRent,
-    priceDisplay: `₹${minRent.toLocaleString('en-IN')}`,
+    price: monthRate,
+    priceDisplay: `₹${monthRate.toLocaleString('en-IN')}`,
     deposit: minDeposit,
     depositDisplay: `₹${minDeposit.toLocaleString('en-IN')}`,
     period: "month",
-    rating: 4.9,
-    reviewsCount: 150,
+    rating: Number(p.rating) || 4.9,
+    reviewsCount: Number(p.reviewsCount) || 140,
     isPremium: Boolean(p.is_featured || p.isFeatured),
-    badge: is1BHK ? "18k Rent • 18k Deposit" : `${sharing} Sharing • Move-In Ready`,
+    badge: badgeText,
     image: photos[0],
     images: photos,
+    videoUrl: p.videoUrl || p.video_url || "",
+    virtualTourUrl: p.virtualTourUrl || p.virtual_tour_url || "",
     desc: p.description || "Luxury coliving sanctuary with homestyle Kerala food, high-speed WiFi, power backup, and modern amenities.",
-    facilities: (p.facilities && Array.isArray(p.facilities) && p.facilities.length > 0) ? p.facilities : [
-      "Lounge area",
-      "Power back up",
-      "CCTV",
-      "Washing machine",
-      "3 times Kerala food",
-      "24/7 hot water",
-      "WiFi"
-    ],
-    highlights: [
-      "3 Times Kerala Food Included",
-      "Power Back Up & High-Speed WiFi",
-      "CCTV & 24/7 Caretaker",
-      "Washing Machine & 24/7 Hot Water"
-    ],
+    description: p.description || "",
+    facilities: resolvedFacilities,
+    highlights: resolvedHighlights,
     stayRates: {
       day: dayRate,
       dayDisplay: `₹${dayRate.toLocaleString('en-IN')}`,
       week: weekRate,
       weekDisplay: `₹${weekRate.toLocaleString('en-IN')}`,
-      month: minRent,
-      monthDisplay: `₹${minRent.toLocaleString('en-IN')}`,
+      month: monthRate,
+      monthDisplay: `₹${monthRate.toLocaleString('en-IN')}`,
     },
     stayBenefits: {
-      day: 'Free hot Kerala breakfast • Zero deposit',
-      week: 'Homestyle breakfast & dinner • Flexible lease',
-      month: is1BHK ? '18k Rent • 18k Deposit • Near Infosys' : '3x Kerala meals daily + evening chai • Full access',
+      day: p.stayBenefits?.day || p.charges?.dayBenefit || 'Free hot Kerala breakfast • Zero deposit',
+      week: p.stayBenefits?.week || p.charges?.weekBenefit || 'Homestyle breakfast & dinner • Flexible lease',
+      month: p.stayBenefits?.month || p.charges?.monthBenefit || (is1BHK ? '18k Rent • 18k Deposit • Near Infosys' : '3x Kerala meals daily + evening chai • Full access'),
     },
-    amenitiesSummary: [
-      '3 Times Kerala Food',
-      'High-Speed WiFi & Power Backup',
-      'Lounge Area & Entertainment Zone',
-      'Washing Machine & 24/7 Hot Water',
-      'CCTV & 24/7 Caretaker'
-    ],
+    amenitiesSummary: resolvedFacilities.slice(0, 5),
     availabilityStatus: p.availability_status || p.availabilityStatus || 'Move-in Ready',
+    rooms: p.rooms || [],
   };
 };
 

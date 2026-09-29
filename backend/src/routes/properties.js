@@ -49,20 +49,27 @@ router.post('/', async (req, res) => {
   try {
     const payload = req.body;
     const newPg = {
-      id: `pg_${Date.now()}`,
+      id: payload.id || `pg_${Date.now()}`,
       name: payload.name,
-      slug: (payload.name || 'pg').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+      slug: payload.slug || ((payload.name || 'pg').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()),
       type: payload.type || 'Boys', // Boys, Girls, Co-living
       state: payload.state || '',
       city: payload.city || '',
       area: payload.area || '',
       fullAddress: payload.fullAddress || '',
+      direction: payload.direction || payload.landmark || '',
+      landmark: payload.landmark || payload.direction || '',
       mapUrl: payload.mapUrl || '',
       description: payload.description || '',
+      badge: payload.badge || '',
+      rating: Number(payload.rating) || 4.9,
+      reviewsCount: Number(payload.reviewsCount) || 140,
       contactNumber: payload.contactNumber || '',
       whatsappNumber: payload.whatsappNumber || payload.contactNumber || '',
+      alternatePhone: payload.alternatePhone || '',
       photos: Array.isArray(payload.photos) ? payload.photos : [],
       videoUrl: payload.videoUrl || '',
+      virtualTourUrl: payload.virtualTourUrl || '',
       status: payload.status || 'Active', // Active, Inactive
       availabilityStatus: payload.availabilityStatus || 'Available', // Available, Limited, Full
       verificationStatus: payload.verificationStatus || 'Pending', // Verified, Pending, Not Verified
@@ -75,12 +82,29 @@ router.post('/', async (req, res) => {
         foodCharges: payload.charges?.foodCharges || 'Included',
         electricityCharges: payload.charges?.electricityCharges || 'Included',
         maintenanceCharges: Number(payload.charges?.maintenanceCharges) || 0,
-        otherCharges: payload.charges?.otherCharges || 'None'
+        otherCharges: payload.charges?.otherCharges || 'None',
+        dayRate: Number(payload.charges?.dayRate) || Number(payload.stayRates?.day) || 499,
+        weekRate: Number(payload.charges?.weekRate) || Number(payload.stayRates?.week) || 2199,
+        monthRate: Number(payload.charges?.monthRate) || Number(payload.stayRates?.month) || 7499,
+        dayBenefit: payload.charges?.dayBenefit || payload.stayBenefits?.day || 'Free hot Kerala breakfast • Zero deposit',
+        weekBenefit: payload.charges?.weekBenefit || payload.stayBenefits?.week || 'Homestyle breakfast & dinner • Flexible lease',
+        monthBenefit: payload.charges?.monthBenefit || payload.stayBenefits?.month || '3x Kerala meals daily + evening chai • Full access',
+      },
+      stayRates: {
+        day: Number(payload.stayRates?.day) || Number(payload.charges?.dayRate) || 499,
+        week: Number(payload.stayRates?.week) || Number(payload.charges?.weekRate) || 2199,
+        month: Number(payload.stayRates?.month) || Number(payload.charges?.monthRate) || 7499,
+      },
+      stayBenefits: {
+        day: payload.stayBenefits?.day || payload.charges?.dayBenefit || 'Free hot Kerala breakfast • Zero deposit',
+        week: payload.stayBenefits?.week || payload.charges?.weekBenefit || 'Homestyle breakfast & dinner • Flexible lease',
+        month: payload.stayBenefits?.month || payload.charges?.monthBenefit || '3x Kerala meals daily + evening chai • Full access',
       },
       rooms: Array.isArray(payload.rooms) ? payload.rooms : [
         { id: `r_${uuidv4().substring(0, 8)}`, type: '2 Sharing', rent: 8000, deposit: 5001, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
       ],
       facilities: Array.isArray(payload.facilities) ? payload.facilities : [],
+      highlights: Array.isArray(payload.highlights) ? payload.highlights : [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

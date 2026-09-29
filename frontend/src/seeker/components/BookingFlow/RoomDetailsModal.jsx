@@ -358,7 +358,9 @@ export default function RoomDetailsModal({
                     {room.stayRates?.dayDisplay || '₹499'}
                     <span className="text-xs font-normal text-white/50">/day</span>
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">Breakfast Free</span>
+                  <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">
+                    {room.stayBenefits?.day || 'Breakfast Free'}
+                  </span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[#0B1220] border border-white/10 text-center">
@@ -367,7 +369,9 @@ export default function RoomDetailsModal({
                     {room.stayRates?.weekDisplay || '₹2,199'}
                     <span className="text-xs font-normal text-white/50">/week</span>
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">Breakfast & Dinner</span>
+                  <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">
+                    {room.stayBenefits?.week || 'Breakfast & Dinner'}
+                  </span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[#0B1220] border border-[#D4A64A]/40 text-center bg-gradient-to-b from-[#D4A64A]/10 to-transparent">
@@ -376,26 +380,33 @@ export default function RoomDetailsModal({
                     {room.stayRates?.monthDisplay || room.priceDisplay}
                     <span className="text-xs font-normal text-white/50">/month</span>
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">3 Times Kerala Food</span>
+                  <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">
+                    {room.stayBenefits?.month || '3 Times Kerala Food'}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* All 10 Included Facilities */}
+            {/* All Included Facilities */}
             <div>
               <h4 className="text-xs font-mono font-bold text-[#D4A64A] uppercase tracking-wider mb-3">
-                All 10 Included Campus Facilities
+                Included Campus Facilities ({facilitiesList.length})
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-                {facilitiesList.map((facility, i) => (
-                  <div
-                    key={i}
-                    className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-[#FAF7F0] font-medium"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="capitalize">{facility}</span>
-                  </div>
-                ))}
+                {facilitiesList.map((facility, i) => {
+                  const resolvedName = typeof facility === 'string' && facility.startsWith('fac_')
+                    ? (facility.replace(/^fac_/, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+                    : facility;
+                  return (
+                    <div
+                      key={i}
+                      className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 text-xs text-[#FAF7F0] font-medium"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="capitalize">{resolvedName}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
