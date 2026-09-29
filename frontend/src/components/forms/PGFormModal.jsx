@@ -57,6 +57,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     direction: '',
     mapUrl: '',
     badge: 'Move-In Ready',
+    tagline: 'Move-in Ready • 1Gbps Wi-Fi • Generator Backup',
     rating: 4.9,
     reviewsCount: 140,
     description: '',
@@ -78,11 +79,29 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
       maintenanceCharges: 300,
       otherCharges: 'None',
       dayRate: 499,
-      dayBenefit: 'Free hot Kerala breakfast • Zero deposit',
+      dayBenefit: 'Hot Kerala Breakfast included',
+      daySubtitle: 'Zero Security Deposit',
       weekRate: 2199,
-      weekBenefit: 'Homestyle breakfast & dinner • Flexible lease',
+      weekBenefit: 'Breakfast & Dinner included',
+      weekSubtitle: 'Better Value • Flexible',
       monthRate: 7499,
-      monthBenefit: '3x Kerala meals daily + evening chai • Full access',
+      monthBenefit: '3x Kerala Homestyle Meals',
+      monthSubtitle: 'Best Value • 1-Month Deposit',
+    },
+    stayRates: {
+      day: 499,
+      week: 2199,
+      month: 7499,
+    },
+    stayBenefits: {
+      day: 'Hot Kerala Breakfast included',
+      week: 'Breakfast & Dinner included',
+      month: '3x Kerala Homestyle Meals',
+    },
+    staySubtitles: {
+      day: 'Zero Security Deposit',
+      week: 'Better Value • Flexible',
+      month: 'Best Value • 1-Month Deposit',
     },
     rooms: [
       { id: 'r_1', type: 'Single Sharing', rent: 11499, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
@@ -121,22 +140,41 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           maintenanceCharges: pgToEdit.charges?.maintenanceCharges ?? 0,
           otherCharges: pgToEdit.charges?.otherCharges || 'None',
           dayRate: pgToEdit.charges?.dayRate || pgToEdit.stayRates?.day || 499,
-          dayBenefit: pgToEdit.charges?.dayBenefit || pgToEdit.stayBenefits?.day || 'Free hot Kerala breakfast • Zero deposit',
+          dayBenefit: pgToEdit.charges?.dayBenefit || pgToEdit.stayBenefits?.day || 'Hot Kerala Breakfast included',
+          daySubtitle: pgToEdit.charges?.daySubtitle || pgToEdit.staySubtitles?.day || 'Zero Security Deposit',
           weekRate: pgToEdit.charges?.weekRate || pgToEdit.stayRates?.week || 2199,
-          weekBenefit: pgToEdit.charges?.weekBenefit || pgToEdit.stayBenefits?.week || 'Homestyle breakfast & dinner • Flexible lease',
+          weekBenefit: pgToEdit.charges?.weekBenefit || pgToEdit.stayBenefits?.week || 'Breakfast & Dinner included',
+          weekSubtitle: pgToEdit.charges?.weekSubtitle || pgToEdit.staySubtitles?.week || 'Better Value • Flexible',
           monthRate: pgToEdit.charges?.monthRate || pgToEdit.stayRates?.month || pgToEdit.rent || 7499,
-          monthBenefit: pgToEdit.charges?.monthBenefit || pgToEdit.stayBenefits?.month || '3x Kerala meals daily + evening chai • Full access',
+          monthBenefit: pgToEdit.charges?.monthBenefit || pgToEdit.stayBenefits?.month || '3x Kerala Homestyle Meals',
+          monthSubtitle: pgToEdit.charges?.monthSubtitle || pgToEdit.staySubtitles?.month || 'Best Value • 1-Month Deposit',
         };
 
         setFormData({
           ...pgToEdit,
           direction: pgToEdit.direction || pgToEdit.landmark || pgToEdit.fullAddress || '',
           badge: pgToEdit.badge || 'Move-In Ready',
+          tagline: pgToEdit.tagline || (Array.isArray(pgToEdit.highlights) && pgToEdit.highlights.length > 0 ? pgToEdit.highlights.slice(0, 3).join(' • ') : 'Move-in Ready • 1Gbps Wi-Fi • Generator Backup'),
           rating: Number(pgToEdit.rating) || 4.9,
           reviewsCount: Number(pgToEdit.reviewsCount) || 140,
           alternatePhone: pgToEdit.alternatePhone || '',
           virtualTourUrl: pgToEdit.virtualTourUrl || '',
           charges: initialCharges,
+          stayRates: {
+            day: initialCharges.dayRate,
+            week: initialCharges.weekRate,
+            month: initialCharges.monthRate,
+          },
+          stayBenefits: {
+            day: initialCharges.dayBenefit,
+            week: initialCharges.weekBenefit,
+            month: initialCharges.monthBenefit,
+          },
+          staySubtitles: {
+            day: initialCharges.daySubtitle,
+            week: initialCharges.weekSubtitle,
+            month: initialCharges.monthSubtitle,
+          },
           rooms: Array.isArray(pgToEdit.rooms) && pgToEdit.rooms.length > 0 ? pgToEdit.rooms : [
             { id: 'r_1', type: 'Single Sharing', rent: 11499, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true }
           ],
@@ -160,6 +198,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           direction: '',
           mapUrl: '',
           badge: 'Move-In Ready',
+          tagline: 'Move-in Ready • 1Gbps Wi-Fi • Generator Backup',
           rating: 4.9,
           reviewsCount: 140,
           description: '',
@@ -181,11 +220,29 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             maintenanceCharges: 300,
             otherCharges: 'None',
             dayRate: 499,
-            dayBenefit: 'Free hot Kerala breakfast • Zero deposit',
+            dayBenefit: 'Hot Kerala Breakfast included',
+            daySubtitle: 'Zero Security Deposit',
             weekRate: 2199,
-            weekBenefit: 'Homestyle breakfast & dinner • Flexible lease',
+            weekBenefit: 'Breakfast & Dinner included',
+            weekSubtitle: 'Better Value • Flexible',
             monthRate: 7499,
-            monthBenefit: '3x Kerala meals daily + evening chai • Full access',
+            monthBenefit: '3x Kerala Homestyle Meals',
+            monthSubtitle: 'Best Value • 1-Month Deposit',
+          },
+          stayRates: {
+            day: 499,
+            week: 2199,
+            month: 7499,
+          },
+          stayBenefits: {
+            day: 'Hot Kerala Breakfast included',
+            week: 'Breakfast & Dinner included',
+            month: '3x Kerala Homestyle Meals',
+          },
+          staySubtitles: {
+            day: 'Zero Security Deposit',
+            week: 'Better Value • Flexible',
+            month: 'Best Value • 1-Month Deposit',
           },
           rooms: [
             { id: 'r_1', type: 'Single Sharing', rent: 11499, deposit: 8000, totalBeds: 4, availableBeds: 1, hasAC: true, hasAttachedBath: true },
@@ -326,6 +383,14 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
       const weekRate = Number(formData.charges.weekRate) || 2199;
       const monthRate = Number(formData.charges.monthRate) || (formData.rooms[0]?.rent ? Number(formData.rooms[0].rent) : 7499);
 
+      const dayBenefit = formData.charges.dayBenefit || 'Hot Kerala Breakfast included';
+      const weekBenefit = formData.charges.weekBenefit || 'Breakfast & Dinner included';
+      const monthBenefit = formData.charges.monthBenefit || '3x Kerala Homestyle Meals';
+
+      const daySubtitle = formData.charges.daySubtitle || 'Zero Security Deposit';
+      const weekSubtitle = formData.charges.weekSubtitle || 'Better Value • Flexible';
+      const monthSubtitle = formData.charges.monthSubtitle || 'Best Value • 1-Month Deposit';
+
       const payload = {
         ...formData,
         rating: Number(formData.rating) || 4.9,
@@ -344,6 +409,12 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           dayRate,
           weekRate,
           monthRate,
+          dayBenefit,
+          weekBenefit,
+          monthBenefit,
+          daySubtitle,
+          weekSubtitle,
+          monthSubtitle,
         },
         stayRates: {
           day: dayRate,
@@ -351,9 +422,14 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           month: monthRate
         },
         stayBenefits: {
-          day: formData.charges.dayBenefit || 'Free hot Kerala breakfast • Zero deposit',
-          week: formData.charges.weekBenefit || 'Homestyle breakfast & dinner • Flexible lease',
-          month: formData.charges.monthBenefit || '3x Kerala meals daily + evening chai • Full access',
+          day: dayBenefit,
+          week: weekBenefit,
+          month: monthBenefit,
+        },
+        staySubtitles: {
+          day: daySubtitle,
+          week: weekSubtitle,
+          month: monthSubtitle,
         },
         totalBeds,
         availableBeds
@@ -389,7 +465,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -397,7 +473,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition-all disabled:opacity-50"
+            className="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition-all disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'Saving...' : (isEditing ? 'Save All Changes' : 'Publish PG Property')}
           </button>
@@ -409,7 +485,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <button
           type="button"
           onClick={() => setActiveTab('basic')}
-          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'basic' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -422,7 +498,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <button
           type="button"
           onClick={() => setActiveTab('rates')}
-          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'rates' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -435,7 +511,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <button
           type="button"
           onClick={() => setActiveTab('rooms')}
-          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'rooms' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -448,7 +524,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <button
           type="button"
           onClick={() => setActiveTab('facilities')}
-          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'facilities' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -461,7 +537,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <button
           type="button"
           onClick={() => setActiveTab('highlights')}
-          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'highlights' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -474,7 +550,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         <button
           type="button"
           onClick={() => setActiveTab('media')}
-          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 pb-2.5 px-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'media' 
               ? 'border-brand-600 text-brand-600 dark:text-brand-400' 
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -728,15 +804,15 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         </div>
       )}
 
-      {/* TAB 2: STAY PLANS & RATES (DAILY, WEEKLY, MONTHLY & CHARGES) */}
+      {/* TAB 2: STAY PLANS & RATES (DAILY, WEEKLY, MONTHLY & SUBTITLES) */}
       {activeTab === 'rates' && (
         <div className="space-y-5">
           <div>
             <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-brand-600" />
-              Stay Plans Pricing & Custom Benefits
+              Stay Plans Pricing, Benefits & Footers
             </h4>
-            <p className="text-[11px] text-slate-500">Configure the 3 stay duration options displayed directly to seekers</p>
+            <p className="text-[11px] text-slate-500">Configure rates, primary benefit text, and footer sub-notes for all 3 stay comparison cards</p>
           </div>
 
           {/* 3 Stay Plans Grid */}
@@ -767,7 +843,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Included Benefit Text</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Perk / Benefit Text</label>
                 <input
                   type="text"
                   value={formData.charges.dayBenefit || ''}
@@ -775,8 +851,22 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     ...formData,
                     charges: { ...formData.charges, dayBenefit: e.target.value }
                   })}
-                  placeholder="Free hot Kerala breakfast • Zero deposit"
-                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  placeholder="Hot Kerala Breakfast included"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Card Footer Subtitle</label>
+                <input
+                  type="text"
+                  value={formData.charges.daySubtitle || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, daySubtitle: e.target.value }
+                  })}
+                  placeholder="Zero Security Deposit"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 />
               </div>
             </div>
@@ -806,7 +896,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Included Benefit Text</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Perk / Benefit Text</label>
                 <input
                   type="text"
                   value={formData.charges.weekBenefit || ''}
@@ -814,8 +904,22 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     ...formData,
                     charges: { ...formData.charges, weekBenefit: e.target.value }
                   })}
-                  placeholder="Homestyle breakfast & dinner • Flexible lease"
-                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  placeholder="Breakfast & Dinner included"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Card Footer Subtitle</label>
+                <input
+                  type="text"
+                  value={formData.charges.weekSubtitle || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, weekSubtitle: e.target.value }
+                  })}
+                  placeholder="Better Value • Flexible"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 />
               </div>
             </div>
@@ -845,7 +949,7 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Included Benefit Text</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Perk / Benefit Text</label>
                 <input
                   type="text"
                   value={formData.charges.monthBenefit || ''}
@@ -853,8 +957,22 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                     ...formData,
                     charges: { ...formData.charges, monthBenefit: e.target.value }
                   })}
-                  placeholder="3x Kerala meals daily + evening chai • Full access"
-                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  placeholder="3x Kerala Homestyle Meals"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Card Footer Subtitle</label>
+                <input
+                  type="text"
+                  value={formData.charges.monthSubtitle || ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    charges: { ...formData.charges, monthSubtitle: e.target.value }
+                  })}
+                  placeholder="Best Value • 1-Month Deposit"
+                  className="w-full px-2.5 py-1.5 text-[11px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 />
               </div>
             </div>
@@ -1142,9 +1260,24 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
           <div>
             <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-500" />
-              Highlight Badges & Key Feature Bullets
+              Highlight Badges, Tagline & Bullet Features
             </h4>
-            <p className="text-[11px] text-slate-500">These bullet points and badges are prominently showcased on Seeker room cards and modals</p>
+            <p className="text-[11px] text-slate-500">These bullet points, taglines and badges are prominently showcased across Seeker cards and modals</p>
+          </div>
+
+          {/* Tagline input */}
+          <div>
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+              Property Tagline / Mini-Highlights (Shown below title in Stay Plan Modal)
+            </label>
+            <input
+              type="text"
+              value={formData.tagline || ''}
+              onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+              placeholder="e.g. Move-in Ready • 1Gbps Wi-Fi • Generator Backup"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-emerald-600 dark:text-emerald-400"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">

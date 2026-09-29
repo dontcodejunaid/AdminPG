@@ -603,6 +603,7 @@ export const transformDbProperty = (p) => {
     virtualTourUrl: p.virtualTourUrl || p.virtual_tour_url || "",
     desc: p.description || "Luxury coliving sanctuary with homestyle Kerala food, high-speed WiFi, power backup, and modern amenities.",
     description: p.description || "",
+    tagline: p.tagline || (resolvedHighlights.length > 0 ? resolvedHighlights.slice(0, 3).join(' • ') : "Move-in Ready • 1Gbps Wi-Fi • Generator Backup"),
     facilities: resolvedFacilities,
     highlights: resolvedHighlights,
     stayRates: {
@@ -614,9 +615,14 @@ export const transformDbProperty = (p) => {
       monthDisplay: `₹${monthRate.toLocaleString('en-IN')}`,
     },
     stayBenefits: {
-      day: p.stayBenefits?.day || p.charges?.dayBenefit || 'Free hot Kerala breakfast • Zero deposit',
-      week: p.stayBenefits?.week || p.charges?.weekBenefit || 'Homestyle breakfast & dinner • Flexible lease',
-      month: p.stayBenefits?.month || p.charges?.monthBenefit || (is1BHK ? '18k Rent • 18k Deposit • Near Infosys' : '3x Kerala meals daily + evening chai • Full access'),
+      day: p.stayBenefits?.day || p.charges?.dayBenefit || 'Hot Kerala Breakfast included',
+      week: p.stayBenefits?.week || p.charges?.weekBenefit || 'Breakfast & Dinner included',
+      month: p.stayBenefits?.month || p.charges?.monthBenefit || (is1BHK ? '18k Rent • 18k Deposit • Near Infosys' : '3x Kerala Homestyle Meals'),
+    },
+    staySubtitles: {
+      day: p.staySubtitles?.day || p.charges?.daySubtitle || 'Zero Security Deposit',
+      week: p.staySubtitles?.week || p.charges?.weekSubtitle || 'Better Value • Flexible',
+      month: p.staySubtitles?.month || p.charges?.monthSubtitle || 'Best Value • 1-Month Deposit',
     },
     amenitiesSummary: resolvedFacilities.slice(0, 5),
     availabilityStatus: p.availability_status || p.availabilityStatus || 'Move-in Ready',

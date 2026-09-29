@@ -160,10 +160,10 @@ export default function StayPlanModal({
   };
 
   const getWhatsAppMessage = () => {
-    const text = `*NEW BOOKING RESERVATION — AAFA COLIVING*
+    const text = `*NEW BOOKING RESERVATION — ${room.pgName || 'AAFA COLIVING'}*
 Ref Code: *${refNumber}*
 Room: *${room.name}*
-Sharing: *${room.sharingLabel}*
+Sharing: *${room.sharingLabel || 'Standard Sharing'}*
 Plan: *${selectedPlan.toUpperCase()} STAY*
 Check-In: *${checkInDate}*
 Duration: *${duration} ${durationUnits}*
@@ -174,9 +174,11 @@ Phone: *${phone}*
 Diet: *${diet}*
 ${note ? `Note: ${note}` : ''}
 
-Please confirm my room check-in availability across Pan-India campuses. Thank you!`;
+Please confirm my room check-in availability. Thank you!`;
     return encodeURIComponent(text);
   };
+
+  const bookingWhatsAppNumber = (room.whatsappNumber || room.contactNumber || '918747049377').replace(/[^0-9]/g, '');
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] overflow-y-auto bg-[#0B1220]/90 backdrop-blur-md">
@@ -306,7 +308,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                 {/* WhatsApp Action Button */}
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <a
-                    href={`https://wa.me/918747049377?text=${getWhatsAppMessage()}`}
+                    href={`https://wa.me/${bookingWhatsAppNumber}?text=${getWhatsAppMessage()}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
@@ -330,19 +332,19 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                 {/* Selected Room Header Snippet */}
                 <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#10192B] border border-white/10">
                   <img
-                    src={room.image}
+                    src={room.image || (room.images && room.images[0]) || "/images/1pg.jpeg"}
                     alt={room.name}
                     className="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0"
                   />
                   <div className="min-w-0 flex-1">
                     <span className="text-[10px] text-[#D4A64A] font-mono block truncate">
-                      {room.area} • {room.sharingLabel}
+                      {room.area || room.direction} • {room.sharingLabel}
                     </span>
                     <h4 className="text-sm font-bold font-sora text-[#FAF7F0] truncate">
                       {room.name}
                     </h4>
-                    <span className="text-[10px] text-emerald-400 font-mono">
-                      Move-in Ready • 1Gbps Wi-Fi • Generator Backup
+                    <span className="text-[10px] text-emerald-400 font-mono block truncate">
+                      {room.tagline || (room.highlights && room.highlights.slice(0, 3).join(' • ')) || 'Move-in Ready • 1Gbps Wi-Fi • Generator Backup'}
                     </span>
                   </div>
                 </div>
@@ -356,8 +358,8 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                   </p>
                 </div>
 
-                {/* 3 Comparison Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* 3 Comparison Cards - Fully Justified & Equal Height */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch">
                   
                   {/* Option 1: Day Stay */}
                   <div
@@ -365,7 +367,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                       setSelectedPlan('day');
                       setDuration(1);
                     }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-full min-h-[165px] ${
                       selectedPlan === 'day'
                         ? 'bg-[#10192B] border-[#D4A64A] ring-2 ring-[#D4A64A]/30 shadow-lg shadow-[#D4A64A]/10'
                         : 'bg-white/5 border-white/10 hover:border-white/25'
@@ -375,7 +377,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-mono font-bold text-white/80">Day Stay</span>
                         {selectedPlan === 'day' && (
-                          <div className="w-5 h-5 rounded-full bg-[#D4A64A] text-[#0B1220] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-[#D4A64A] text-[#0B1220] flex items-center justify-center shrink-0">
                             <Check className="w-3 h-3 stroke-[3]" />
                           </div>
                         )}
@@ -384,12 +386,12 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                         ₹{dayRate}
                         <span className="text-xs font-normal text-white/50">/day</span>
                       </div>
-                      <p className="text-[11px] text-emerald-400 font-semibold mt-1">
-                        Hot Kerala Breakfast included
+                      <p className="text-[11px] text-emerald-400 font-semibold mt-1.5 leading-snug">
+                        {room.stayBenefits?.day || 'Hot Kerala Breakfast included'}
                       </p>
                     </div>
-                    <span className="text-[10px] text-white/50 font-mono pt-3 block border-t border-white/5 mt-3">
-                      Zero Security Deposit
+                    <span className="text-[10px] text-white/50 font-mono pt-3 block border-t border-white/10 mt-3 truncate">
+                      {room.staySubtitles?.day || 'Zero Security Deposit'}
                     </span>
                   </div>
 
@@ -399,7 +401,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                       setSelectedPlan('week');
                       setDuration(1);
                     }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-full min-h-[165px] ${
                       selectedPlan === 'week'
                         ? 'bg-[#10192B] border-[#D4A64A] ring-2 ring-[#D4A64A]/30 shadow-lg shadow-[#D4A64A]/10'
                         : 'bg-white/5 border-white/10 hover:border-white/25'
@@ -409,7 +411,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-mono font-bold text-white/80">Weekly Stay</span>
                         {selectedPlan === 'week' && (
-                          <div className="w-5 h-5 rounded-full bg-[#D4A64A] text-[#0B1220] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-[#D4A64A] text-[#0B1220] flex items-center justify-center shrink-0">
                             <Check className="w-3 h-3 stroke-[3]" />
                           </div>
                         )}
@@ -418,12 +420,12 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                         ₹{weekRate.toLocaleString('en-IN')}
                         <span className="text-xs font-normal text-white/50">/week</span>
                       </div>
-                      <p className="text-[11px] text-emerald-400 font-semibold mt-1">
-                        Breakfast & Dinner included
+                      <p className="text-[11px] text-emerald-400 font-semibold mt-1.5 leading-snug">
+                        {room.stayBenefits?.week || 'Breakfast & Dinner included'}
                       </p>
                     </div>
-                    <span className="text-[10px] text-white/50 font-mono pt-3 block border-t border-white/5 mt-3">
-                      Better Value • Flexible
+                    <span className="text-[10px] text-white/50 font-mono pt-3 block border-t border-white/10 mt-3 truncate">
+                      {room.staySubtitles?.week || 'Better Value • Flexible'}
                     </span>
                   </div>
 
@@ -433,7 +435,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                       setSelectedPlan('month');
                       setDuration(1);
                     }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-full min-h-[165px] ${
                       selectedPlan === 'month'
                         ? 'bg-[#10192B] border-[#D4A64A] ring-2 ring-[#D4A64A]/30 shadow-lg shadow-[#D4A64A]/10'
                         : 'bg-white/5 border-white/10 hover:border-white/25'
@@ -443,7 +445,7 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-mono font-bold text-[#D4A64A]">Monthly Stay</span>
                         {selectedPlan === 'month' && (
-                          <div className="w-5 h-5 rounded-full bg-[#D4A64A] text-[#0B1220] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-[#D4A64A] text-[#0B1220] flex items-center justify-center shrink-0">
                             <Check className="w-3 h-3 stroke-[3]" />
                           </div>
                         )}
@@ -452,12 +454,12 @@ Please confirm my room check-in availability across Pan-India campuses. Thank yo
                         ₹{monthRate.toLocaleString('en-IN')}
                         <span className="text-xs font-normal text-white/50">/mo</span>
                       </div>
-                      <p className="text-[11px] text-emerald-400 font-semibold mt-1">
-                        3x Kerala Homestyle Meals
+                      <p className="text-[11px] text-emerald-400 font-semibold mt-1.5 leading-snug">
+                        {room.stayBenefits?.month || '3x Kerala Homestyle Meals'}
                       </p>
                     </div>
-                    <span className="text-[10px] text-white/50 font-mono pt-3 block border-t border-white/5 mt-3">
-                      Best Value • 1-Month Deposit
+                    <span className="text-[10px] text-white/50 font-mono pt-3 block border-t border-white/10 mt-3 truncate">
+                      {room.staySubtitles?.month || 'Best Value • 1-Month Deposit'}
                     </span>
                   </div>
 

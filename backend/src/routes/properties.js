@@ -62,6 +62,7 @@ router.post('/', async (req, res) => {
       mapUrl: payload.mapUrl || '',
       description: payload.description || '',
       badge: payload.badge || '',
+      tagline: payload.tagline || '',
       rating: Number(payload.rating) || 4.9,
       reviewsCount: Number(payload.reviewsCount) || 140,
       contactNumber: payload.contactNumber || '',
@@ -86,9 +87,12 @@ router.post('/', async (req, res) => {
         dayRate: Number(payload.charges?.dayRate) || Number(payload.stayRates?.day) || 499,
         weekRate: Number(payload.charges?.weekRate) || Number(payload.stayRates?.week) || 2199,
         monthRate: Number(payload.charges?.monthRate) || Number(payload.stayRates?.month) || 7499,
-        dayBenefit: payload.charges?.dayBenefit || payload.stayBenefits?.day || 'Free hot Kerala breakfast • Zero deposit',
-        weekBenefit: payload.charges?.weekBenefit || payload.stayBenefits?.week || 'Homestyle breakfast & dinner • Flexible lease',
-        monthBenefit: payload.charges?.monthBenefit || payload.stayBenefits?.month || '3x Kerala meals daily + evening chai • Full access',
+        dayBenefit: payload.charges?.dayBenefit || payload.stayBenefits?.day || 'Hot Kerala Breakfast included',
+        weekBenefit: payload.charges?.weekBenefit || payload.stayBenefits?.week || 'Breakfast & Dinner included',
+        monthBenefit: payload.charges?.monthBenefit || payload.stayBenefits?.month || '3x Kerala Homestyle Meals',
+        daySubtitle: payload.charges?.daySubtitle || payload.staySubtitles?.day || 'Zero Security Deposit',
+        weekSubtitle: payload.charges?.weekSubtitle || payload.staySubtitles?.week || 'Better Value • Flexible',
+        monthSubtitle: payload.charges?.monthSubtitle || payload.staySubtitles?.month || 'Best Value • 1-Month Deposit',
       },
       stayRates: {
         day: Number(payload.stayRates?.day) || Number(payload.charges?.dayRate) || 499,
@@ -96,9 +100,14 @@ router.post('/', async (req, res) => {
         month: Number(payload.stayRates?.month) || Number(payload.charges?.monthRate) || 7499,
       },
       stayBenefits: {
-        day: payload.stayBenefits?.day || payload.charges?.dayBenefit || 'Free hot Kerala breakfast • Zero deposit',
-        week: payload.stayBenefits?.week || payload.charges?.weekBenefit || 'Homestyle breakfast & dinner • Flexible lease',
-        month: payload.stayBenefits?.month || payload.charges?.monthBenefit || '3x Kerala meals daily + evening chai • Full access',
+        day: payload.stayBenefits?.day || payload.charges?.dayBenefit || 'Hot Kerala Breakfast included',
+        week: payload.stayBenefits?.week || payload.charges?.weekBenefit || 'Breakfast & Dinner included',
+        month: payload.stayBenefits?.month || payload.charges?.monthBenefit || '3x Kerala Homestyle Meals',
+      },
+      staySubtitles: {
+        day: payload.staySubtitles?.day || payload.charges?.daySubtitle || 'Zero Security Deposit',
+        week: payload.staySubtitles?.week || payload.charges?.weekSubtitle || 'Better Value • Flexible',
+        month: payload.staySubtitles?.month || payload.charges?.monthSubtitle || 'Best Value • 1-Month Deposit',
       },
       rooms: Array.isArray(payload.rooms) ? payload.rooms : [
         { id: `r_${uuidv4().substring(0, 8)}`, type: '2 Sharing', rent: 8000, deposit: 5001, totalBeds: 10, availableBeds: 2, hasAC: true, hasAttachedBath: true }
