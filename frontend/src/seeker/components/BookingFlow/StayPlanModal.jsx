@@ -23,6 +23,7 @@ import {
 import confetti from 'canvas-confetti';
 import useScrollLock from '../../hooks/useScrollLock';
 import BookingProgressSteps from './BookingProgressSteps';
+import { api } from '../../../services/api';
 
 export default function StayPlanModal({
   isOpen,
@@ -122,6 +123,27 @@ export default function StayPlanModal({
     const generatedRef = 'AAFA-' + Math.floor(100000 + Math.random() * 900000);
     setRefNumber(generatedRef);
     setIsConfirmed(true);
+
+    // Save Lead to CRM Database
+    try {
+      api.createEnquiry({
+        name: fullName.trim(),
+        phone: phone.trim(),
+        preferredCity: room.city || 'Bengaluru',
+        propertyId: room.id || '',
+        propertyName: room.name || room.pgName || 'Aafa Coliving',
+        propertyType: room.genderLabel || 'Coliving',
+        roomType: `${room.sharingLabel || room.name} (${selectedPlan.toUpperCase()} Stay)`,
+        budgetRange: `₹${Number(totalPrice).toLocaleString('en-IN')}`,
+        moveInDate: checkInDate || new Date().toISOString(),
+        message: `Online Booking: ${room.name} (${selectedPlan.toUpperCase()} STAY, ${duration} ${durationUnits}, Ref: ${generatedRef}) • Meals/Diet: ${diet}${note ? ` • Note: ${note}` : ''} • Price: ₹${totalPrice.toLocaleString('en-IN')}`,
+        status: 'New',
+        source: 'Website Booking Flow',
+        createdAt: new Date().toISOString()
+      }).catch(err => console.log('Enquiry CRM error:', err));
+    } catch (e) {
+      console.log('Error dispatching enquiry:', e);
+    }
 
     // Confetti
     try {
@@ -343,8 +365,18 @@ Please confirm my room check-in availability. Thank you!`;
                     <h4 className="text-sm font-bold font-sora text-[#FAF7F0] truncate">
                       {room.name}
                     </h4>
-                    <span className="text-[10px] text-emerald-400 font-mono block truncate">
-                      {room.tagline || (room.highlights && room.highlights.slice(0, 3).join(' • ')) || 'Move-in Ready • 1Gbps Wi-Fi • Generator Backup'}
+                    <span className={`text-[10px] font-mono block truncate ${
+                      (room.availabilityStatus || '').toLowerCase() === 'full'
+                        ? 'text-red-400 font-semibold'
+                        : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                        ? 'text-amber-400'
+                        : 'text-emerald-400'
+                    }`}>
+                      {(room.availabilityStatus || '').toLowerCase() === 'full'
+                        ? '🔴 Fully Booked • Joining Priority Waitlist'
+                        : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                        ? '🟡 Fast Filling • Limited Beds Available'
+                        : (room.tagline || (room.highlights && room.highlights.slice(0, 3).join(' • ')) || 'Move-in Ready • 1Gbps Wi-Fi • Generator Backup')}
                     </span>
                   </div>
                 </div>
@@ -561,7 +593,11 @@ Please confirm my room check-in availability. Thank you!`;
                     onClick={handleContinueToStep4}
                     className="flex-1 py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl shadow-[#D4A64A]/25 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer btn-shimmer"
                   >
-                    <span>Continue to Guest Details</span>
+                    <span>
+                      {(room.availabilityStatus || '').toLowerCase() === 'full'
+                        ? 'Continue to Waitlist Details'
+                        : 'Continue to Guest Details'}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -705,7 +741,11 @@ Please confirm my room check-in availability. Thank you!`;
                     type="submit"
                     className="flex-1 py-3.5 sm:py-4 px-4 sm:px-6 rounded-2xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] font-extrabold text-xs sm:text-base flex items-center justify-center gap-2 shadow-xl shadow-[#D4A64A]/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer btn-shimmer"
                   >
-                    <span>Confirm Booking</span>
+                    <span>
+                      {(room.availabilityStatus || '').toLowerCase() === 'full'
+                        ? 'Submit Waitlist Request'
+                        : 'Confirm Booking'}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

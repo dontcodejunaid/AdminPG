@@ -179,7 +179,55 @@ router.post('/', async (req, res) => {
 // PUT /api/properties/:id
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await store.update('properties', req.params.id, req.body);
+    const payload = req.body;
+    
+    const dayRate = Number(payload.charges?.dayRate) || Number(payload.stayRates?.day) || null;
+    const weekRate = Number(payload.charges?.weekRate) || Number(payload.stayRates?.week) || null;
+    const monthRate = Number(payload.charges?.monthRate) || Number(payload.stayRates?.month) || null;
+
+    const dayBenefit = payload.charges?.dayBenefit || payload.stayBenefits?.day || null;
+    const weekBenefit = payload.charges?.weekBenefit || payload.stayBenefits?.week || null;
+    const monthBenefit = payload.charges?.monthBenefit || payload.stayBenefits?.month || null;
+
+    const daySubtitle = payload.charges?.daySubtitle || payload.staySubtitles?.day || null;
+    const weekSubtitle = payload.charges?.weekSubtitle || payload.staySubtitles?.week || null;
+    const monthSubtitle = payload.charges?.monthSubtitle || payload.staySubtitles?.month || null;
+
+    const sanitized = { ...payload };
+
+    if (dayRate || weekRate || monthRate || payload.charges || payload.stayRates) {
+      sanitized.stayRates = {
+        day: dayRate || 499,
+        week: weekRate || 2199,
+        month: monthRate || 7499,
+      };
+      sanitized.stayBenefits = {
+        day: dayBenefit || 'Hot Kerala Breakfast included',
+        week: weekBenefit || 'Breakfast & Dinner included',
+        month: monthBenefit || '3x Kerala Homestyle Meals',
+      };
+      sanitized.staySubtitles = {
+        day: daySubtitle || 'Zero Security Deposit',
+        week: weekSubtitle || 'Better Value • Flexible',
+        month: monthSubtitle || 'Best Value • 1-Month Deposit',
+      };
+      sanitized.charges = {
+        ...(payload.charges || {}),
+        deposit: Number(payload.charges?.deposit) || 0,
+        maintenanceCharges: Number(payload.charges?.maintenanceCharges) || 0,
+        dayRate: sanitized.stayRates.day,
+        weekRate: sanitized.stayRates.week,
+        monthRate: sanitized.stayRates.month,
+        dayBenefit: sanitized.stayBenefits.day,
+        weekBenefit: sanitized.stayBenefits.week,
+        monthBenefit: sanitized.stayBenefits.month,
+        daySubtitle: sanitized.staySubtitles.day,
+        weekSubtitle: sanitized.staySubtitles.week,
+        monthSubtitle: sanitized.staySubtitles.month,
+      };
+    }
+
+    const updated = await store.update('properties', req.params.id, sanitized);
     if (!updated) return res.status(404).json({ success: false, error: 'PG Not Found' });
 
     if (req.body.city && req.body.area) {

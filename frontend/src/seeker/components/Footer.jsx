@@ -165,13 +165,14 @@ export default function Footer({ onOpenBooking, onOpenAdminCMS, onOpenAuth }) {
             Trust & Policies
           </h4>
           <ul className="space-y-2.5 text-xs text-[#FAF7F0]/75 font-medium">
-            <li><Link to="/move-in" className="hover:text-[#D4A64A] transition-colors">Move-In Checklist</Link></li>
+            <li><Link to="/about" className="hover:text-[#D4A64A] transition-colors">About Us</Link></li>
+            <li><Link to="/contact" className="hover:text-[#D4A64A] transition-colors">Contact & Support</Link></li>
             <li><Link to="/guidelines" className="hover:text-[#D4A64A] transition-colors">House Guidelines</Link></li>
+            <li><Link to="/terms" className="hover:text-[#D4A64A] transition-colors">Terms & Conditions</Link></li>
+            <li><Link to="/privacy" className="hover:text-[#D4A64A] transition-colors">Privacy Policy</Link></li>
+            <li><Link to="/move-in" className="hover:text-[#D4A64A] transition-colors">Move-In Checklist</Link></li>
             <li><Link to="/locations" className="hover:text-[#D4A64A] transition-colors">Pan-India Map</Link></li>
-            <li><Link to="/blog" className="hover:text-[#D4A64A] transition-colors">Life at Aafa Blog</Link></li>
             <li><Link to="/careers" className="hover:text-[#D4A64A] transition-colors">Franchise Partnership</Link></li>
-            <li><Link to="/about" className="hover:text-[#D4A64A] transition-colors">Founding Story</Link></li>
-            <li><Link to="/contact" className="hover:text-[#D4A64A] transition-colors">Contact Hotlines</Link></li>
           </ul>
         </div>
 

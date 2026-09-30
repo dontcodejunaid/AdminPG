@@ -88,6 +88,7 @@ export const api = {
     const qs = new URLSearchParams(params).toString();
     return request(`/reports${qs ? `?${qs}` : ''}`);
   },
+  createReport: (data) => request('/reports', { method: 'POST', body: data }),
   resolveReport: (id, data) => request(`/reports/${id}/resolve`, { method: 'PATCH', body: data }),
 
   // Payments

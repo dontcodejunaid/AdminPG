@@ -218,7 +218,24 @@
       "photos": []
     }
   ],
-  "enquiries": [],
+  "enquiries": [
+    {
+      "id": "enq_1790750984454",
+      "customerName": "Junaid Guest",
+      "customerPhone": "9876543210",
+      "customerEmail": "",
+      "pgId": "",
+      "pgName": "Aafa Coliving - 1 Sharing",
+      "roomType": "1 Sharing",
+      "budget": "₹11,499",
+      "moveInDate": "2026-10-01",
+      "message": "Online Booking Flow Test",
+      "status": "New",
+      "adminNotes": "",
+      "source": "Website Booking",
+      "createdAt": "2026-09-30T06:49:44.454Z"
+    }
+  ],
   "customers": [],
   "reportedListings": [],
   "reports": [],
