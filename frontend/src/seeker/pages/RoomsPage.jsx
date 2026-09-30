@@ -4,6 +4,7 @@ import { Bed, Home as HomeIcon, DoorClosed, Clock, CheckCircle2, Calendar, Arrow
 import PageTransition from '../components/PageTransition';
 import PriceCalculator from '../components/PriceCalculator';
 import SavingsCalculator from '../components/SavingsCalculator';
+import PromotionalBannerSection from '../components/PromotionalBannerSection';
 import { api } from '../../services/api';
 
 export default function RoomsPage({ onOpenBooking }) {
@@ -13,7 +14,7 @@ export default function RoomsPage({ onOpenBooking }) {
 
   useEffect(() => {
     let isMounted = true;
-    api.getProperties()
+    api.getProperties({ status: 'Active', verificationStatus: 'Verified' })
       .then(res => {
         if (res && res.data && isMounted) {
           setDbProps(res.data);
@@ -24,7 +25,11 @@ export default function RoomsPage({ onOpenBooking }) {
   }, []);
 
   const getDbPrice = (keyword, fallback) => {
-    const found = dbProps.find(p => (p.name || '').toLowerCase().includes(keyword.toLowerCase()));
+    const found = dbProps.find(p => 
+      (p.name || '').toLowerCase().includes(keyword.toLowerCase()) &&
+      (p.status || 'Active').toLowerCase() === 'active' &&
+      (p.verificationStatus || 'Verified').toLowerCase() === 'verified'
+    );
     if (found) {
       if (found.rooms && found.rooms.length > 0) {
         const min = Math.min(...found.rooms.map(r => Number(r.rent) || 99999));
@@ -174,6 +179,14 @@ export default function RoomsPage({ onOpenBooking }) {
           </p>
         </div>
 
+        {/* Dynamic Promotional & Sponsored Banner */}
+        <div className="mb-8">
+          <PromotionalBannerSection
+            placement="Search Results Header"
+            currentCity="All"
+          />
+        </div>
+
         {/* Top-Level Low-Scroll Section Controller */}
         <div className="flex justify-center mb-8">
           <div className="p-1.5 rounded-2xl glass-card border border-[#D4A64A]/30 flex flex-wrap items-center justify-center gap-2">
@@ -310,22 +323,31 @@ export default function RoomsPage({ onOpenBooking }) {
                       </div>
 
                       {/* CTA Buttons */}
-                      <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-white/10">
+                      <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-4 border-t border-white/10">
                         <button
                           onClick={() => onOpenBooking(plan.title)}
-                          className="w-full sm:flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] font-extrabold text-xs sm:text-sm shadow-lg shadow-[#D4A64A]/30 hover:shadow-[#D4A64A]/50 transition-all btn-shimmer"
+                          className="w-full sm:flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] font-extrabold text-xs sm:text-sm shadow-lg shadow-[#D4A64A]/30 hover:shadow-[#D4A64A]/50 transition-all btn-shimmer"
                         >
                           <Calendar className="w-4 h-4 stroke-[2.5]" />
                           <span>Book Room</span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
 
+                        <a
+                          href="tel:9900082615"
+                          className="w-full sm:w-auto px-3.5 py-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                          title="Call Desk (+91 99000 82615)"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call</span>
+                        </a>
+
                         <button
                           onClick={() => handleWhatsApp(plan.title)}
-                          className="w-full sm:w-auto px-4 py-3.5 rounded-xl glass-card text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/15 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                          className="w-full sm:w-auto px-3.5 py-3 rounded-xl glass-card text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/15 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
                           title="Enquire on WhatsApp"
                         >
-                          <MessageSquare className="w-4 h-4 text-emerald-400" />
+                          <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                           <span>WhatsApp</span>
                         </button>
                       </div>

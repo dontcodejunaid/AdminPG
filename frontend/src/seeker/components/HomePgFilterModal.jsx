@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   SlidersHorizontal, X, MapPin, Users, Building2, Bed, ArrowUpDown, Star, ShieldCheck,
-  CheckCircle2, Calendar, MessageSquare, RotateCcw
+  CheckCircle2, Calendar, MessageSquare, RotateCcw, Phone, Lock, Unlock, Sparkles
 } from 'lucide-react';
 import useScrollLock from '../hooks/useScrollLock';
 import { pgListings, citiesList, transformDbProperty, matchLocation, registerDynamicFacilities } from '../data/pgListingsData';
 import SimpleFilterCard from './SimpleFilterCard';
 import { api } from '../../services/api';
+import UnlockContactModal from './UnlockContactModal';
 
 export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
   useScrollLock(isOpen);
@@ -21,6 +22,22 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
   const [selectedGender, setSelectedGender] = useState('all'); // 'all' | 'boys' | 'girls' | 'coliving'
   const [selectedSharing, setSelectedSharing] = useState('all'); // 'all' | '1' | '2' | '3' | '4'
   const [dbListings, setDbListings] = useState([]);
+  const [unlockModalProperty, setUnlockModalProperty] = useState(null);
+  const [unlockedIds, setUnlockedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('unlocked_pg_contacts') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const handleUnlockSuccess = (pgId) => {
+    setUnlockedIds((prev) => {
+      const next = Array.from(new Set([...prev, pgId]));
+      localStorage.setItem('unlocked_pg_contacts', JSON.stringify(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -32,10 +49,12 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
       })
       .catch(() => {});
 
-    api.getProperties()
+    api.getProperties({ status: 'Active', verificationStatus: 'Verified' })
       .then((res) => {
         if (res && res.data && isMounted) {
-          const transformed = res.data.map(transformDbProperty);
+          const transformed = res.data
+            .filter(p => (p.status || 'Active').toLowerCase() === 'active' && (p.verificationStatus || 'Verified').toLowerCase() === 'verified')
+            .map(transformDbProperty);
           setDbListings(transformed);
         }
       })
@@ -61,50 +80,69 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
     };
   }, [isOpen, onClose]);
 
-  // Filter Logic
+  // Filter & Sort Logic
   const filteredAndSortedListings = useMemo(() => {
-    return currentListings.filter((item) => {
-      // 1. Category Filter (PG | Co-Living | Rooms)
-      if (selectedCategory === 'pg') {
-        if (item.genderType !== 'boys' && item.genderType !== 'girls') return false;
-      } else if (selectedCategory === 'coliving') {
-        if (item.genderType !== 'coliving') return false;
-      }
-
-      // 2. City / Location Match
-      if (selectedCity && selectedCity !== 'all') {
-        if (!matchLocation(item, selectedCity)) return false;
-      }
-
-      // 3. Area Match
-      if (selectedArea && selectedArea !== 'all') {
-        const itemArea = (item.area || '').toLowerCase();
-        const targetArea = selectedArea.toLowerCase();
-        if (!itemArea.includes(targetArea)) {
+    return currentListings
+      .filter((item) => {
+        // 0. Active & Verified status check
+        if ((item.status || 'Active').toLowerCase() !== 'active') {
           return false;
         }
-      }
-
-      // 4. Gender / Type Match
-      if (selectedGender !== 'all') {
-        const reqGen = selectedGender.toLowerCase();
-        const itemGen = (item.genderType || 'coliving').toLowerCase();
-        if (reqGen === 'boys' && itemGen !== 'boys' && itemGen !== 'coliving') return false;
-        if (reqGen === 'girls' && itemGen !== 'girls' && itemGen !== 'coliving') return false;
-        if (reqGen === 'coliving' && itemGen !== 'coliving') return false;
-      }
-
-      // 5. Sharing Match
-      if (selectedSharing !== 'all') {
-        const reqSharing = Number(selectedSharing);
-        const itemSharings = item.availableSharings || [item.sharing];
-        if (item.sharing !== reqSharing && !itemSharings.includes(reqSharing)) {
+        if (item.verificationStatus && item.verificationStatus.toLowerCase() !== 'verified') {
           return false;
         }
-      }
 
-      return true;
-    });
+        // 1. Category Filter (PG | Co-Living | Rooms)
+        if (selectedCategory === 'pg') {
+          if (item.genderType !== 'boys' && item.genderType !== 'girls') return false;
+        } else if (selectedCategory === 'coliving') {
+          if (item.genderType !== 'coliving') return false;
+        }
+
+        // 2. City / Location Match
+        if (selectedCity && selectedCity !== 'all') {
+          if (!matchLocation(item, selectedCity)) return false;
+        }
+
+        // 3. Area Match
+        if (selectedArea && selectedArea !== 'all') {
+          const itemArea = (item.area || '').toLowerCase();
+          const targetArea = selectedArea.toLowerCase();
+          if (!itemArea.includes(targetArea)) {
+            return false;
+          }
+        }
+
+        // 4. Gender / Type Match
+        if (selectedGender !== 'all') {
+          const reqGen = selectedGender.toLowerCase();
+          const itemGen = (item.genderType || 'coliving').toLowerCase();
+          if (reqGen === 'boys' && itemGen !== 'boys' && itemGen !== 'coliving') return false;
+          if (reqGen === 'girls' && itemGen !== 'girls' && itemGen !== 'coliving') return false;
+          if (reqGen === 'coliving' && itemGen !== 'coliving') return false;
+        }
+
+        // 5. Sharing Match
+        if (selectedSharing !== 'all') {
+          const reqSharing = Number(selectedSharing);
+          const itemSharings = item.availableSharings || [item.sharing];
+          if (item.sharing !== reqSharing && !itemSharings.includes(reqSharing)) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const aFeatured = Boolean(a.isFeatured ?? a.isPremium);
+        const bFeatured = Boolean(b.isFeatured ?? b.isPremium);
+        if (aFeatured !== bFeatured) {
+          return aFeatured ? -1 : 1;
+        }
+        const aOrder = a.featuredOrder ?? 999;
+        const bOrder = b.featuredOrder ?? 999;
+        return aOrder - bOrder;
+      });
   }, [currentListings, selectedCategory, selectedCity, selectedArea, selectedGender, selectedSharing]);
 
   const handleWhatsApp = (listing) => {
@@ -326,14 +364,35 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleWhatsApp(room)}
-                            className="p-2 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer"
-                            title="Inquire on WhatsApp"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="flex items-center gap-1.5">
+                          {unlockedIds.includes(room.id) ? (
+                            <>
+                              <a
+                                href={`tel:${room.contactNumber || room.phones?.[0] || '9900082615'}`}
+                                className="p-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition-colors"
+                                title={`Call Owner (${room.contactNumber || room.phones?.[0] || '+91 99000 82615'})`}
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                              </a>
+                              <button
+                                onClick={() => handleWhatsApp(room)}
+                                className="p-2 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/30 transition-colors cursor-pointer"
+                                title="Inquire on WhatsApp"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setUnlockModalProperty(room)}
+                              className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-[#0B1220] border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                              title="Pay ₹19 to unlock direct owner contact"
+                            >
+                              <Lock className="w-3 h-3" />
+                              <span>₹19 Unlock</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               onClose();
@@ -355,6 +414,14 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
           </motion.div>
         </div>
       )}
+
+      {/* ₹19 Owner Contact Micro-Payment Unlock Modal */}
+      <UnlockContactModal
+        property={unlockModalProperty}
+        isOpen={Boolean(unlockModalProperty)}
+        onClose={() => setUnlockModalProperty(null)}
+        onUnlockSuccess={handleUnlockSuccess}
+      />
     </AnimatePresence>,
     document.body
   );

@@ -34,18 +34,18 @@ router.post('/', async (req, res) => {
     const payload = req.body;
     const newEnquiry = {
       id: `enq_${Date.now()}`,
-      customerName: payload.customerName,
-      customerPhone: payload.customerPhone,
-      customerEmail: payload.customerEmail || '',
-      pgId: payload.pgId,
-      pgName: payload.pgName || 'PG Accommodation',
-      roomType: payload.roomType || 'Standard',
-      budget: payload.budget || '',
+      customerName: payload.customerName || payload.name || 'Website Seeker',
+      customerPhone: payload.customerPhone || payload.phone || '',
+      customerEmail: payload.customerEmail || payload.email || '',
+      pgId: payload.pgId || payload.propertyId || '',
+      pgName: payload.pgName || payload.propertyName || 'Aafa Coliving',
+      roomType: payload.roomType || payload.propertyType || 'Standard',
+      budget: payload.budget || payload.budgetRange || '',
       moveInDate: payload.moveInDate || '',
       message: payload.message || '',
       status: payload.status || 'New', // New, Contacted, Interested, Visited, Closed
       adminNotes: payload.adminNotes || '',
-      source: payload.source || 'Admin Direct',
+      source: payload.source || 'Website Booking',
       createdAt: new Date().toISOString()
     };
 

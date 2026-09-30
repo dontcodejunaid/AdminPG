@@ -78,12 +78,12 @@ export const BannersPage = () => {
       title: '',
       subtitle: '',
       imageUrl: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80',
-      targetType: 'All',
+      placement: 'Homepage Hero Top',
       city: 'All Cities',
-      actionText: 'Explore PGs',
-      link: '/properties',
+      targetUrl: '/rooms',
       startDate: new Date().toISOString().split('T')[0],
-      endDate: '2026-12-31'
+      endDate: '2026-12-31',
+      isActive: true
     });
     setIsModalOpen(true);
   };

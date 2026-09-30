@@ -16,9 +16,16 @@ import {
   ArrowRight,
   Flame,
   Check,
+  Phone,
+  Lock,
+  Unlock,
+  Sparkles,
+  Flag,
 } from 'lucide-react';
 import { allEnrichedListings, transformDbProperty, matchLocation, registerDynamicFacilities } from '../../data/pgListingsData';
 import { api } from '../../../services/api';
+import UnlockContactModal from '../UnlockContactModal';
+import ReportListingModal from '../ReportListingModal';
 
 export default function MatchingRoomsSection({
   filters = {
@@ -36,6 +43,24 @@ export default function MatchingRoomsSection({
   onSelectRoom,
 }) {
   const [dbListings, setDbListings] = useState([]);
+  const [isDbLoaded, setIsDbLoaded] = useState(false);
+  const [unlockModalProperty, setUnlockModalProperty] = useState(null);
+  const [reportModalProperty, setReportModalProperty] = useState(null);
+  const [unlockedIds, setUnlockedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('unlocked_pg_contacts') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const handleUnlockSuccess = (pgId) => {
+    setUnlockedIds((prev) => {
+      const next = Array.from(new Set([...prev, pgId]));
+      localStorage.setItem('unlocked_pg_contacts', JSON.stringify(next));
+      return next;
+    });
+  };
 
   // Fetch live properties & facilities from database API
   useEffect(() => {
@@ -48,62 +73,85 @@ export default function MatchingRoomsSection({
       })
       .catch(() => {});
 
-    api.getProperties()
+    api.getProperties({ status: 'Active', verificationStatus: 'Verified' })
       .then((res) => {
-        if (res && res.data && res.data.length > 0 && isMounted) {
+        if (res && res.data && isMounted) {
           const transformed = res.data.map(transformDbProperty);
           setDbListings(transformed);
+          setIsDbLoaded(true);
         }
       })
-      .catch((err) => console.log('Live properties fetch error:', err));
+      .catch((err) => {
+        console.log('Live properties fetch error:', err);
+        if (isMounted) setIsDbLoaded(true);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const listingsPool = dbListings.length > 0 ? dbListings : allEnrichedListings;
+  const listingsPool = isDbLoaded ? dbListings : allEnrichedListings;
 
-  // Filtering Logic
+  // Filtering & Sorting Logic
   const matchingListings = useMemo(() => {
-    return listingsPool.filter((item) => {
-      // 1. Location match using cluster-aware matcher
-      if (!matchLocation(item, filters.location)) {
-        return false;
-      }
-
-      // 2. Room Type match
-      if (filters.roomType && filters.roomType !== 'all') {
-        const itemRoomTypes = item.availableRoomTypes || [item.roomType];
-        if (item.roomType !== filters.roomType && !itemRoomTypes.includes(filters.roomType)) {
+    return listingsPool
+      .filter((item) => {
+        // 0. Active & Verified status check - exclude Inactive, Draft, or Pending/Unverified properties
+        if ((item.status || 'Active').toLowerCase() !== 'active') {
           return false;
         }
-      }
-
-      // 3. Sharing match
-      if (filters.sharing && filters.sharing !== 'all') {
-        const reqSharing = Number(filters.sharing);
-        const itemSharings = item.availableSharings || [item.sharing];
-        if (item.sharing !== reqSharing && !itemSharings.includes(reqSharing)) {
+        if (item.verificationStatus && item.verificationStatus.toLowerCase() !== 'verified') {
           return false;
         }
-      }
 
-      // 4. Gender match
-      if (filters.gender && filters.gender !== 'all') {
-        const reqGender = (filters.gender || '').toLowerCase();
-        const itemGender = (item.genderType || 'coliving').toLowerCase();
-        
-        if (reqGender === 'boys') {
-          if (itemGender !== 'boys' && itemGender !== 'coliving') return false;
-        } else if (reqGender === 'girls') {
-          if (itemGender !== 'girls' && itemGender !== 'coliving') return false;
-        } else if (reqGender === 'coliving') {
-          if (itemGender !== 'coliving') return false;
+        // 1. Location match using cluster-aware matcher
+        if (!matchLocation(item, filters.location)) {
+          return false;
         }
-      }
 
-      return true;
-    });
+        // 2. Room Type match
+        if (filters.roomType && filters.roomType !== 'all') {
+          const itemRoomTypes = item.availableRoomTypes || [item.roomType];
+          if (item.roomType !== filters.roomType && !itemRoomTypes.includes(filters.roomType)) {
+            return false;
+          }
+        }
+
+        // 3. Sharing match
+        if (filters.sharing && filters.sharing !== 'all') {
+          const reqSharing = Number(filters.sharing);
+          const itemSharings = item.availableSharings || [item.sharing];
+          if (item.sharing !== reqSharing && !itemSharings.includes(reqSharing)) {
+            return false;
+          }
+        }
+
+        // 4. Gender match
+        if (filters.gender && filters.gender !== 'all') {
+          const reqGender = (filters.gender || '').toLowerCase();
+          const itemGender = (item.genderType || 'coliving').toLowerCase();
+          
+          if (reqGender === 'boys') {
+            if (itemGender !== 'boys' && itemGender !== 'coliving') return false;
+          } else if (reqGender === 'girls') {
+            if (itemGender !== 'girls' && itemGender !== 'coliving') return false;
+          } else if (reqGender === 'coliving') {
+            if (itemGender !== 'coliving') return false;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const aFeatured = Boolean(a.isFeatured ?? a.isPremium);
+        const bFeatured = Boolean(b.isFeatured ?? b.isPremium);
+        if (aFeatured !== bFeatured) {
+          return aFeatured ? -1 : 1;
+        }
+        const aOrder = a.featuredOrder ?? 999;
+        const bOrder = b.featuredOrder ?? 999;
+        return aOrder - bOrder;
+      });
   }, [listingsPool, filters]);
 
   // Price helper based on selected stayType
@@ -276,18 +324,47 @@ export default function MatchingRoomsSection({
                         </span>
                       </div>
 
-                      {/* Rating & Availability */}
-                      <div className="absolute top-3 right-3 flex items-center gap-1.5 pointer-events-none">
-                        <span className="px-2.5 py-1 rounded-lg bg-[#0B1220]/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 border border-white/15">
+                      {/* Rating & Report Flag */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                        <span className="px-2.5 py-1 rounded-lg bg-[#0B1220]/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 border border-white/15 pointer-events-none">
                           <Star className="w-3 h-3 text-[#D4A64A] fill-[#D4A64A]" />
                           <span>{room.rating}</span>
                         </span>
+                        <button
+                          type="button"
+                          title="Report inaccurate listing or scam"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setReportModalProperty(room);
+                          }}
+                          className="w-7 h-7 rounded-lg bg-[#0B1220]/90 backdrop-blur-md text-white/70 hover:text-red-400 hover:bg-red-500/20 border border-white/15 hover:border-red-500/40 flex items-center justify-center transition-all cursor-pointer shadow-md"
+                        >
+                          <Flag className="w-3 h-3" />
+                        </button>
                       </div>
 
                       {/* Availability banner */}
-                      <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-md bg-[#0B1220]/95 text-emerald-400 text-[10px] font-mono font-semibold flex items-center gap-1 border border-emerald-500/20 pointer-events-none">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                        <span>Move-In Ready</span>
+                      <div className={`absolute bottom-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-semibold flex items-center gap-1 border pointer-events-none backdrop-blur-md ${
+                        (room.availabilityStatus || '').toLowerCase() === 'full'
+                          ? 'bg-red-950/95 text-red-300 border-red-500/50 shadow-lg shadow-red-950/50'
+                          : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                          ? 'bg-amber-950/95 text-amber-300 border-amber-500/50 shadow-lg shadow-amber-950/50'
+                          : 'bg-[#0B1220]/95 text-emerald-400 border-emerald-500/20'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          (room.availabilityStatus || '').toLowerCase() === 'full'
+                            ? 'bg-red-500'
+                            : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                            ? 'bg-amber-400 animate-ping'
+                            : 'bg-emerald-400 animate-ping'
+                        }`} />
+                        <span>
+                          {(room.availabilityStatus || '').toLowerCase() === 'full'
+                            ? 'Full • Sold Out'
+                            : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                            ? 'Limited Beds Left'
+                            : 'Move-In Ready'}
+                        </span>
                       </div>
                     </div>
 
@@ -317,7 +394,7 @@ export default function MatchingRoomsSection({
                     </p>
 
                     {/* Core Features Grid */}
-                    <div className="grid grid-cols-2 gap-2 mb-4 p-2.5 rounded-xl bg-[#0B1220]/60 border border-white/5 text-[10px] text-[#FAF7F0]/80 font-medium">
+                    <div className="grid grid-cols-2 gap-2 mb-3 p-2.5 rounded-xl bg-[#0B1220]/60 border border-white/5 text-[10px] text-[#FAF7F0]/80 font-medium">
                       <div className="flex items-center gap-1.5 truncate">
                         <Utensils className="w-3.5 h-3.5 text-[#D4A64A] shrink-0" />
                         <span className="truncate">Kerala Meals</span>
@@ -335,6 +412,55 @@ export default function MatchingRoomsSection({
                         <span className="truncate">Biometric Entry</span>
                       </div>
                     </div>
+
+                    {/* Direct Owner Contact Bar - Locked/Blurred until ₹19 payment */}
+                    {unlockedIds.includes(room.id) ? (
+                      <div className="flex items-center justify-between gap-2 mb-3 p-2 rounded-xl bg-emerald-950/60 border border-emerald-500/35 text-xs shadow-sm">
+                        <div className="flex items-center gap-1.5 text-emerald-300 font-mono text-[11px] truncate min-w-0">
+                          <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span className="text-white/60">Owner:</span>
+                          <span className="font-bold text-[#FAF7F0] truncate">{room.contactNumber || room.phones?.[0] || '+91 99000 82615'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <a
+                            href={`tel:${room.contactNumber || room.phones?.[0] || '9900082615'}`}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] font-bold flex items-center gap-1 transition-all shadow-sm"
+                            title="Call PG Owner / Caretaker"
+                          >
+                            <Phone className="w-3 h-3" />
+                            <span>Call</span>
+                          </a>
+                          <a
+                            href={`https://wa.me/${(room.whatsappNumber || room.contactNumber || '918747049377').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I just unlocked ${room.name} (${room.area}) on KeralaPG. Please confirm availability.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2 py-1 rounded-lg bg-[#25D366]/20 hover:bg-[#25D366] active:scale-95 text-[#25D366] hover:text-white border border-[#25D366]/40 text-[11px] font-bold flex items-center gap-1 transition-all shadow-sm"
+                            title="WhatsApp PG Owner / Caretaker"
+                          >
+                            <span>WA</span>
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2 mb-3 p-2 rounded-xl bg-[#090E1B] border border-amber-500/30 text-xs shadow-inner">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span className="text-white/50 text-[10px] font-mono">Owner:</span>
+                          <span className="font-mono text-[11px] text-white/40 blur-[3px] select-none tracking-wider truncate">
+                            +91 99000 •••••
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setUnlockModalProperty(room)}
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-[#0B1220] text-[11px] font-extrabold flex items-center gap-1 transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                          title="Pay ₹19 to unlock verified owner phone number"
+                        >
+                          <Lock className="w-3 h-3 stroke-[2.5]" />
+                          <span>Unlock ₹19</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Pricing & Dual Action Buttons ("View Details" and "Book Now") */}
@@ -368,14 +494,25 @@ export default function MatchingRoomsSection({
                         <span>View Details</span>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => onSelectRoom && onSelectRoom(room)}
-                        className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] text-xs font-extrabold shadow-md shadow-[#D4A64A]/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1 cursor-pointer btn-shimmer"
-                      >
-                        <span>Book Now</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
+                      {(room.availabilityStatus || '').toLowerCase() === 'full' ? (
+                        <button
+                          type="button"
+                          onClick={() => onSelectRoom && onSelectRoom(room)}
+                          className="py-2.5 px-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/40 text-xs font-extrabold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                        >
+                          <span>Full • Waitlist</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => onSelectRoom && onSelectRoom(room)}
+                          className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] text-xs font-extrabold shadow-md shadow-[#D4A64A]/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1 cursor-pointer btn-shimmer"
+                        >
+                          <span>Book Now</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -385,6 +522,21 @@ export default function MatchingRoomsSection({
           </AnimatePresence>
         </div>
       )}
+
+      {/* ₹19 Owner Contact Micro-Payment Unlock Modal */}
+      <UnlockContactModal
+        property={unlockModalProperty}
+        isOpen={Boolean(unlockModalProperty)}
+        onClose={() => setUnlockModalProperty(null)}
+        onUnlockSuccess={handleUnlockSuccess}
+      />
+
+      {/* Listing Report Moderation Modal */}
+      <ReportListingModal
+        property={reportModalProperty}
+        isOpen={Boolean(reportModalProperty)}
+        onClose={() => setReportModalProperty(null)}
+      />
     </div>
   );
 }

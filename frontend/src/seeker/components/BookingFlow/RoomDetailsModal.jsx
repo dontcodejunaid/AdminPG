@@ -12,9 +12,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Lock,
+  Unlock,
+  MessageSquare,
+  Flag,
 } from 'lucide-react';
 import useScrollLock from '../../hooks/useScrollLock';
 import { formatFacilityName } from '../../data/pgListingsData';
+import UnlockContactModal from '../UnlockContactModal';
+import ReportListingModal from '../ReportListingModal';
 
 const all8Images = [
   "/images/1pg.jpeg",
@@ -37,6 +43,25 @@ export default function RoomDetailsModal({
   useScrollLock(isOpen);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [unlockedIds, setUnlockedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('unlocked_pg_contacts') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const handleUnlockSuccess = (pgId) => {
+    setUnlockedIds((prev) => {
+      const next = Array.from(new Set([...prev, pgId]));
+      localStorage.setItem('unlocked_pg_contacts', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const isUnlocked = room?.id && unlockedIds.includes(room.id);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const touchStartY = useRef(0);
@@ -181,21 +206,48 @@ export default function RoomDetailsModal({
               <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-[#D4A64A]/15 text-[#D4A64A] text-[10px] sm:text-xs font-mono font-bold border border-[#D4A64A]/30 shrink-0">
                 Coliving
               </span>
-              <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-[10px] sm:text-xs font-mono font-bold border border-emerald-500/30 truncate text-center">
+              <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-white/10 text-white/90 text-[10px] sm:text-xs font-mono font-bold border border-white/15 truncate text-center">
                 {room.sharingLabel || '1, 2, 3 & 4 Sharing'}
+              </span>
+              <span className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold border truncate text-center ${
+                (room.availabilityStatus || '').toLowerCase() === 'full'
+                  ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                  : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+              }`}>
+                {(room.availabilityStatus || '').toLowerCase() === 'full'
+                  ? '🔴 Full / Sold Out'
+                  : (room.availabilityStatus || '').toLowerCase() === 'limited'
+                  ? '🟡 Limited Beds'
+                  : '🟢 Move-In Ready'}
               </span>
             </div>
 
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close modal"
-              className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500 text-red-200 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 border border-red-500/30 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
-            >
-              <X className="w-4 h-4 stroke-[2.5]" />
-              <span className="hidden sm:inline">Close</span>
-            </button>
+            {/* Actions: Report & Close */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsReportModalOpen(true)}
+                title="Report inaccurate listing or issue"
+                aria-label="Report listing"
+                className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-white/70 hover:text-red-400 text-xs font-semibold flex items-center justify-center gap-1.5 border border-white/15 hover:border-red-500/40 transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <Flag className="w-3.5 h-3.5 text-red-400" />
+                <span className="hidden sm:inline">Report</span>
+              </button>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close modal"
+                className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500 text-red-200 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 border border-red-500/30 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+              >
+                <X className="w-4 h-4 stroke-[2.5]" />
+                <span className="hidden sm:inline">Close</span>
+              </button>
+            </div>
           </div>
 
           {/* Scrollable Body */}
@@ -318,19 +370,47 @@ export default function RoomDetailsModal({
                   </h3>
                 </div>
                 
-                {/* Direct Call / Contact Pills */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {phones.map((p, i) => (
+                {/* Direct Call / Contact Pills - Locked/Unlocked State */}
+                {isUnlocked ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {phones.map((p, i) => (
+                      <a
+                        key={i}
+                        href={`tel:${p}`}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5 border border-emerald-500/40 transition-all shadow-sm"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{p}</span>
+                      </a>
+                    ))}
                     <a
-                      key={i}
-                      href={`tel:${p}`}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5 border border-emerald-500/40 transition-all"
+                      href={`https://wa.me/${(room.whatsappNumber || room.contactNumber || '918747049377').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi, I unlocked ${room.name} on KeralaPG. Please confirm room availability.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-[#25D366]/20 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
                     >
-                      <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>{p}</span>
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>WhatsApp</span>
                     </a>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-1.5 rounded-xl bg-[#090E1B] border border-amber-500/30">
+                    <div className="flex items-center gap-1.5 px-2">
+                      <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span className="font-mono text-xs text-white/40 blur-[3px] select-none tracking-wider">
+                        +91 99000 •••••
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsUnlockModalOpen(true)}
+                      className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-[#0B1220] text-xs font-extrabold flex items-center gap-1 shadow-md shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Unlock Contact (₹19)</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Direction Badge */}
@@ -423,13 +503,24 @@ export default function RoomDetailsModal({
                 <span>Back</span>
               </button>
 
-              <a
-                href={`tel:${phones[0]}`}
-                className="px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Call Desk</span>
-              </a>
+              {isUnlocked ? (
+                <a
+                  href={`tel:${phones[0]}`}
+                  className="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Desk</span>
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsUnlockModalOpen(true)}
+                  className="px-3.5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-[#0B1220] border border-amber-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Unlock Desk (₹19)</span>
+                </button>
+              )}
             </div>
 
             <button
@@ -438,9 +529,17 @@ export default function RoomDetailsModal({
                 onClose();
                 if (onProceedToBooking) onProceedToBooking(room);
               }}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] text-xs sm:text-sm font-extrabold shadow-lg shadow-[#D4A64A]/25 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer btn-shimmer"
+              className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                (room.availabilityStatus || '').toLowerCase() === 'full'
+                  ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-950/40'
+                  : 'bg-gradient-to-r from-[#D4A64A] via-amber-500 to-yellow-600 text-[#0B1220] shadow-[#D4A64A]/25 hover:scale-[1.02] active:scale-95 btn-shimmer'
+              }`}
             >
-              <span>Choose Stay Plan & Book</span>
+              <span>
+                {(room.availabilityStatus || '').toLowerCase() === 'full'
+                  ? 'Join Waitlist / Enquire'
+                  : 'Choose Stay Plan & Book'}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -563,6 +662,21 @@ export default function RoomDetailsModal({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ₹19 Owner Contact Micro-Payment Unlock Modal */}
+      <UnlockContactModal
+        property={room}
+        isOpen={isUnlockModalOpen}
+        onClose={() => setIsUnlockModalOpen(false)}
+        onUnlockSuccess={handleUnlockSuccess}
+      />
+
+      {/* Listing Report Moderation Modal */}
+      <ReportListingModal
+        property={room}
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+      />
     </div>,
     document.body
   );

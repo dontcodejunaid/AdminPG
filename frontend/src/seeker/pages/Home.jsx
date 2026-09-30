@@ -20,6 +20,7 @@ import MatchingRoomsSection from '../components/BookingFlow/MatchingRoomsSection
 import RoomDetailsModal from '../components/BookingFlow/RoomDetailsModal';
 import StayPlanModal from '../components/BookingFlow/StayPlanModal';
 import FindSpaceLogo from '../components/FindSpaceLogo';
+import PromotionalBannerSection from '../components/PromotionalBannerSection';
 import { locations } from '../data/locationsData';
 import { transformDbProperty, registerDynamicFacilities } from '../data/pgListingsData';
 import { api } from '../../services/api';
@@ -29,6 +30,8 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
   const [activeFaq, setActiveFaq] = useState(null);
   const [roomCategoryTab, setRoomCategoryTab] = useState('all');
   const [dbProps, setDbProps] = useState([]);
+  const [isDbLoaded, setIsDbLoaded] = useState(false);
+  const [cmsData, setCmsData] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,18 +43,33 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
       })
       .catch(() => {});
 
-    api.getProperties()
+    api.getCms()
       .then(res => {
         if (res && res.data && isMounted) {
-          setDbProps(res.data);
+          setCmsData(res.data);
         }
       })
       .catch(() => {});
+
+    api.getProperties({ status: 'Active', verificationStatus: 'Verified' })
+      .then(res => {
+        if (res && res.data && isMounted) {
+          setDbProps(res.data);
+          setIsDbLoaded(true);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setIsDbLoaded(true);
+      });
     return () => { isMounted = false; };
   }, []);
 
   const getDbPrice = (keyword, fallback) => {
-    const found = dbProps.find(p => (p.name || '').toLowerCase().includes(keyword.toLowerCase()));
+    const found = dbProps.find(p => 
+      (p.name || '').toLowerCase().includes(keyword.toLowerCase()) && 
+      (p.status || 'Active').toLowerCase() === 'active' &&
+      (p.verificationStatus || 'Verified').toLowerCase() === 'verified'
+    );
     if (found) {
       if (found.rooms && found.rooms.length > 0) {
         const min = Math.min(...found.rooms.map(r => Number(r.rent) || 99999));
@@ -154,9 +172,10 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
 
   // Curated room plans dynamically derived from Admin database properties
   const featuredRooms = useMemo(() => {
-    if (dbProps && dbProps.length > 0) {
+    if (isDbLoaded) {
+      const activeDbProps = dbProps.filter(p => (p.status || 'Active').toLowerCase() === 'active');
       // Prioritize featured properties, then by featuredOrder or creation
-      const sorted = [...dbProps].sort((a, b) => {
+      const sorted = [...activeDbProps].sort((a, b) => {
         if (a.isFeatured && !b.isFeatured) return -1;
         if (!a.isFeatured && b.isFeatured) return 1;
         return (Number(a.featuredOrder) || 0) - (Number(b.featuredOrder) || 0);
@@ -320,39 +339,48 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
     ? featuredRooms.filter((r) => r.type === 'daily' || r.period === 'day')
     : featuredRooms.filter((r) => r.type === roomCategoryTab || (roomCategoryTab === 'private' && (r.type === '1bhk' || r.type === 'private')));
 
-  // FAQ Accordion Data
-  const faqs = [
-    {
-      q: 'Is 3x daily food included in the monthly rent?',
-      a: 'Yes! All monthly room plans (1BHK, 2BHK, Single Room) include 3x daily fresh Kerala homestyle meals (Breakfast, Lunch, Dinner) + evening tea & snacks prepared in-house by experienced chefs.',
-      category: 'food'
-    },
-    {
-      q: 'How does the ₹499/day Daily Stay plan work?',
-      a: 'Ideal for short business trips, exams, or interview visits near Bengaluru tech corridors! The ₹499/day rate includes a clean furnished room + free Puttu, Dosa, or Uppumavu breakfast every morning with zero deposit.',
-      category: 'pricing'
-    },
-    {
-      q: 'How far is Aafa Coliving from HCL Gate and major tech parks?',
-      a: 'We are located right in Sannidhi Layout, just 300 meters (2-minute walk) from HCL Gate! Convenient for engineers, researchers, and corporate professionals.',
-      category: 'location'
-    },
-    {
-      q: 'What is the deposit policy and notice period?',
-      a: 'We maintain a transparent 1-month refundable security deposit policy with zero hidden deduction fees. 1-month notice prior to vacating is required.',
-      category: 'pricing'
-    },
-    {
-      q: 'Is there 24/7 generator power backup?',
-      a: 'Yes! We have an automatic commercial generator line that powers lights, laptop chargers, Wi-Fi, and common areas during power cuts.',
-      category: 'amenities'
-    },
-    {
-      q: 'Is Aafa Coliving safe for female residents?',
-      a: 'Absolutely. We have biometric facial recognition entry, 24/7 CCTV surveillance across all corridors and gates, and dedicated staff on campus 24/7.',
-      category: 'safety'
-    },
-  ];
+  // FAQ Accordion Data (synced live with Super Admin CMS)
+  const faqs = useMemo(() => {
+    if (cmsData?.faq && Array.isArray(cmsData.faq) && cmsData.faq.length > 0) {
+      return cmsData.faq.map((f, idx) => ({
+        q: f.question || `Question ${idx + 1}`,
+        a: f.answer || '',
+        category: 'general'
+      }));
+    }
+    return [
+      {
+        q: 'Is 3x daily food included in the monthly rent?',
+        a: 'Yes! All monthly room plans (1BHK, 2BHK, Single Room) include 3x daily fresh Kerala homestyle meals (Breakfast, Lunch, Dinner) + evening tea & snacks prepared in-house by experienced chefs.',
+        category: 'food'
+      },
+      {
+        q: 'How does the ₹499/day Daily Stay plan work?',
+        a: 'Ideal for short business trips, exams, or interview visits near Bengaluru tech corridors! The ₹499/day rate includes a clean furnished room + free Puttu, Dosa, or Uppumavu breakfast every morning with zero deposit.',
+        category: 'pricing'
+      },
+      {
+        q: 'How far is Aafa Coliving from HCL Gate and major tech parks?',
+        a: 'We are located right in Sannidhi Layout, just 300 meters (2-minute walk) from HCL Gate! Convenient for engineers, researchers, and corporate professionals.',
+        category: 'location'
+      },
+      {
+        q: 'What is the deposit policy and notice period?',
+        a: 'We maintain a transparent 1-month refundable security deposit policy with zero hidden deduction fees. 1-month notice prior to vacating is required.',
+        category: 'pricing'
+      },
+      {
+        q: 'Is there 24/7 generator power backup?',
+        a: 'Yes! We have an automatic commercial generator line that powers lights, laptop chargers, Wi-Fi, and common areas during power cuts.',
+        category: 'amenities'
+      },
+      {
+        q: 'Is Aafa Coliving safe for female residents?',
+        a: 'Absolutely. We have biometric facial recognition entry, 24/7 CCTV surveillance across all corridors and gates, and dedicated staff on campus 24/7.',
+        category: 'safety'
+      },
+    ];
+  }, [cmsData]);
 
   const filteredFaqs = useMemo(() => {
     if (!faqSearch.trim()) return faqs;
@@ -469,8 +497,25 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
                     loading="lazy"
                     decoding="async"
                   />
-                  <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#0B1220]/80 backdrop-blur-md text-[#D4A64A] border border-[#D4A64A]/30 text-[10px] font-bold font-mono">
-                    {room.badge}
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 pointer-events-none">
+                    <div className="px-3 py-1 rounded-full bg-[#0B1220]/80 backdrop-blur-md text-[#D4A64A] border border-[#D4A64A]/30 text-[10px] font-bold font-mono">
+                      {room.badge}
+                    </div>
+                    {room.transformed?.availabilityStatus && (
+                      <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono border backdrop-blur-md ${
+                        (room.transformed.availabilityStatus || '').toLowerCase() === 'full'
+                          ? 'bg-red-950/90 text-red-300 border-red-500/50 shadow-sm'
+                          : (room.transformed.availabilityStatus || '').toLowerCase() === 'limited'
+                          ? 'bg-amber-950/90 text-amber-300 border-amber-500/50 shadow-sm'
+                          : 'bg-[#0B1220]/90 text-emerald-400 border-emerald-500/30'
+                      }`}>
+                        {(room.transformed.availabilityStatus || '').toLowerCase() === 'full'
+                          ? '🔴 Full'
+                          : (room.transformed.availabilityStatus || '').toLowerCase() === 'limited'
+                          ? '🟡 Limited'
+                          : '🟢 Ready'}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -508,10 +553,14 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
                     const roomObj = room.transformed || (room.rawProperty ? transformDbProperty(room.rawProperty) : room);
                     setSelectedRoomForPlan(roomObj);
                   }}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4A64A] to-amber-500 text-[#0B1220] font-bold text-xs shadow-md shadow-[#D4A64A]/25 hover:scale-105 transition-all whitespace-nowrap shrink-0 cursor-pointer"
+                  className={`px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                    (room.transformed?.availabilityStatus || '').toLowerCase() === 'full'
+                      ? 'bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-500/40'
+                      : 'bg-gradient-to-r from-[#D4A64A] to-amber-500 text-[#0B1220] shadow-[#D4A64A]/25 hover:scale-105'
+                  }`}
                   data-cursor="expand"
                 >
-                  Book Now
+                  {(room.transformed?.availabilityStatus || '').toLowerCase() === 'full' ? 'Join Waitlist' : 'Book Now'}
                 </button>
               </div>
             </motion.div>
@@ -780,6 +829,13 @@ export default function Home({ onOpenBooking, onSelectRoom }) {
             </motion.div>
 
           </div>
+
+          {/* DYNAMIC PROMOTIONAL & SPONSORED ADS BANNER (Managed in Super Admin) */}
+          <PromotionalBannerSection
+            placement="Homepage Hero Top"
+            currentCity={bookingFilters.location}
+            onSelectCityFilter={(city) => handleEditFilters({ location: city })}
+          />
 
           {/* STEP 1: PROMINENT "FIND YOUR SPACE" BOOKING & FILTER PANEL */}
           <div id="find-your-space-panel" className="scroll-mt-28 relative z-20">

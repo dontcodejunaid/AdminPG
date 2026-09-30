@@ -592,9 +592,23 @@ export const transformDbProperty = (p) => {
     return `/${trimmed}`;
   });
 
-  const customDayRate = Number(p.charges?.dayRate) || Number(p.stayRates?.day);
-  const customWeekRate = Number(p.charges?.weekRate) || Number(p.stayRates?.week);
-  const customMonthRate = Number(p.charges?.monthRate) || Number(p.stayRates?.month);
+  const firstRoom = Array.isArray(p.rooms) && p.rooms[0];
+  const embeddedStayRates = firstRoom?.stayRates || firstRoom?.stay_rates;
+  const embeddedStayBenefits = firstRoom?.stayBenefits || firstRoom?.stay_benefits;
+  const embeddedStaySubtitles = firstRoom?.staySubtitles || firstRoom?.stay_subtitles;
+  const embeddedCharges = firstRoom?.charges;
+
+  const customDayRate = Number(p.stayRates?.day || p.charges?.dayRate || p.charges?.day_rate || embeddedStayRates?.day || embeddedCharges?.dayRate);
+  const customWeekRate = Number(p.stayRates?.week || p.charges?.weekRate || p.charges?.week_rate || embeddedStayRates?.week || embeddedCharges?.weekRate);
+  const customMonthRate = Number(p.stayRates?.month || p.charges?.monthRate || p.charges?.month_rate || embeddedStayRates?.month || embeddedCharges?.monthRate);
+
+  const customDayBenefit = p.stayBenefits?.day || p.charges?.dayBenefit || p.charges?.day_benefit || embeddedStayBenefits?.day || embeddedCharges?.dayBenefit;
+  const customWeekBenefit = p.stayBenefits?.week || p.charges?.weekBenefit || p.charges?.week_benefit || embeddedStayBenefits?.week || embeddedCharges?.weekBenefit;
+  const customMonthBenefit = p.stayBenefits?.month || p.charges?.monthBenefit || p.charges?.month_benefit || embeddedStayBenefits?.month || embeddedCharges?.monthBenefit;
+
+  const customDaySubtitle = p.staySubtitles?.day || p.charges?.daySubtitle || p.charges?.day_subtitle || embeddedStaySubtitles?.day || embeddedCharges?.daySubtitle;
+  const customWeekSubtitle = p.staySubtitles?.week || p.charges?.weekSubtitle || p.charges?.week_subtitle || embeddedStaySubtitles?.week || embeddedCharges?.weekSubtitle;
+  const customMonthSubtitle = p.staySubtitles?.month || p.charges?.monthSubtitle || p.charges?.month_subtitle || embeddedStaySubtitles?.month || embeddedCharges?.monthSubtitle;
 
   const dayRate = customDayRate || (is1BHK ? 1199 : (sharing === 1 ? 799 : (sharing === 2 ? 499 : (sharing === 3 ? 399 : 349))));
   const weekRate = customWeekRate || (is1BHK ? 4999 : (sharing === 1 ? 3499 : (sharing === 2 ? 2199 : (sharing === 3 ? 1799 : 1499))));
@@ -654,6 +668,8 @@ export const transformDbProperty = (p) => {
     rating: Number(p.rating) || 4.9,
     reviewsCount: Number(p.reviewsCount) || 140,
     isPremium: Boolean(p.is_featured || p.isFeatured),
+    isFeatured: Boolean(p.is_featured || p.isFeatured),
+    featuredOrder: Number(p.featured_order ?? p.featuredOrder ?? 999),
     badge: badgeText,
     image: photos[0],
     images: photos,
@@ -673,16 +689,18 @@ export const transformDbProperty = (p) => {
       monthDisplay: `₹${monthRate.toLocaleString('en-IN')}`,
     },
     stayBenefits: {
-      day: p.stayBenefits?.day || p.charges?.dayBenefit || 'Hot Kerala Breakfast included',
-      week: p.stayBenefits?.week || p.charges?.weekBenefit || 'Breakfast & Dinner included',
-      month: p.stayBenefits?.month || p.charges?.monthBenefit || (is1BHK ? '18k Rent • 18k Deposit • Near Infosys' : '3x Kerala Homestyle Meals'),
+      day: customDayBenefit || 'Hot Kerala Breakfast included',
+      week: customWeekBenefit || 'Breakfast & Dinner included',
+      month: customMonthBenefit || (is1BHK ? '18k Rent • 18k Deposit • Near Infosys' : '3x Kerala Homestyle Meals'),
     },
     staySubtitles: {
-      day: p.staySubtitles?.day || p.charges?.daySubtitle || 'Zero Security Deposit',
-      week: p.staySubtitles?.week || p.charges?.weekSubtitle || 'Better Value • Flexible',
-      month: p.staySubtitles?.month || p.charges?.monthSubtitle || 'Best Value • 1-Month Deposit',
+      day: customDaySubtitle || 'Zero Security Deposit',
+      week: customWeekSubtitle || 'Better Value • Flexible',
+      month: customMonthSubtitle || 'Best Value • 1-Month Deposit',
     },
     amenitiesSummary: resolvedFacilities.slice(0, 5),
+    status: p.status || 'Active',
+    verificationStatus: p.verification_status || p.verificationStatus || 'Verified',
     availabilityStatus: p.availability_status || p.availabilityStatus || 'Move-in Ready',
     rooms: p.rooms || [],
   };

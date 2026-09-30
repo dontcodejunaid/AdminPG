@@ -147,14 +147,94 @@ function toDbFormat(data, table = '', isCreate = false) {
     }
     if (converted.videos !== undefined && !Array.isArray(converted.videos)) converted.videos = [];
     if (converted.photos !== undefined && !Array.isArray(converted.photos)) converted.photos = [];
-    if (converted.rooms !== undefined && !Array.isArray(converted.rooms)) converted.rooms = [];
     if (converted.facilities !== undefined && !Array.isArray(converted.facilities)) converted.facilities = [];
     if (converted.rules !== undefined && !Array.isArray(converted.rules)) converted.rules = [];
+
+    // Extract stay rates & benefits to store within rooms JSONB structure
+    const rawCharges = converted.charges || {};
+    const rawStayRates = converted.stay_rates || converted.stayRates || {};
+    const rawStayBenefits = converted.stay_benefits || converted.stayBenefits || {};
+    const rawStaySubtitles = converted.stay_subtitles || converted.staySubtitles || {};
+
+    const dayRate = Number(rawCharges.dayRate || rawCharges.day_rate || rawStayRates.day) || null;
+    const weekRate = Number(rawCharges.weekRate || rawCharges.week_rate || rawStayRates.week) || null;
+    const monthRate = Number(rawCharges.monthRate || rawCharges.month_rate || rawStayRates.month) || null;
+
+    const dayBenefit = rawCharges.dayBenefit || rawCharges.day_benefit || rawStayBenefits.day || null;
+    const weekBenefit = rawCharges.weekBenefit || rawCharges.week_benefit || rawStayBenefits.week || null;
+    const monthBenefit = rawCharges.monthBenefit || rawCharges.month_benefit || rawStayBenefits.month || null;
+
+    const daySubtitle = rawCharges.daySubtitle || rawCharges.day_subtitle || rawStaySubtitles.day || null;
+    const weekSubtitle = rawCharges.weekSubtitle || rawCharges.week_subtitle || rawStaySubtitles.week || null;
+    const monthSubtitle = rawCharges.monthSubtitle || rawCharges.month_subtitle || rawStaySubtitles.month || null;
+
+    const consolidatedStayRates = (dayRate || weekRate || monthRate) ? {
+      day: dayRate || 499,
+      week: weekRate || 2199,
+      month: monthRate || 7499,
+    } : null;
+
+    const consolidatedStayBenefits = (dayBenefit || weekBenefit || monthBenefit) ? {
+      day: dayBenefit || 'Hot Kerala Breakfast included',
+      week: weekBenefit || 'Breakfast & Dinner included',
+      month: monthBenefit || '3x Kerala Homestyle Meals',
+    } : null;
+
+    const consolidatedStaySubtitles = (daySubtitle || weekSubtitle || monthSubtitle) ? {
+      day: daySubtitle || 'Zero Security Deposit',
+      week: weekSubtitle || 'Better Value • Flexible',
+      month: monthSubtitle || 'Best Value • 1-Month Deposit',
+    } : null;
+
+    const consolidatedCharges = (converted.charges || consolidatedStayRates) ? {
+      deposit: Number(rawCharges.deposit) || 0,
+      foodCharges: rawCharges.foodCharges || rawCharges.food_charges || converted.food_availability || 'Included',
+      electricityCharges: rawCharges.electricityCharges || rawCharges.electricity_charges || 'Included',
+      maintenanceCharges: Number(rawCharges.maintenanceCharges || rawCharges.maintenance_charges) || 0,
+      otherCharges: rawCharges.otherCharges || rawCharges.other_charges || 'None',
+      dayRate: dayRate || 499,
+      weekRate: weekRate || 2199,
+      monthRate: monthRate || 7499,
+      dayBenefit: dayBenefit || 'Hot Kerala Breakfast included',
+      weekBenefit: weekBenefit || 'Breakfast & Dinner included',
+      monthBenefit: monthBenefit || '3x Kerala Homestyle Meals',
+      daySubtitle: daySubtitle || 'Zero Security Deposit',
+      weekSubtitle: weekSubtitle || 'Better Value • Flexible',
+      monthSubtitle: monthSubtitle || 'Best Value • 1-Month Deposit',
+    } : null;
+
+    let roomList = Array.isArray(converted.rooms) ? [...converted.rooms] : [];
+    if (roomList.length === 0 && (isCreate || consolidatedStayRates)) {
+      roomList = [{
+        id: `r_${Date.now()}`,
+        type: 'Single Sharing',
+        rent: monthRate || 7499,
+        deposit: Number(rawCharges.deposit) || 5000,
+        totalBeds: 1,
+        availableBeds: 1,
+        hasAC: true,
+        hasAttachedBath: true
+      }];
+    }
+
+    if (roomList.length > 0) {
+      converted.rooms = roomList.map((room, idx) => ({
+        ...room,
+        rent: (idx === 0 && monthRate) ? monthRate : (Number(room.rent || room.price) || monthRate || 7499),
+        ...(consolidatedStayRates ? { stayRates: consolidatedStayRates } : {}),
+        ...(consolidatedStayBenefits ? { stayBenefits: consolidatedStayBenefits } : {}),
+        ...(consolidatedStaySubtitles ? { staySubtitles: consolidatedStaySubtitles } : {}),
+        ...(consolidatedCharges ? { charges: consolidatedCharges } : {})
+      }));
+    }
   }
 
   if (table === 'enquiries') {
     if (converted.admin_notes !== undefined && converted.internal_notes === undefined) {
       converted.internal_notes = converted.admin_notes;
+    }
+    if (!converted.pg_id) {
+      converted.pg_id = null;
     }
     const statusMap = {
       'New': 'New',
@@ -176,6 +256,16 @@ function toDbFormat(data, table = '', isCreate = false) {
     };
     if (converted.status) {
       converted.status = statusMap[converted.status] || 'New';
+    }
+  }
+
+  if (table === 'reports') {
+    if (!converted.pg_id) {
+      converted.pg_id = null;
+    }
+    const validReasons = ['Wrong price', 'Fake photos', 'Full/unavailable', 'Wrong contact number', 'Harassment', 'Other'];
+    if (converted.reason && !validReasons.includes(converted.reason)) {
+      converted.reason = 'Other';
     }
   }
 
@@ -221,16 +311,134 @@ function fromDbFormat(data, table = '') {
     converted.whatsappNumber = converted.whatsappNumber || converted.ownerPhone || '';
     converted.fullAddress = converted.fullAddress || '';
     converted.videoUrl = (Array.isArray(converted.videos) && converted.videos[0]) || '';
-    converted.charges = converted.charges || {
-      deposit: (Array.isArray(converted.rooms) && converted.rooms[0]?.deposit) || 5000,
-      foodCharges: converted.foodAvailability || 'Included in Rent',
-      electricityCharges: 'Included',
-      maintenanceCharges: 0,
-      otherCharges: 'None'
+
+    // Extract stay rates, benefits, subtitles, and charges from rooms if stored in JSONB
+    const firstRoom = Array.isArray(converted.rooms) && converted.rooms[0];
+    const embeddedStayRates = firstRoom?.stayRates || firstRoom?.stay_rates;
+    const embeddedStayBenefits = firstRoom?.stayBenefits || firstRoom?.stay_benefits;
+    const embeddedStaySubtitles = firstRoom?.staySubtitles || firstRoom?.stay_subtitles;
+    const embeddedCharges = firstRoom?.charges;
+
+    const dayRate = Number(
+      converted.charges?.dayRate ||
+      converted.charges?.day_rate ||
+      converted.stayRates?.day ||
+      converted.stay_rates?.day ||
+      embeddedStayRates?.day ||
+      embeddedCharges?.dayRate
+    ) || 499;
+
+    const weekRate = Number(
+      converted.charges?.weekRate ||
+      converted.charges?.week_rate ||
+      converted.stayRates?.week ||
+      converted.stay_rates?.week ||
+      embeddedStayRates?.week ||
+      embeddedCharges?.weekRate
+    ) || 2199;
+
+    const monthRate = Number(
+      converted.charges?.monthRate ||
+      converted.charges?.month_rate ||
+      converted.stayRates?.month ||
+      converted.stay_rates?.month ||
+      embeddedStayRates?.month ||
+      embeddedCharges?.monthRate ||
+      (firstRoom && (firstRoom.rent || firstRoom.price))
+    ) || 7499;
+
+    const dayBenefit =
+      converted.charges?.dayBenefit ||
+      converted.charges?.day_benefit ||
+      converted.stayBenefits?.day ||
+      converted.stay_benefits?.day ||
+      embeddedStayBenefits?.day ||
+      embeddedCharges?.dayBenefit ||
+      'Hot Kerala Breakfast included';
+
+    const weekBenefit =
+      converted.charges?.weekBenefit ||
+      converted.charges?.week_benefit ||
+      converted.stayBenefits?.week ||
+      converted.stay_benefits?.week ||
+      embeddedStayBenefits?.week ||
+      embeddedCharges?.weekBenefit ||
+      'Breakfast & Dinner included';
+
+    const monthBenefit =
+      converted.charges?.monthBenefit ||
+      converted.charges?.month_benefit ||
+      converted.stayBenefits?.month ||
+      converted.stay_benefits?.month ||
+      embeddedStayBenefits?.month ||
+      embeddedCharges?.monthBenefit ||
+      '3x Kerala Homestyle Meals';
+
+    const daySubtitle =
+      converted.charges?.daySubtitle ||
+      converted.charges?.day_subtitle ||
+      converted.staySubtitles?.day ||
+      converted.stay_subtitles?.day ||
+      embeddedStaySubtitles?.day ||
+      embeddedCharges?.daySubtitle ||
+      'Zero Security Deposit';
+
+    const weekSubtitle =
+      converted.charges?.weekSubtitle ||
+      converted.charges?.week_subtitle ||
+      converted.staySubtitles?.week ||
+      converted.stay_subtitles?.week ||
+      embeddedStaySubtitles?.week ||
+      embeddedCharges?.weekSubtitle ||
+      'Better Value • Flexible';
+
+    const monthSubtitle =
+      converted.charges?.monthSubtitle ||
+      converted.charges?.month_subtitle ||
+      converted.staySubtitles?.month ||
+      converted.stay_subtitles?.month ||
+      embeddedStaySubtitles?.month ||
+      embeddedCharges?.monthSubtitle ||
+      'Best Value • 1-Month Deposit';
+
+    converted.stayRates = {
+      day: dayRate,
+      week: weekRate,
+      month: monthRate
     };
+
+    converted.stayBenefits = {
+      day: dayBenefit,
+      week: weekBenefit,
+      month: monthBenefit
+    };
+
+    converted.staySubtitles = {
+      day: daySubtitle,
+      week: weekSubtitle,
+      month: monthSubtitle
+    };
+
+    converted.charges = {
+      deposit: Number(converted.charges?.deposit ?? (firstRoom?.deposit ?? 5000)),
+      foodCharges: converted.charges?.foodCharges || converted.foodAvailability || 'Included in Rent',
+      electricityCharges: converted.charges?.electricityCharges || 'Included',
+      maintenanceCharges: Number(converted.charges?.maintenanceCharges) || 0,
+      otherCharges: converted.charges?.otherCharges || 'None',
+      dayRate,
+      weekRate,
+      monthRate,
+      dayBenefit,
+      weekBenefit,
+      monthBenefit,
+      daySubtitle,
+      weekSubtitle,
+      monthSubtitle
+    };
+
     if (Array.isArray(converted.rooms) && converted.rooms.length > 0) {
       const rents = converted.rooms.map(r => Number(r.rent || r.price || 0)).filter(r => r > 0);
-      converted.minRent = rents.length > 0 ? Math.min(...rents) : 0;
+      converted.minRent = rents.length > 0 ? Math.min(...rents) : monthRate;
       converted.totalBeds = converted.rooms.reduce((acc, r) => acc + (Number(r.totalBeds || r.total_beds) || 0), 0);
       converted.availableBeds = converted.rooms.reduce((acc, r) => acc + (Number(r.availableBeds || r.available_beds) || 0), 0);
     }
@@ -260,7 +468,10 @@ export const supabaseStore = {
 
     let query = supabase.from(table).select('*');
     if (table === 'properties') {
-      query = query.order('is_featured', { ascending: false }).order('created_at', { ascending: false });
+      query = query
+        .order('is_featured', { ascending: false })
+        .order('featured_order', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: false });
     } else if (table === 'notifications' || table === 'enquiries' || table === 'reports' || table === 'payments') {
       query = query.order('created_at', { ascending: false });
     }
@@ -272,6 +483,18 @@ export const supabaseStore = {
     }
 
     const items = (data || []).map(d => fromDbFormat(d, table));
+    if (table === 'properties') {
+      items.sort((a, b) => {
+        const aFeat = Boolean(a.isFeatured);
+        const bFeat = Boolean(b.isFeatured);
+        if (aFeat && !bFeat) return -1;
+        if (!aFeat && bFeat) return 1;
+        if (aFeat && bFeat) {
+          return (Number(a.featuredOrder) || 0) - (Number(b.featuredOrder) || 0);
+        }
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      });
+    }
     if (filterFn) return items.filter(filterFn);
     return items;
   },

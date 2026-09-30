@@ -134,21 +134,27 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
     if (isOpen) {
       loadMetadata();
       if (pgToEdit) {
+        const firstRoom = Array.isArray(pgToEdit.rooms) && pgToEdit.rooms[0];
+        const embeddedStayRates = firstRoom?.stayRates || firstRoom?.stay_rates;
+        const embeddedStayBenefits = firstRoom?.stayBenefits || firstRoom?.stay_benefits;
+        const embeddedStaySubtitles = firstRoom?.staySubtitles || firstRoom?.stay_subtitles;
+        const embeddedCharges = firstRoom?.charges;
+
         const initialCharges = {
-          deposit: pgToEdit.charges?.deposit ?? 0,
-          foodCharges: pgToEdit.charges?.foodCharges || 'Included (3 times Kerala food)',
+          deposit: pgToEdit.charges?.deposit ?? (firstRoom?.deposit ?? 0),
+          foodCharges: pgToEdit.charges?.foodCharges || pgToEdit.foodAvailability || 'Included (3 times Kerala food)',
           electricityCharges: pgToEdit.charges?.electricityCharges || 'Included',
           maintenanceCharges: pgToEdit.charges?.maintenanceCharges ?? 0,
           otherCharges: pgToEdit.charges?.otherCharges || 'None',
-          dayRate: pgToEdit.charges?.dayRate || pgToEdit.stayRates?.day || 499,
-          dayBenefit: pgToEdit.charges?.dayBenefit || pgToEdit.stayBenefits?.day || 'Hot Kerala Breakfast included',
-          daySubtitle: pgToEdit.charges?.daySubtitle || pgToEdit.staySubtitles?.day || 'Zero Security Deposit',
-          weekRate: pgToEdit.charges?.weekRate || pgToEdit.stayRates?.week || 2199,
-          weekBenefit: pgToEdit.charges?.weekBenefit || pgToEdit.stayBenefits?.week || 'Breakfast & Dinner included',
-          weekSubtitle: pgToEdit.charges?.weekSubtitle || pgToEdit.staySubtitles?.week || 'Better Value • Flexible',
-          monthRate: pgToEdit.charges?.monthRate || pgToEdit.stayRates?.month || pgToEdit.rent || 7499,
-          monthBenefit: pgToEdit.charges?.monthBenefit || pgToEdit.stayBenefits?.month || '3x Kerala Homestyle Meals',
-          monthSubtitle: pgToEdit.charges?.monthSubtitle || pgToEdit.staySubtitles?.month || 'Best Value • 1-Month Deposit',
+          dayRate: pgToEdit.charges?.dayRate || pgToEdit.stayRates?.day || embeddedStayRates?.day || embeddedCharges?.dayRate || 499,
+          dayBenefit: pgToEdit.charges?.dayBenefit || pgToEdit.stayBenefits?.day || embeddedStayBenefits?.day || embeddedCharges?.dayBenefit || 'Hot Kerala Breakfast included',
+          daySubtitle: pgToEdit.charges?.daySubtitle || pgToEdit.staySubtitles?.day || embeddedStaySubtitles?.day || embeddedCharges?.daySubtitle || 'Zero Security Deposit',
+          weekRate: pgToEdit.charges?.weekRate || pgToEdit.stayRates?.week || embeddedStayRates?.week || embeddedCharges?.weekRate || 2199,
+          weekBenefit: pgToEdit.charges?.weekBenefit || pgToEdit.stayBenefits?.week || embeddedStayBenefits?.week || embeddedCharges?.weekBenefit || 'Breakfast & Dinner included',
+          weekSubtitle: pgToEdit.charges?.weekSubtitle || pgToEdit.staySubtitles?.week || embeddedStaySubtitles?.week || embeddedCharges?.weekSubtitle || 'Better Value • Flexible',
+          monthRate: pgToEdit.charges?.monthRate || pgToEdit.stayRates?.month || embeddedStayRates?.month || embeddedCharges?.monthRate || (firstRoom && (firstRoom.rent || firstRoom.price)) || pgToEdit.rent || 7499,
+          monthBenefit: pgToEdit.charges?.monthBenefit || pgToEdit.stayBenefits?.month || embeddedStayBenefits?.month || embeddedCharges?.monthBenefit || '3x Kerala Homestyle Meals',
+          monthSubtitle: pgToEdit.charges?.monthSubtitle || pgToEdit.staySubtitles?.month || embeddedStaySubtitles?.month || embeddedCharges?.monthSubtitle || 'Best Value • 1-Month Deposit',
         };
 
         setFormData({
@@ -425,12 +431,41 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         ...formData,
         rating: Number(formData.rating) || 4.9,
         reviewsCount: Number(formData.reviewsCount) || 140,
-        rooms: formData.rooms.map(r => ({
+        rooms: formData.rooms.map((r, idx) => ({
           ...r,
-          rent: Number(r.rent) || 0,
+          rent: (idx === 0 && monthRate) ? monthRate : (Number(r.rent) || monthRate || 0),
           totalBeds: Number(r.totalBeds) || 0,
           availableBeds: Number(r.availableBeds) || 0,
-          deposit: Number(r.deposit) || 0
+          deposit: Number(r.deposit) || Number(formData.charges.deposit) || 0,
+          stayRates: {
+            day: dayRate,
+            week: weekRate,
+            month: monthRate
+          },
+          stayBenefits: {
+            day: dayBenefit,
+            week: weekBenefit,
+            month: monthBenefit
+          },
+          staySubtitles: {
+            day: daySubtitle,
+            week: weekSubtitle,
+            month: monthSubtitle
+          },
+          charges: {
+            ...formData.charges,
+            deposit: Number(formData.charges.deposit) || 0,
+            maintenanceCharges: Number(formData.charges.maintenanceCharges) || 0,
+            dayRate,
+            weekRate,
+            monthRate,
+            dayBenefit,
+            weekBenefit,
+            monthBenefit,
+            daySubtitle,
+            weekSubtitle,
+            monthSubtitle,
+          }
         })),
         charges: {
           ...formData.charges,

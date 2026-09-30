@@ -31,6 +31,7 @@ const CityDetailsPage = lazy(() => import('./pages/CityDetailsPage'));
 const GuidelinesPage = lazy(() => import('./pages/GuidelinesPage'));
 const MoveInPage = lazy(() => import('./pages/MoveInPage'));
 const CareersPage = lazy(() => import('./pages/CareersPage'));
+const LegalPolicyPage = lazy(() => import('./pages/LegalPolicyPage'));
 
 // Fallback Loader for Route Transitions
 function PageFallback() {
@@ -65,6 +66,10 @@ function AnimatedRoutes({ onOpenBooking, onSelectRoom }) {
       '/guidelines': 'House Guidelines & Resident Rules — KeralaPG',
       '/move-in': 'Move-In Process & Required Documents Checklist — KeralaPG',
       '/careers': 'Partner With Us & Property Franchise Portal — KeralaPG',
+      '/terms': 'Terms & Conditions — KeralaPG',
+      '/terms-and-conditions': 'Terms & Conditions — KeralaPG',
+      '/privacy': 'Privacy Policy — KeralaPG',
+      '/privacy-policy': 'Privacy Policy — KeralaPG',
     };
     document.title = titles[location.pathname] || 'KeralaPG | Luxury Stays & Coliving';
   }, [location.pathname]);
@@ -96,6 +101,10 @@ function AnimatedRoutes({ onOpenBooking, onSelectRoom }) {
         <Route path="/guidelines" element={<GuidelinesPage />} />
         <Route path="/move-in" element={<MoveInPage onOpenBooking={onOpenBooking} />} />
         <Route path="/careers" element={<CareersPage />} />
+        <Route path="/terms" element={<LegalPolicyPage />} />
+        <Route path="/terms-and-conditions" element={<LegalPolicyPage />} />
+        <Route path="/privacy" element={<LegalPolicyPage />} />
+        <Route path="/privacy-policy" element={<LegalPolicyPage />} />
       </Routes>
     </Suspense>
   );
