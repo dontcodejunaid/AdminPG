@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bed, Home as HomeIcon, DoorClosed, Clock, CheckCircle2, Calendar, ArrowRight, Phone, MessageSquare, Sparkles, ShieldCheck, Calculator, Coins } from 'lucide-react';
+import { Bed, Home as HomeIcon, DoorClosed, Clock, CheckCircle2, Calendar, ArrowRight, Phone, MessageSquare, Sparkles, ShieldCheck, Calculator, Coins, ImageOff } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import PriceCalculator from '../components/PriceCalculator';
 import SavingsCalculator from '../components/SavingsCalculator';
@@ -263,17 +263,34 @@ export default function RoomsPage({ onOpenBooking }) {
                       <div>
                         {/* Image Preview */}
                         <div className="relative h-56 sm:h-64 rounded-2xl overflow-hidden mb-6 border border-white/10 bg-[#080d1a]">
-                          <img
-                            src={plan.image || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'}
-                            alt={plan.title}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80';
-                            }}
-                            className="w-full h-full object-cover object-center transition-transform duration-500"
-                            loading="lazy"
-                            decoding="async"
-                          />
+                          {plan.image ? (
+                            <img
+                              src={plan.image}
+                              alt={plan.title}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                              className="w-full h-full object-cover object-center transition-transform duration-500"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : null}
+
+                          <div
+                            className={`w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-[#0F172A] via-[#0B1220] to-[#080D1A] ${
+                              plan.image ? 'hidden' : 'flex'
+                            }`}
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4A64A] mb-2 shadow-inner">
+                              <ImageOff className="w-6 h-6 stroke-[1.75]" />
+                            </div>
+                            <span className="text-xs font-bold font-sora text-[#FAF7F0]/90">
+                              No Photo Uploaded
+                            </span>
+                          </div>
+
                           <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#0B1220]/85 backdrop-blur-md text-[#D4A64A] border border-[#D4A64A]/30 text-xs font-bold font-mono">
                             {plan.badge}
                           </div>

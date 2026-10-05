@@ -6,7 +6,8 @@ import {
   Building2, 
   MapPin, 
   Sparkles, 
-  CheckCircle2
+  CheckCircle2,
+  ImageOff
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
@@ -91,11 +92,26 @@ export const FeaturedPage = ({ onEditPg }) => {
                   #{idx + 1}
                 </span>
 
-                <img
-                  src={pg.photos?.[0] || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=200&q=80"}
-                  alt={pg.name}
-                  className="w-16 h-16 rounded-xl object-cover"
-                />
+                {pg.photos?.[0] ? (
+                  <img
+                    src={pg.photos[0]}
+                    alt={pg.name}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                    className="w-16 h-16 rounded-xl object-cover"
+                  />
+                ) : null}
+                <div
+                  className={`w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center flex-shrink-0 text-slate-400 dark:text-slate-500 ${
+                    pg.photos?.[0] ? 'hidden' : 'flex'
+                  }`}
+                >
+                  <ImageOff className="w-5 h-5 stroke-[1.5]" />
+                  <span className="text-[8px] font-medium mt-0.5">No photo</span>
+                </div>
 
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">

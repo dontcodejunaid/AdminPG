@@ -10,7 +10,8 @@ import {
   Eye, 
   ExternalLink,
   ShieldAlert,
-  Search
+  Search,
+  ImageOff
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { api } from '../services/api';
@@ -110,11 +111,26 @@ export const VerificationPage = ({ onEditPg }) => {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <img
-                    src={pg.photos?.[0] || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=200&q=80"}
-                    alt={pg.name}
-                    className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-                  />
+                  {pg.photos?.[0] ? (
+                    <img
+                      src={pg.photos[0]}
+                      alt={pg.name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                      className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+                    />
+                  ) : null}
+                  <div
+                    className={`w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center flex-shrink-0 text-slate-400 dark:text-slate-500 ${
+                      pg.photos?.[0] ? 'hidden' : 'flex'
+                    }`}
+                  >
+                    <ImageOff className="w-5 h-5 stroke-[1.5]" />
+                    <span className="text-[8px] font-medium mt-0.5">No photo</span>
+                  </div>
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                       {pg.name}

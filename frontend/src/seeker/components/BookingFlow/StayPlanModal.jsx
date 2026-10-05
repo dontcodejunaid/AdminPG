@@ -19,6 +19,7 @@ import {
   Check,
   Share2,
   MessageSquare,
+  ImageOff,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import useScrollLock from '../../hooks/useScrollLock';
@@ -353,11 +354,26 @@ Please confirm my room check-in availability. Thank you!`;
                 
                 {/* Selected Room Header Snippet */}
                 <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#10192B] border border-white/10">
-                  <img
-                    src={room.image || (room.images && room.images[0]) || "/images/1pg.jpeg"}
-                    alt={room.name}
-                    className="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0"
-                  />
+                  {room.image || (room.images && room.images[0]) ? (
+                    <img
+                      src={room.image || room.images[0]}
+                      alt={room.name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                      className="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0"
+                    />
+                  ) : null}
+                  <div
+                    className={`w-16 h-16 rounded-xl bg-[#080D1A] border border-white/10 flex flex-col items-center justify-center shrink-0 ${
+                      (room.image || (room.images && room.images[0])) ? 'hidden' : 'flex'
+                    }`}
+                  >
+                    <ImageOff className="w-5 h-5 text-[#D4A64A]/70" />
+                    <span className="text-[8px] text-white/40 font-mono mt-0.5">No photo</span>
+                  </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-[10px] text-[#D4A64A] font-mono block truncate">
                       {room.area || room.direction} • {room.sharingLabel}

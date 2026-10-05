@@ -19,7 +19,8 @@ import {
   Bed,
   Eye,
   IndianRupee,
-  RotateCcw
+  RotateCcw,
+  ImageOff
 } from 'lucide-react';
 import { Badge } from '../components/common/Badge';
 import { CustomSelect } from '../components/ui/select';
@@ -359,11 +360,26 @@ export const PropertiesPage = ({ onOpenNewPgModal, onEditPg }) => {
                   
                   {/* Left: Image & Info */}
                   <div className="flex items-start gap-4">
-                    <img
-                      src={pg.photos?.[0] || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=400&q=80"}
-                      alt={pg.name}
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover flex-shrink-0 border border-slate-100 dark:border-slate-800"
-                    />
+                    {pg.photos?.[0] ? (
+                      <img
+                        src={pg.photos[0]}
+                        alt={pg.name}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.nextElementSibling;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover flex-shrink-0 border border-slate-100 dark:border-slate-800"
+                      />
+                    ) : null}
+                    <div
+                      className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center flex-shrink-0 text-slate-400 dark:text-slate-500 ${
+                        pg.photos?.[0] ? 'hidden' : 'flex'
+                      }`}
+                    >
+                      <ImageOff className="w-6 h-6 stroke-[1.5]" />
+                      <span className="text-[9px] font-medium mt-1">No photo</span>
+                    </div>
 
                     <div className="space-y-1.5 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

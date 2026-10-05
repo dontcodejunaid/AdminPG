@@ -16,22 +16,12 @@ import {
   Unlock,
   MessageSquare,
   Flag,
+  ImageOff,
 } from 'lucide-react';
 import useScrollLock from '../../hooks/useScrollLock';
 import { formatFacilityName } from '../../data/pgListingsData';
 import UnlockContactModal from '../UnlockContactModal';
 import ReportListingModal from '../ReportListingModal';
-
-const all8Images = [
-  "/images/1pg.jpeg",
-  "/images/2pg.jpeg",
-  "/images/3pg.jpeg",
-  "/images/4pg.jpeg",
-  "/images/5pg.jpeg",
-  "/images/6pg.jpeg",
-  "/images/7pg.jpeg",
-  "/images/8pg.jpeg"
-];
 
 export default function RoomDetailsModal({
   isOpen,
@@ -67,7 +57,9 @@ export default function RoomDetailsModal({
   const touchStartY = useRef(0);
   const touchEndY = useRef(0);
 
-  const imagesList = room?.images && room.images.length > 0 ? room.images : (room?.image ? [room.image] : all8Images);
+  const imagesList = (room?.images && room.images.length > 0)
+    ? room.images.filter(Boolean)
+    : (room?.image ? [room.image] : []);
 
   // Always show the first image (index 0) by default when opening the modal
   useEffect(() => {
@@ -253,109 +245,138 @@ export default function RoomDetailsModal({
           {/* Scrollable Body */}
           <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
             
-            {/* High-Clarity Keyboard & Arrow Navigable Image Slider */}
+            {/* High-Clarity Keyboard & Arrow Navigable Image Slider / Placeholder */}
             <div className="space-y-2">
               <div
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onClick={() => setIsFullScreen(true)}
-                title="Click photo to view full screen"
-                className="relative h-64 xs:h-72 sm:h-88 md:h-[420px] max-h-[55vh] rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-[#080d1a] flex items-center justify-center select-none group cursor-zoom-in"
+                onTouchStart={imagesList.length > 1 ? handleTouchStart : undefined}
+                onTouchMove={imagesList.length > 1 ? handleTouchMove : undefined}
+                onTouchEnd={imagesList.length > 1 ? handleTouchEnd : undefined}
+                onClick={() => imagesList.length > 0 && setIsFullScreen(true)}
+                title={imagesList.length > 0 ? "Click photo to view full screen" : "No photos uploaded"}
+                className={`relative h-64 xs:h-72 sm:h-88 md:h-[420px] max-h-[55vh] rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-[#080d1a] flex items-center justify-center select-none ${
+                  imagesList.length > 0 ? 'cursor-zoom-in group' : ''
+                }`}
               >
-                {/* Soft ambient background fill */}
-                <img
-                  src={imagesList[currentImageIndex]}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-105 pointer-events-none"
-                />
+                {imagesList.length > 0 ? (
+                  <>
+                    {/* Soft ambient background fill */}
+                    <img
+                      src={imagesList[currentImageIndex]}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-105 pointer-events-none"
+                    />
 
-                {/* Active Photo - Full uncropped wide view (Zoomed out) */}
-                <img
-                  key={currentImageIndex}
-                  src={imagesList[currentImageIndex]}
-                  alt={`Aafa Coliving Photo ${currentImageIndex + 1}`}
-                  className="relative z-1 max-w-full max-h-full object-contain p-2 sm:p-4 transition-opacity duration-300 drop-shadow-2xl"
-                />
+                    {/* Active Photo - Full uncropped wide view (Zoomed out) */}
+                    <img
+                      key={currentImageIndex}
+                      src={imagesList[currentImageIndex]}
+                      alt={`${room.name || 'PG'} Photo ${currentImageIndex + 1}`}
+                      className="relative z-1 max-w-full max-h-full object-contain p-2 sm:p-4 transition-opacity duration-300 drop-shadow-2xl"
+                    />
+                  </>
+                ) : (
+                  /* No Photo Placeholder Card */
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-[#0F172A] via-[#0B1220] to-[#080D1A]">
+                    <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4A64A] mb-3 shadow-inner">
+                      <ImageOff className="w-8 h-8 stroke-[1.75]" />
+                    </div>
+                    <h4 className="text-base sm:text-lg font-bold font-sora text-[#FAF7F0] mb-1">
+                      No Photo Uploaded
+                    </h4>
+                    <p className="text-xs text-[#FAF7F0]/65 max-w-md mx-auto leading-relaxed">
+                      The owner has not attached photos for this property yet. You can unlock contact details to request room pictures directly or visit the property.
+                    </p>
+                  </div>
+                )}
 
                 {/* Top Badges Bar - flex container to prevent overlap on all devices */}
                 <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-2.5 sm:right-3.5 flex items-center justify-between gap-2 pointer-events-none z-10">
                   {/* Photo Counter Pill */}
                   <div className="px-2.5 sm:px-3 py-1 rounded-full bg-[#0B1220]/90 backdrop-blur-md text-[#FAF7F0] text-[10px] sm:text-xs font-mono font-bold border border-white/15 shadow-lg flex items-center gap-1.5 shrink-0">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#D4A64A]" />
-                    <span>Photo {currentImageIndex + 1}/{imagesList.length}</span>
+                    <span>
+                      {imagesList.length > 0 ? `Photo ${currentImageIndex + 1}/${imagesList.length}` : '0 Photos'}
+                    </span>
                   </div>
 
                   {/* Rating Badge */}
                   <div className="px-2.5 sm:px-3 py-1 rounded-full bg-[#0B1220]/90 backdrop-blur-md text-[#FAF7F0] text-[10px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 border border-white/15 shadow-lg shrink-0">
                     <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#D4A64A] fill-[#D4A64A]" />
-                    <span>4.9 <span className="hidden xs:inline font-normal text-[#FAF7F0]/80">(140+)</span></span>
+                    <span>{room.rating || 4.9} <span className="hidden xs:inline font-normal text-[#FAF7F0]/80">({room.reviewsCount || 140}+)</span></span>
                   </div>
                 </div>
 
                 {/* Left Navigation Arrow */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrevImage();
-                  }}
-                  aria-label="Previous photo (Left Arrow)"
-                  title="Previous Photo (Left Arrow Key)"
-                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#0B1220]/80 hover:bg-[#0B1220] active:scale-95 text-white flex items-center justify-center transition-all border border-white/25 hover:border-[#D4A64A] shadow-2xl hover:scale-105 z-10 cursor-pointer backdrop-blur-md"
-                >
-                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
-                </button>
+                {imagesList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrevImage();
+                    }}
+                    aria-label="Previous photo (Left Arrow)"
+                    title="Previous Photo (Left Arrow Key)"
+                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#0B1220]/80 hover:bg-[#0B1220] active:scale-95 text-white flex items-center justify-center transition-all border border-white/25 hover:border-[#D4A64A] shadow-2xl hover:scale-105 z-10 cursor-pointer backdrop-blur-md"
+                  >
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+                  </button>
+                )}
 
                 {/* Right Navigation Arrow */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNextImage();
-                  }}
-                  aria-label="Next photo (Right Arrow)"
-                  title="Next Photo (Right Arrow Key)"
-                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#0B1220]/80 hover:bg-[#0B1220] active:scale-95 text-white flex items-center justify-center transition-all border border-white/25 hover:border-[#D4A64A] shadow-2xl hover:scale-105 z-10 cursor-pointer backdrop-blur-md"
-                >
-                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
-                </button>
+                {imagesList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNextImage();
+                    }}
+                    aria-label="Next photo (Right Arrow)"
+                    title="Next Photo (Right Arrow Key)"
+                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#0B1220]/80 hover:bg-[#0B1220] active:scale-95 text-white flex items-center justify-center transition-all border border-white/25 hover:border-[#D4A64A] shadow-2xl hover:scale-105 z-10 cursor-pointer backdrop-blur-md"
+                  >
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+                  </button>
+                )}
 
                 {/* Bottom Center Smart Dots Indicator */}
-                <div className="absolute bottom-2.5 sm:bottom-3 left-1/2 -translate-x-1/2 max-w-[85%] flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-[#0B1220]/85 backdrop-blur-md border border-white/15 z-10 overflow-x-auto no-scrollbar">
-                  {imagesList.map((_, idx) => {
-                    const isVisibleOnMobile = Math.abs(idx - currentImageIndex) <= 3 || idx === 0 || idx === imagesList.length - 1;
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentImageIndex(idx);
-                        }}
-                        aria-label={`Go to photo ${idx + 1}`}
-                        className={`transition-all rounded-full cursor-pointer shrink-0 ${
-                          currentImageIndex === idx
-                            ? 'w-4 sm:w-6 h-1.5 sm:h-2 bg-[#D4A64A]'
-                            : isVisibleOnMobile
-                            ? 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
-                            : 'hidden sm:block w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/20'
-                        }`}
-                      />
-                    );
-                  })}
-                </div>
+                {imagesList.length > 1 && (
+                  <div className="absolute bottom-2.5 sm:bottom-3 left-1/2 -translate-x-1/2 max-w-[85%] flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-[#0B1220]/85 backdrop-blur-md border border-white/15 z-10 overflow-x-auto no-scrollbar">
+                    {imagesList.map((_, idx) => {
+                      const isVisibleOnMobile = Math.abs(idx - currentImageIndex) <= 3 || idx === 0 || idx === imagesList.length - 1;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex(idx);
+                          }}
+                          aria-label={`Go to photo ${idx + 1}`}
+                          className={`transition-all rounded-full cursor-pointer shrink-0 ${
+                            currentImageIndex === idx
+                              ? 'w-4 sm:w-6 h-1.5 sm:h-2 bg-[#D4A64A]'
+                              : isVisibleOnMobile
+                              ? 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
+                              : 'hidden sm:block w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/20'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Keyboard & Swipe Hint Bar */}
-              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-[#FAF7F0]/60 px-1">
-                <span>
-                  <span className="sm:hidden">👆 Tap photo for fullscreen • Swipe to browse</span>
-                  <span className="hidden sm:inline">💡 Click photo for Fullscreen • <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[#D4A64A] font-bold">←</kbd> <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[#D4A64A] font-bold">→</kbd> arrows or swipe to browse</span>
-                </span>
-                <span>{imagesList.length} Photos</span>
-              </div>
+              {imagesList.length > 1 && (
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-[#FAF7F0]/60 px-1">
+                  <span>
+                    <span className="sm:hidden">👆 Tap photo for fullscreen • Swipe to browse</span>
+                    <span className="hidden sm:inline">💡 Click photo for Fullscreen • <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[#D4A64A] font-bold">←</kbd> <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[#D4A64A] font-bold">→</kbd> arrows or swipe to browse</span>
+                  </span>
+                  <span>{imagesList.length} Photos</span>
+                </div>
+              )}
             </div>
 
             {/* Title, Direction, and Contact Details */}
