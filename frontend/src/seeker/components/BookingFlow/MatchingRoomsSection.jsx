@@ -21,6 +21,7 @@ import {
   Unlock,
   Sparkles,
   Flag,
+  ImageOff,
 } from 'lucide-react';
 import { allEnrichedListings, transformDbProperty, matchLocation, registerDynamicFacilities } from '../../data/pgListingsData';
 import { api } from '../../../services/api';
@@ -294,17 +295,36 @@ export default function MatchingRoomsSection({
                       aria-label={`View details for ${room.name}`}
                       className="relative h-52 rounded-2xl overflow-hidden mb-4 border border-white/10 bg-[#080d1a] cursor-pointer group/img select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A64A]"
                     >
-                      <img
-                        src={room.image}
-                        alt={room.name}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src =
-                            'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80';
-                        }}
-                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover/img:scale-105"
-                        loading="lazy"
-                      />
+                      {room.image ? (
+                        <img
+                          src={room.image}
+                          alt={room.name}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover/img:scale-105"
+                          loading="lazy"
+                        />
+                      ) : null}
+
+                      {/* Fallback Placeholder Card */}
+                      <div
+                        className={`w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-[#0F172A] via-[#0B1220] to-[#080D1A] ${
+                          room.image ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4A64A] mb-2 shadow-inner group-hover/img:scale-110 group-hover/img:border-[#D4A64A]/40 transition-all duration-300">
+                          <ImageOff className="w-6 h-6 stroke-[1.75]" />
+                        </div>
+                        <span className="text-xs font-bold font-sora text-[#FAF7F0]/90">
+                          No Photo Uploaded
+                        </span>
+                        <span className="text-[10px] text-white/45 font-mono mt-0.5">
+                          Verified details available below
+                        </span>
+                      </div>
 
                       {/* Hover Overlay with Quick View Hint */}
                       <div className="absolute inset-0 bg-black/35 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">

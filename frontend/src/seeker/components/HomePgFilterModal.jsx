@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   SlidersHorizontal, X, MapPin, Users, Building2, Bed, ArrowUpDown, Star, ShieldCheck,
-  CheckCircle2, Calendar, MessageSquare, RotateCcw, Phone, Lock, Unlock, Sparkles
+  CheckCircle2, Calendar, MessageSquare, RotateCcw, Phone, Lock, Unlock, Sparkles, ImageOff
 } from 'lucide-react';
 import useScrollLock from '../hooks/useScrollLock';
 import { pgListings, citiesList, transformDbProperty, matchLocation, registerDynamicFacilities } from '../data/pgListingsData';
@@ -305,18 +305,34 @@ export default function HomePgFilterModal({ isOpen, onClose, onOpenBooking }) {
                       }`}
                     >
                       <div>
-                        {/* Compact Image */}
+                        {/* Compact Image or Placeholder */}
                         <div className="relative h-36 rounded-xl overflow-hidden mb-3 border border-white/10 bg-[#0B1220]">
-                          <img
-                            src={room.image || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=80'}
-                            alt={room.name}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80';
-                            }}
-                            className="w-full h-full object-cover object-center transition-transform duration-300"
-                            loading="lazy"
-                          />
+                          {room.image ? (
+                            <img
+                              src={room.image}
+                              alt={room.name}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling;
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                              className="w-full h-full object-cover object-center transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          ) : null}
+
+                          <div
+                            className={`w-full h-full flex flex-col items-center justify-center p-3 text-center bg-gradient-to-b from-[#0F172A] via-[#0B1220] to-[#080D1A] ${
+                              room.image ? 'hidden' : 'flex'
+                            }`}
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4A64A] mb-1.5 shadow-inner">
+                              <ImageOff className="w-4 h-4 stroke-[1.75]" />
+                            </div>
+                            <span className="text-[11px] font-bold font-sora text-[#FAF7F0]/90">
+                              No Photo Uploaded
+                            </span>
+                          </div>
                           <div className="absolute top-2 left-2 flex items-center gap-1">
                             <span className="px-2 py-0.5 rounded-md bg-[#0B1220]/95 text-[#D4A64A] text-[10px] font-mono font-bold border border-[#D4A64A]/30">
                               {room.genderLabel}

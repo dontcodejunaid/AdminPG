@@ -12,6 +12,7 @@ import {
   Send,
   Sparkles,
   ShieldCheck,
+  ImageOff,
 } from 'lucide-react';
 import useScrollLock from '../hooks/useScrollLock';
 import { api } from '../../services/api';
@@ -140,11 +141,25 @@ export default function ReportListingModal({
 
             {/* Target Listing Summary */}
             <div className="p-3 rounded-2xl bg-[#080D1A] border border-white/10 flex items-center gap-3 mb-4">
-              <img
-                src={property.image || (property.images && property.images[0]) || 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=200&q=80'}
-                alt={property.name}
-                className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0"
-              />
+              {property.image || (property.images && property.images[0]) ? (
+                <img
+                  src={property.image || property.images[0]}
+                  alt={property.name}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                  className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0"
+                />
+              ) : null}
+              <div
+                className={`w-12 h-12 rounded-xl bg-[#0B1220] border border-white/10 flex flex-col items-center justify-center shrink-0 ${
+                  (property.image || (property.images && property.images[0])) ? 'hidden' : 'flex'
+                }`}
+              >
+                <ImageOff className="w-4 h-4 text-[#D4A64A]/70" />
+              </div>
               <div className="min-w-0 flex-1">
                 <h4 className="text-xs sm:text-sm font-bold text-white truncate">
                   {property.name}

@@ -573,12 +573,10 @@ export const transformDbProperty = (p) => {
 
   const validCandidates = candidatePhotos.filter(img => typeof img === 'string' && img.trim().length > 0);
 
-  const rawPhotos = validCandidates.length > 0
-    ? validCandidates
-    : (is1BHK ? aafa1BhkImages : ["/images/1pg.jpeg", "/images/8pg.jpeg"]);
+  const rawPhotos = validCandidates;
 
   const photos = rawPhotos.map(img => {
-    if (!img || typeof img !== 'string') return '/images/1pg.jpeg';
+    if (!img || typeof img !== 'string') return '';
     const trimmed = img.trim();
     if (
       trimmed.startsWith('data:') ||
@@ -590,7 +588,7 @@ export const transformDbProperty = (p) => {
       return trimmed;
     }
     return `/${trimmed}`;
-  });
+  }).filter(Boolean);
 
   const firstRoom = Array.isArray(p.rooms) && p.rooms[0];
   const embeddedStayRates = firstRoom?.stayRates || firstRoom?.stay_rates;
