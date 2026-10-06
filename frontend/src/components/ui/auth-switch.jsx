@@ -402,16 +402,13 @@ export function AuthSwitch({
                 />
                 <span className="text-xs font-medium text-slate-300">Remember me</span>
               </label>
-              <a
-                href="#forgot"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowForgotModal(true);
-                }}
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(true)}
                 className="text-xs font-medium text-slate-400 hover:text-emerald-400 transition-colors"
               >
                 Forgot?
-              </a>
+              </button>
             </div>
 
             <button

@@ -34,11 +34,17 @@ export function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect legacy hash '#admin' to '/admin'
+  // Automatically remove trailing '#' from address bar and migrate any legacy hash routes
   useEffect(() => {
-    if (window.location.hash === '#admin') {
-      window.location.hash = '';
+    if (window.location.hash === '#admin' || window.location.hash === '#/admin') {
+      window.history.replaceState(null, '', '/admin');
       navigate('/admin', { replace: true });
+    } else if (window.location.hash.startsWith('#/')) {
+      const cleanPath = window.location.hash.replace(/^#/, '');
+      window.history.replaceState(null, '', cleanPath);
+      navigate(cleanPath, { replace: true });
+    } else if (window.location.href.includes('#') && (!window.location.hash || window.location.hash === '#')) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }, [navigate]);
 

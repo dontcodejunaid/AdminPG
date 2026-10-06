@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { AuthSwitch } from '@/components/ui/auth-switch';
@@ -102,9 +102,9 @@ export const LoginPage = ({ onClose }) => {
       <footer className="relative z-10 py-2.5 text-center text-xs text-slate-300/80 drop-shadow flex-shrink-0">
         <p>
           By continuing, you agree to our{' '}
-          <a href="#" className="hover:text-amber-400 text-white underline">Terms</a>{' '}
+          <Link to="/terms" className="hover:text-amber-400 text-white underline">Terms</Link>{' '}
           and{' '}
-          <a href="#" className="hover:text-amber-400 text-white underline">Privacy Policy</a>.
+          <Link to="/privacy" className="hover:text-amber-400 text-white underline">Privacy Policy</Link>.
           <span className="mx-2 opacity-50">•</span>
           © {new Date().getFullYear()} KeralaPG.com • All Rights Reserved
         </p>
