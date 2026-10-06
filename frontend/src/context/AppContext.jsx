@@ -126,6 +126,13 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     if (isSupabaseConfigured() && supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        // Strip sensitive OAuth access_token from URL bar immediately so it cannot be copied/shared
+        if (typeof window !== 'undefined' && window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token'))) {
+          setTimeout(() => {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }, 100);
+        }
+
         if (event === 'SIGNED_IN' && session?.user) {
           const u = session.user;
           const userEmail = u.email;
