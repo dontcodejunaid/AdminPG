@@ -279,6 +279,33 @@
   },
   "adminUsers": [
     {
+      "id": "usr_ffd7bb",
+      "authUserId": null,
+      "name": "Sourav",
+      "email": "souravbrave324@gmail.com",
+      "password": "KeralaPG@123",
+      "passwordHash": "KeralaPG@123",
+      "role": "Admin",
+      "phone": "9663259968",
+      "status": "Active",
+      "lastLogin": "2026-10-06T04:53:58.276Z",
+      "permissions": {
+        "canAddPG": true,
+        "canEditPG": true,
+        "canDeletePG": true,
+        "canVerifyPG": true,
+        "canManageLocations": true,
+        "canManageFacilities": true,
+        "canManageEnquiries": true,
+        "canManageCustomers": true,
+        "canModerateReports": true,
+        "canManagePayments": false,
+        "canManageCMS": true,
+        "canManageBanners": true,
+        "canManageUsers": false
+      }
+    },
+    {
       "id": "usr_77bebb",
       "authUserId": "012e9b05-1db7-45f5-9756-71d7d7880d62",
       "name": "Staff",
