@@ -1,6 +1,7 @@
 # 🌴 KeralaPG — Enterprise Admin & Seeker Management Platform
 
-> A production-ready, full-stack Paying Guest (PG) and Hostel discovery, operations, and administration platform built for Kerala and South Indian tech hubs (Kochi Infopark, Trivandrum Technopark, Kozhikode Cyberpark, Bangalore Electronic City, etc.).
+> A production-ready, full-stack Paying Guest (PG) and Hostel discovery, operations, and administration platform built for Kerala and South Indian tech hubs (Kochi Infopark, Trivandrum Technopark, Kozhikode Cyberpark, Bangalore Electronic City, etc.)
+> 
 
 ---
 
