@@ -22,13 +22,25 @@
   /* Default select & options UI theme styling */
   select {
     cursor: pointer;
+    color-scheme: dark;
   }
 
   select option {
-    background-color: #ffffff;
-    color: #1e293b;
+    background-color: #10192B;
+    color: #FAF7F0;
     padding: 8px 12px;
     font-size: 13px;
+  }
+
+  select option:checked {
+    background-color: #1E293B;
+    color: #D4A64A;
+    font-weight: 600;
+  }
+
+  select option:hover {
+    background-color: #1E293B;
+    color: #FAF7F0;
   }
 
   .dark select option {

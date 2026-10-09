@@ -24,6 +24,8 @@ import {
 import confetti from 'canvas-confetti';
 import useScrollLock from '../../hooks/useScrollLock';
 import BookingProgressSteps from './BookingProgressSteps';
+import LuxurySelect from '../LuxurySelect';
+import LuxuryDatePicker from '../LuxuryDatePicker';
 import { api } from '../../../services/api';
 
 export default function StayPlanModal({
@@ -516,68 +518,65 @@ Please confirm my room check-in availability. Thank you!`;
                 {/* Check-in Date & Duration Controls */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-[#10192B] border border-white/10">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{selectedPlan === 'month' ? 'Move-In Date' : 'Check-In Date'}</span>
-                    </label>
-                    <input
-                      type="date"
+                    <LuxuryDatePicker
+                      label={selectedPlan === 'month' ? 'Move-In Date' : 'Check-In Date'}
+                      icon={Calendar}
                       value={checkInDate}
-                      min={todayStr}
-                      onChange={(e) => setCheckInDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#0B1220] border border-white/15 text-xs text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
+                      minDate={todayStr}
+                      onChange={(val) => setCheckInDate(val)}
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>Stay Duration</span>
-                    </label>
+                    <div className="space-y-1">
+                      {selectedPlan === 'day' && (
+                        <LuxurySelect
+                          label="Stay Duration"
+                          icon={Clock}
+                          value={duration}
+                          options={[
+                            { value: 1, label: `1 Day (₹${dayRate})` },
+                            { value: 2, label: `2 Days (₹${dayRate * 2})` },
+                            { value: 3, label: `3 Days (₹${dayRate * 3})` },
+                            { value: 5, label: `5 Days (₹${dayRate * 5})` },
+                            { value: 7, label: `7 Days (₹${dayRate * 7})` },
+                            { value: 10, label: `10 Days (₹${dayRate * 10})` },
+                            { value: 14, label: `14 Days (₹${dayRate * 14})` },
+                          ]}
+                          onChange={(val) => setDuration(Number(val))}
+                        />
+                      )}
 
-                    {selectedPlan === 'day' && (
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-xl bg-[#0B1220] border border-white/15 text-xs text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
-                      >
-                        <option value={1}>1 Day (₹{dayRate})</option>
-                        <option value={2}>2 Days (₹{dayRate * 2})</option>
-                        <option value={3}>3 Days (₹{dayRate * 3})</option>
-                        <option value={5}>5 Days (₹{dayRate * 5})</option>
-                        <option value={7}>7 Days (₹{dayRate * 7})</option>
-                        <option value={10}>10 Days (₹{dayRate * 10})</option>
-                        <option value={14}>14 Days (₹{dayRate * 14})</option>
-                      </select>
-                    )}
+                      {selectedPlan === 'week' && (
+                        <LuxurySelect
+                          label="Stay Duration"
+                          icon={Clock}
+                          value={duration}
+                          options={[
+                            { value: 1, label: `1 Week (₹${weekRate.toLocaleString('en-IN')})` },
+                            { value: 2, label: `2 Weeks (₹${(weekRate * 2).toLocaleString('en-IN')})` },
+                            { value: 3, label: `3 Weeks (₹${(weekRate * 3).toLocaleString('en-IN')})` },
+                            { value: 4, label: `4 Weeks (₹${(weekRate * 4).toLocaleString('en-IN')})` },
+                          ]}
+                          onChange={(val) => setDuration(Number(val))}
+                        />
+                      )}
 
-                    {selectedPlan === 'week' && (
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-xl bg-[#0B1220] border border-white/15 text-xs text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
-                      >
-                        <option value={1}>1 Week (₹{weekRate.toLocaleString('en-IN')})</option>
-                        <option value={2}>2 Weeks (₹{(weekRate * 2).toLocaleString('en-IN')})</option>
-                        <option value={3}>3 Weeks (₹{(weekRate * 3).toLocaleString('en-IN')})</option>
-                        <option value={4}>4 Weeks (₹{(weekRate * 4).toLocaleString('en-IN')})</option>
-                      </select>
-                    )}
-
-                    {selectedPlan === 'month' && (
-                      <select
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-xl bg-[#0B1220] border border-white/15 text-xs text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
-                      >
-                        <option value={1}>1 Month (₹{monthRate.toLocaleString('en-IN')})</option>
-                        <option value={2}>2 Months (₹{(monthRate * 2).toLocaleString('en-IN')})</option>
-                        <option value={3}>3 Months (₹{(monthRate * 3).toLocaleString('en-IN')})</option>
-                        <option value={6}>6 Months (₹{(monthRate * 6).toLocaleString('en-IN')})</option>
-                        <option value={11}>11 Months (₹{(monthRate * 11).toLocaleString('en-IN')})</option>
-                      </select>
-                    )}
-                  </div>
+                      {selectedPlan === 'month' && (
+                        <LuxurySelect
+                          label="Stay Duration"
+                          icon={Clock}
+                          value={duration}
+                          options={[
+                            { value: 1, label: `1 Month (₹${monthRate.toLocaleString('en-IN')})` },
+                            { value: 2, label: `2 Months (₹${(monthRate * 2).toLocaleString('en-IN')})` },
+                            { value: 3, label: `3 Months (₹${(monthRate * 3).toLocaleString('en-IN')})` },
+                            { value: 6, label: `6 Months (₹${(monthRate * 6).toLocaleString('en-IN')})` },
+                            { value: 11, label: `11 Months (₹${(monthRate * 11).toLocaleString('en-IN')})` },
+                          ]}
+                          onChange={(val) => setDuration(Number(val))}
+                        />
+                      )}
+                    </div>
                 </div>
 
                 {/* Pricing Calculation Summary */}

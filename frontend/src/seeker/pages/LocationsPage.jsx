@@ -283,12 +283,12 @@ export default function LocationsPage() {
                   className="w-full sm:w-1/3 px-4 py-3.5 rounded-xl glass-card text-xs focus:outline-none focus:border-[#D4A64A] bg-[#0B1220] text-[#FAF7F0]"
                   required
                 >
-                  <option value="">Select City...</option>
-                  <option value="Pune">Pune (Hinjawadi)</option>
-                  <option value="Mumbai">Mumbai (Powai / BKC)</option>
-                  <option value="Delhi NCR">Delhi NCR (Cyber Hub)</option>
-                  <option value="Chennai">Chennai (OMR)</option>
-                  <option value="Kerala">Kerala (Infopark / Technopark)</option>
+                  <option value="" className="bg-[#10192B] text-[#FAF7F0]">Select City...</option>
+                  <option value="Pune" className="bg-[#10192B] text-[#FAF7F0]">Pune (Hinjawadi)</option>
+                  <option value="Mumbai" className="bg-[#10192B] text-[#FAF7F0]">Mumbai (Powai / BKC)</option>
+                  <option value="Delhi NCR" className="bg-[#10192B] text-[#FAF7F0]">Delhi NCR (Cyber Hub)</option>
+                  <option value="Chennai" className="bg-[#10192B] text-[#FAF7F0]">Chennai (OMR)</option>
+                  <option value="Kerala" className="bg-[#10192B] text-[#FAF7F0]">Kerala (Infopark / Technopark)</option>
                 </select>
 
                 <input
