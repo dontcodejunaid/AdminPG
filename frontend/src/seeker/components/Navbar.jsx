@@ -158,7 +158,8 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute left-0 mt-2 w-72 rounded-2xl glass-nav p-3 border border-[#D4A64A]/30 shadow-2xl z-50 flex flex-col gap-1"
+                      style={{ backgroundColor: '#0B1220' }}
+                      className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B1220] p-3 border border-[#D4A64A]/40 shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_35px_rgba(0,0,0,0.9)] z-[9999] flex flex-col gap-1"
                     >
                       <p className="text-[10px] font-mono text-[#D4A64A] uppercase font-bold px-2.5 py-1 border-b border-white/10 mb-1">
                         Campus Living & Dining
@@ -209,7 +210,8 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute left-0 mt-2 w-72 rounded-2xl glass-nav p-3 border border-[#D4A64A]/30 shadow-2xl z-50 flex flex-col gap-1"
+                      style={{ backgroundColor: '#0B1220' }}
+                      className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B1220] p-3 border border-[#D4A64A]/40 shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_35px_rgba(0,0,0,0.9)] z-[9999] flex flex-col gap-1"
                     >
                       <p className="text-[10px] font-mono text-[#D4A64A] uppercase font-bold px-2.5 py-1 border-b border-white/10 mb-1">
                         Resident Information & Policies
@@ -270,7 +272,8 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-64 rounded-2xl glass-nav p-3 border border-[#D4A64A]/30 shadow-2xl z-50 flex flex-col gap-1.5"
+                      style={{ backgroundColor: '#0B1220' }}
+                      className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0B1220] p-3 border border-[#D4A64A]/40 shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_35px_rgba(0,0,0,0.9)] z-[9999] flex flex-col gap-1.5"
                     >
                       <p className="text-[10px] font-mono text-[#D4A64A] px-2 uppercase mb-1 font-bold">
                         Direct Campus Hotlines
@@ -323,7 +326,8 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 mt-2 w-64 rounded-2xl glass-nav p-3 border border-[#D4A64A]/30 shadow-2xl z-50 flex flex-col gap-1.5"
+                        style={{ backgroundColor: '#0B1220' }}
+                        className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0B1220] p-3 border border-[#D4A64A]/40 shadow-[0_25px_70px_rgba(0,0,0,0.95),0_0_35px_rgba(0,0,0,0.9)] z-[9999] flex flex-col gap-1.5"
                       >
                         {/* User Summary Header */}
                         <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 mb-1">
@@ -377,8 +381,6 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
                           className="flex items-center gap-2.5 p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 hover:text-rose-200 border border-rose-500/20 transition-all text-left mt-1"
                         >
                           <LogOut className="w-4 h-4 text-rose-400" />
-                          <span className="font-bold">Log Out</span>
-                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -413,7 +415,8 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
               initial={{ opacity: 0, y: -15, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -15, scale: 0.98 }}
-              className="lg:hidden mt-2 mx-3 sm:mx-auto max-w-7xl rounded-2xl sm:rounded-3xl glass-nav p-4 sm:p-5 border border-[#D4A64A]/30 shadow-2xl flex flex-col gap-3 max-h-[80vh] overflow-y-auto bg-[#0B1220]/95 backdrop-blur-2xl"
+              style={{ backgroundColor: '#0B1220' }}
+              className="lg:hidden mt-2 mx-3 sm:mx-auto max-w-7xl rounded-2xl sm:rounded-3xl bg-[#0B1220] p-4 sm:p-5 border border-[#D4A64A]/40 shadow-2xl flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
             >
               {/* Mobile User Profile & Session Card */}
               {isAuthenticated ? (
