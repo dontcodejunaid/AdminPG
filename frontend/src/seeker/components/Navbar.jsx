@@ -381,6 +381,8 @@ export default function Navbar({ onOpenBooking, onOpenAuth }) {
                           className="flex items-center gap-2.5 p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 hover:text-rose-200 border border-rose-500/20 transition-all text-left mt-1"
                         >
                           <LogOut className="w-4 h-4 text-rose-400" />
+                          <span className="font-bold">Log Out</span>
+                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
