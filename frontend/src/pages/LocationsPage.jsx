@@ -449,6 +449,8 @@ export const LocationsPage = () => {
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Select State *</label>
             <CustomSelect
               value={cityForm.stateName}
+              searchable={true}
+              searchPlaceholder="Search state..."
               onChange={(e) => setCityForm({ ...cityForm, stateName: e.target.value })}
               placeholder="Select State"
               options={allStates.map(st => ({ value: st.name, label: st.name }))}
@@ -506,6 +508,8 @@ export const LocationsPage = () => {
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target City *</label>
             <CustomSelect
               value={areaForm.cityName}
+              searchable={true}
+              searchPlaceholder="Search city..."
               onChange={(e) => setAreaForm({ ...areaForm, cityName: e.target.value })}
               placeholder="Select City"
               options={allStates.flatMap(s => (s.cities || [])).map(c => ({ value: c.name, label: c.name }))}

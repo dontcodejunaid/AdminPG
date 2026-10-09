@@ -758,6 +758,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                   <CustomSelect
                     value={formData.state}
                     placeholder="Select State"
+                    searchable={true}
+                    searchPlaceholder="Search state..."
                     onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '', area: '' })}
                     options={flatLocations.states.map(st => ({ value: st.name, label: st.name }))}
                   />
@@ -794,6 +796,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
                   <CustomSelect
                     value={formData.city}
                     placeholder="Select City"
+                    searchable={true}
+                    searchPlaceholder="Search city..."
                     onChange={(e) => setFormData({ ...formData, city: e.target.value, area: '' })}
                     options={filteredCities.map(ct => ({ value: ct.name, label: ct.name }))}
                   />
