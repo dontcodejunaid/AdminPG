@@ -72,10 +72,10 @@ export default function SimpleFilterCard({
 
   const sharingOptions = [
     { value: 'all', label: 'Any Sharing' },
-    { value: '1', label: '1 Sharing' },
-    { value: '2', label: '2 Sharing' },
-    { value: '3', label: '3 Sharing' },
-    { value: '4', label: '4 Sharing' },
+    { value: '1', label: 'Single Sharing' },
+    { value: '2', label: 'Double Sharing' },
+    { value: '3', label: 'Triple Sharing' },
+    { value: '4', label: 'Four Sharing' },
   ];
 
   const handleTabSelect = (tabId) => {

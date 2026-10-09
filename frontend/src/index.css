@@ -22,13 +22,25 @@
   /* Default select & options UI theme styling */
   select {
     cursor: pointer;
+    color-scheme: dark;
   }
 
   select option {
-    background-color: #ffffff;
-    color: #1e293b;
+    background-color: #10192B;
+    color: #FAF7F0;
     padding: 8px 12px;
     font-size: 13px;
+  }
+
+  select option:checked {
+    background-color: #1E293B;
+    color: #D4A64A;
+    font-weight: 600;
+  }
+
+  select option:hover {
+    background-color: #1E293B;
+    color: #FAF7F0;
   }
 
   .dark select option {
@@ -160,7 +172,7 @@
 }
 
 .glass-nav {
-  background: rgba(11, 18, 32, 0.92);
+  background: #0B1220;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(250, 247, 240, 0.08);

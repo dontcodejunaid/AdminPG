@@ -14,6 +14,56 @@ import {
   SlidersHorizontal,
   Flame,
 } from 'lucide-react';
+import LuxurySelect from '../LuxurySelect';
+import LuxuryDatePicker from '../LuxuryDatePicker';
+import { api } from '../../../services/api';
+
+const DEFAULT_ADMIN_LOCATIONS = [
+  {
+    value: 'all',
+    label: 'Pan-India',
+    badge: 'All Hubs',
+    subtext: 'Browse all active coliving campuses across Kerala & Karnataka',
+  },
+  {
+    value: 'Kochi',
+    label: 'Kochi',
+    badge: 'Kerala',
+    subtext: 'Kakkanad • Edappally • Kaloor • Infopark Campus',
+    groupHeader: 'Kerala Hubs',
+  },
+  {
+    value: 'Thiruvananthapuram',
+    label: 'Thiruvananthapuram',
+    badge: 'Kerala',
+    subtext: 'Kazhakkoottam (Technopark) • Pattom',
+  },
+  {
+    value: 'Kozhikode',
+    label: 'Kozhikode',
+    badge: 'Kerala',
+    subtext: 'Cyberpark • Hilite City',
+  },
+  {
+    value: 'Bengaluru',
+    label: 'Bengaluru',
+    badge: 'Karnataka',
+    subtext: 'Electronic City • HSR • Sannidhi Layout / Jigani (HCL)',
+    groupHeader: 'Karnataka Hubs',
+  },
+  {
+    value: 'Mysuru',
+    label: 'Mysuru',
+    badge: 'Karnataka',
+    subtext: 'Hebbal • Bannimantap • NR Mohalla',
+  },
+  {
+    value: 'Ramanagara',
+    label: 'Ramanagara',
+    badge: 'Karnataka',
+    subtext: 'Ghousia College (GCE) • Local Town',
+  },
+];
 
 export default function FindYourSpacePanel({
   initialFilters = {},
@@ -22,6 +72,59 @@ export default function FindYourSpacePanel({
 }) {
   // 1. Location
   const [location, setLocation] = useState(initialFilters.location || 'all');
+  const [dynamicLocations, setDynamicLocations] = useState(DEFAULT_ADMIN_LOCATIONS);
+
+  // Fetch dynamic locations live from Admin database
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAdminLocations = async () => {
+      try {
+        const res = await api.getLocations();
+        if (isMounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const list = [
+            {
+              value: 'all',
+              label: 'Pan-India',
+              badge: 'All Hubs',
+              subtext: 'Browse all active coliving campuses across Kerala & Karnataka',
+            },
+          ];
+
+          (res.data || []).forEach((country) => {
+            (country.states || []).forEach((state) => {
+              const stateName = state.name || 'Region';
+              const stateCode = state.code || stateName.substring(0, 2).toUpperCase();
+
+              (state.cities || []).forEach((city, cIdx) => {
+                const areasStr = (city.areas || [])
+                  .map((a) => (typeof a === 'string' ? a : a.name))
+                  .filter(Boolean)
+                  .join(' • ');
+
+                list.push({
+                  value: city.name,
+                  label: city.name,
+                  badge: stateCode,
+                  subtext: areasStr ? areasStr : `${stateName} Coliving Hub`,
+                  groupHeader: cIdx === 0 ? `${stateName} (${state.cities?.length || 0} Cities)` : undefined,
+                });
+              });
+            });
+          });
+
+          if (list.length > 1) {
+            setDynamicLocations(list);
+          }
+        }
+      } catch (err) {
+        console.warn('Using default admin locations:', err);
+      }
+    };
+    fetchAdminLocations();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // 2. Stay Type: 'day' | 'week' | 'month'
   const [stayType, setStayType] = useState(initialFilters.stayType || 'month');
@@ -109,7 +212,7 @@ export default function FindYourSpacePanel({
 
   return (
     <div
-      className={`rounded-3xl bg-[#0B1220]/95 backdrop-blur-xl border border-[#D4A64A]/30 p-4 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-[#FAF7F0] ${className}`}
+      className={`rounded-3xl bg-[#0B1220] border border-[#D4A64A]/30 p-4 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-[#FAF7F0] relative z-20 ${className}`}
     >
       {/* Panel Top Heading & Stay Type Segmented Pills */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 mb-4 border-b border-white/10">
@@ -168,199 +271,164 @@ export default function FindYourSpacePanel({
       </div>
 
       {/* Main Grid Controls */}
-      <form onSubmit={handleApply} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <form onSubmit={handleApply} className="space-y-4 relative z-30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
           
           {/* 1. Location Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              <span>Location</span>
-            </label>
-            <div className="relative">
-              <select
-                value={location}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setLocation(val);
-                  emitSearch({ location: val });
-                }}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#10192B] border border-white/15 text-xs sm:text-sm font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer appearance-none pr-8"
-              >
-                <option value="all">Pan-India (All Cities)</option>
-                <option value="Bengaluru">Bengaluru (Tech Corridor)</option>
-                <option value="Kochi">Kochi (InfoPark)</option>
-                <option value="Thiruvananthapuram">Thiruvananthapuram (Technopark)</option>
-                <option value="Kozhikode">Kozhikode (Cyberpark)</option>
-                <option value="Ramanagara">Ramanagara (Ghousia / Town)</option>
-                <option value="Mysuru">Mysuru (Heritage City)</option>
-                <option value="Coimbatore">Coimbatore (TIDEL Park)</option>
-                <option value="Chennai">Chennai (OMR)</option>
-                <option value="Hyderabad">Hyderabad (Hitec City)</option>
-                <option value="Pune">Pune (Hinjawadi)</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-white/40 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <LuxurySelect
+              label="Location"
+              icon={MapPin}
+              value={location}
+              searchable={true}
+              options={dynamicLocations}
+              onChange={(val) => {
+                setLocation(val);
+                emitSearch({ location: val });
+              }}
+            />
           </div>
 
           {/* 2. Room Type Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-              <Home className="w-3 h-3" />
-              <span>Room Type</span>
-            </label>
-            <div className="relative">
-              <select
-                value={roomType}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setRoomType(val);
-                  emitSearch({ roomType: val });
-                }}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#10192B] border border-white/15 text-xs sm:text-sm font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer appearance-none pr-8"
-              >
-                <option value="all">Any Room Type</option>
-                <option value="1bhk">1 BHK Suite</option>
-                <option value="2bhk">2 BHK Apartment</option>
-                <option value="single">Single Room (Private)</option>
-                <option value="shared">Shared Room</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-white/40 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <LuxurySelect
+              label="Room Type"
+              icon={Home}
+              value={roomType}
+              options={[
+                { value: 'all', label: 'Any Room Type' },
+                { value: '1bhk', label: '1 BHK Suite', badge: 'Private' },
+                { value: '2bhk', label: '2 BHK Flat', badge: 'Spacious' },
+                { value: 'single', label: 'Single Room', badge: 'Solo' },
+                { value: 'shared', label: 'Shared Room', badge: 'Budget' },
+              ]}
+              onChange={(val) => {
+                setRoomType(val);
+                emitSearch({ roomType: val });
+              }}
+            />
           </div>
 
           {/* 3. Sharing Selector */}
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              <span>Sharing</span>
-            </label>
-            <div className="relative">
-              <select
-                value={sharing}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSharing(val);
-                  emitSearch({ sharing: val });
-                }}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#10192B] border border-white/15 text-xs sm:text-sm font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer appearance-none pr-8"
-              >
-                <option value="all">Any Sharing</option>
-                <option value="1">Single (1 Sharing)</option>
-                <option value="2">2 Sharing (Twin)</option>
-                <option value="3">3 Sharing (Triple)</option>
-                <option value="4">4 Sharing (Quad)</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-white/40 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <LuxurySelect
+              label="Sharing"
+              icon={Users}
+              value={sharing}
+              options={[
+                { value: 'all', label: 'Any Sharing' },
+                { value: '1', label: 'Single Sharing' },
+                { value: '2', label: 'Double Sharing' },
+                { value: '3', label: 'Triple Sharing' },
+                { value: '4', label: 'Four Sharing' },
+              ]}
+              onChange={(val) => {
+                setSharing(val);
+                emitSearch({ sharing: val });
+              }}
+            />
           </div>
 
           {/* 4. Gender / Occupancy */}
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" />
-              <span>Gender</span>
-            </label>
-            <div className="relative">
-              <select
-                value={gender}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setGender(val);
-                  emitSearch({ gender: val });
-                }}
-                className="w-full px-3 py-2.5 rounded-xl bg-[#10192B] border border-white/15 text-xs sm:text-sm font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer appearance-none pr-8"
-              >
-                <option value="all">Any / Unisex / Coliving</option>
-                <option value="boys">Boys / Men Only</option>
-                <option value="girls">Girls / Women Only</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-white/40 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <LuxurySelect
+              label="Gender"
+              icon={ShieldCheck}
+              value={gender}
+              options={[
+                { value: 'all', label: 'Any / Coliving' },
+                { value: 'boys', label: 'Boys / Men' },
+                { value: 'girls', label: 'Girls / Women' },
+              ]}
+              onChange={(val) => {
+                setGender(val);
+                emitSearch({ gender: val });
+              }}
+            />
           </div>
 
-          {/* 5. Dynamic Check-in & Duration Selector */}
+          {/* 5. Check-In / Move-In Date */}
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-[#D4A64A] flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              <span>
-                {stayType === 'day'
-                  ? 'Check-In & Days'
-                  : stayType === 'week'
-                  ? 'Check-In & Weeks'
-                  : 'Move-In & Months'}
-              </span>
-            </label>
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-1.5">
-              {/* Date Input */}
-              <input
-                type="date"
-                value={checkInDate}
-                min={todayStr}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setCheckInDate(val);
-                  emitSearch({ checkInDate: val });
+            <LuxuryDatePicker
+              label={stayType === 'month' ? 'Move-In Date' : 'Check-In Date'}
+              icon={Calendar}
+              value={checkInDate}
+              minDate={todayStr}
+              onChange={(val) => {
+                setCheckInDate(val);
+                emitSearch({ checkInDate: val });
+              }}
+            />
+          </div>
+
+          {/* 6. Dynamic Duration Select based on Stay Type */}
+          <div className="space-y-1">
+            {stayType === 'day' && (
+              <LuxurySelect
+                label="Duration (Days)"
+                icon={Clock}
+                value={durationDays}
+                className="py-2.5"
+                align="right"
+                dropdownClassName="min-w-[190px]"
+                options={[
+                  { value: '1', label: '1 Day', badge: '₹499' },
+                  { value: '2', label: '2 Days' },
+                  { value: '3', label: '3 Days' },
+                  { value: '5', label: '5 Days' },
+                  { value: '7', label: '7 Days' },
+                  { value: '10', label: '10 Days' },
+                  { value: '14', label: '14 Days' },
+                ]}
+                onChange={(val) => {
+                  setDurationDays(val);
+                  emitSearch({ durationDays: val });
                 }}
-                className="w-full px-2 py-2 rounded-xl bg-[#10192B] border border-white/15 text-[11px] font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer min-w-0"
               />
+            )}
 
-              {/* Dynamic Duration Select based on Stay Type */}
-              {stayType === 'day' && (
-                <select
-                  value={durationDays}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDurationDays(val);
-                    emitSearch({ durationDays: val });
-                  }}
-                  className="w-full px-2 py-2 rounded-xl bg-[#10192B] border border-white/15 text-[11px] font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
-                >
-                  <option value="1">1 Day (₹499)</option>
-                  <option value="2">2 Days</option>
-                  <option value="3">3 Days</option>
-                  <option value="5">5 Days</option>
-                  <option value="7">7 Days</option>
-                  <option value="10">10 Days</option>
-                  <option value="14">14 Days</option>
-                </select>
-              )}
+            {stayType === 'week' && (
+              <LuxurySelect
+                label="Duration (Weeks)"
+                icon={Clock}
+                value={durationWeeks}
+                className="py-2.5"
+                align="right"
+                dropdownClassName="min-w-[190px]"
+                options={[
+                  { value: '1', label: '1 Week' },
+                  { value: '2', label: '2 Weeks' },
+                  { value: '3', label: '3 Weeks' },
+                  { value: '4', label: '4 Weeks' },
+                ]}
+                onChange={(val) => {
+                  setDurationWeeks(val);
+                  emitSearch({ durationWeeks: val });
+                }}
+              />
+            )}
 
-              {stayType === 'week' && (
-                <select
-                  value={durationWeeks}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDurationWeeks(val);
-                    emitSearch({ durationWeeks: val });
-                  }}
-                  className="w-full px-2 py-2 rounded-xl bg-[#10192B] border border-white/15 text-[11px] font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
-                >
-                  <option value="1">1 Week</option>
-                  <option value="2">2 Weeks</option>
-                  <option value="3">3 Weeks</option>
-                  <option value="4">4 Weeks</option>
-                </select>
-              )}
-
-              {stayType === 'month' && (
-                <select
-                  value={durationMonths}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDurationMonths(val);
-                    emitSearch({ durationMonths: val });
-                  }}
-                  className="w-full px-2 py-2 rounded-xl bg-[#10192B] border border-white/15 text-[11px] font-semibold text-[#FAF7F0] focus:border-[#D4A64A] outline-none cursor-pointer"
-                >
-                  <option value="1">1 Month</option>
-                  <option value="2">2 Months</option>
-                  <option value="3">3 Months</option>
-                  <option value="6">6 Months</option>
-                  <option value="11">11 Months</option>
-                </select>
-              )}
-            </div>
+            {stayType === 'month' && (
+              <LuxurySelect
+                label="Stay Duration"
+                icon={Clock}
+                value={durationMonths}
+                className="py-2.5"
+                align="right"
+                dropdownClassName="min-w-[190px]"
+                options={[
+                  { value: '1', label: '1 Month' },
+                  { value: '2', label: '2 Months' },
+                  { value: '3', label: '3 Months' },
+                  { value: '6', label: '6 Months' },
+                  { value: '11', label: '11 Months' },
+                ]}
+                onChange={(val) => {
+                  setDurationMonths(val);
+                  emitSearch({ durationMonths: val });
+                }}
+              />
+            )}
           </div>
 
         </div>

@@ -7,6 +7,7 @@ export const CustomSelect = ({
   value,
   onChange,
   placeholder = 'Select option...',
+  searchPlaceholder = 'Search...',
   disabled = false,
   className = '',
   dropdownClassName = '',
@@ -208,11 +209,11 @@ export const CustomSelect = ({
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search..."
+                placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full pl-8 pr-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-transparent focus:border-brand-500 focus:outline-none"
+                className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/60 focus:border-brand-500 focus:outline-none"
               />
             </div>
           )}

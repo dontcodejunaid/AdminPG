@@ -278,10 +278,10 @@ export default function ContactPage() {
                         {...register('roomType')}
                         className="w-full px-4 py-3.5 rounded-xl glass-card text-sm focus:outline-none focus:border-[#D4A64A] transition-colors bg-[#0B1220]"
                       >
-                        <option value="1 BHK">1 BHK Suite</option>
-                        <option value="2 BHK Sharing">2 BHK Sharing</option>
-                        <option value="Single Room">Single Room</option>
-                        <option value="Daily Stay (₹499/day)">Daily Stay (₹499/day)</option>
+                        <option value="1 BHK" className="bg-[#10192B] text-[#FAF7F0]">1 BHK Suite</option>
+                        <option value="2 BHK Sharing" className="bg-[#10192B] text-[#FAF7F0]">2 BHK Sharing</option>
+                        <option value="Single Room" className="bg-[#10192B] text-[#FAF7F0]">Single Room</option>
+                        <option value="Daily Stay (₹499/day)" className="bg-[#10192B] text-[#FAF7F0]">Daily Stay (₹499/day)</option>
                       </select>
                     </div>
 

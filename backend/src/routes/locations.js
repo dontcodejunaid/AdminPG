@@ -186,14 +186,27 @@ router.post('/city', async (req, res) => {
 
     await store.addCity({ stateName, cityName, code, areas });
     const locations = await store.getLocations();
-    let stateFound = null;
+    let country = locations[0] || { id: 'loc_in', name: 'India', code: 'IN', states: [] };
+    if (!country.states) country.states = [];
 
+    let stateFound = null;
     for (const c of locations) {
       const s = (c.states || []).find(st => st.name.toLowerCase() === stateName.toLowerCase());
       if (s) {
         stateFound = s;
         break;
       }
+    }
+
+    if (!stateFound) {
+      stateFound = {
+        id: `state_${uuidv4().substring(0, 6)}`,
+        name: stateName,
+        code: stateName.substring(0, 2).toUpperCase(),
+        type: 'state',
+        cities: []
+      };
+      country.states.push(stateFound);
     }
 
     if (stateFound) {
@@ -207,8 +220,15 @@ router.post('/city', async (req, res) => {
           areas: Array.isArray(areas) ? areas : []
         };
         stateFound.cities.push(newCity);
-        await store.setCollection('locations', locations);
+      } else if (Array.isArray(areas) && areas.length > 0) {
+        if (!existingCity.areas) existingCity.areas = [];
+        areas.forEach(a => {
+          if (a && !existingCity.areas.some(ex => (typeof ex === 'string' ? ex : ex.name)?.toLowerCase() === a.toLowerCase())) {
+            existingCity.areas.push(a);
+          }
+        });
       }
+      await store.setCollection('locations', locations);
     }
 
     res.status(201).json({ success: true, data: { name: cityName, code, areas } });
@@ -242,7 +262,7 @@ router.post('/area', async (req, res) => {
 
     if (cityFound) {
       if (!cityFound.areas) cityFound.areas = [];
-      if (!cityFound.areas.includes(areaName)) {
+      if (!cityFound.areas.some(a => (typeof a === 'string' ? a : a.name)?.toLowerCase() === areaName.toLowerCase())) {
         cityFound.areas.push(areaName);
         await store.setCollection('locations', locations);
       }

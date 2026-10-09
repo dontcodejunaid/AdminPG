@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, User, Phone, Mail, CheckCircle2, Sparkles, Send, Clock, MessageSquare, Bell, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import LuxurySelect from './LuxurySelect';
+import LuxuryDatePicker from './LuxuryDatePicker';
 import { api } from '../../services/api';
 
 export default function EnquiryPopup({ isOpen, onClose }) {
@@ -11,18 +13,26 @@ export default function EnquiryPopup({ isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false);
   const [refCode, setRefCode] = useState('');
   const [formData, setFormData] = useState(null);
+  const todayStr = new Date().toISOString().split('T')[0];
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
+      visitDate: todayStr,
       timeSlot: '10:00 AM - 12:00 PM',
       roomType: '2 BHK Sharing Room',
     },
   });
+
+  const selectedVisitDate = watch('visitDate');
+  const selectedTimeSlot = watch('timeSlot');
+  const selectedRoomType = watch('roomType');
 
   const onSubmit = (data) => {
     const mockRef = 'WALK-' + Math.floor(100000 + Math.random() * 900000);
@@ -167,45 +177,44 @@ export default function EnquiryPopup({ isOpen, onClose }) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#FAF7F0]/80 font-mono">
-                      Visit Date *
-                    </label>
-                    <input
-                      type="date"
-                      {...register('visitDate', { required: 'Date is required' })}
-                      className="w-full px-3.5 py-3 rounded-xl glass-card text-xs sm:text-sm focus:outline-none focus:border-[#D4A64A] transition-colors bg-[#0B1220]"
+                    <LuxuryDatePicker
+                      label="Visit Date *"
+                      icon={Calendar}
+                      value={selectedVisitDate}
+                      minDate={todayStr}
+                      onChange={(val) => setValue('visitDate', val)}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#FAF7F0]/80 font-mono">
-                      Time Slot
-                    </label>
-                    <select
-                      {...register('timeSlot')}
-                      className="w-full px-3.5 py-3 rounded-xl glass-card text-xs sm:text-sm focus:outline-none focus:border-[#D4A64A] transition-colors bg-[#0B1220]"
-                    >
-                      <option value="10:00 AM - 12:00 PM">Morning (10 AM - 12 PM)</option>
-                      <option value="01:00 PM - 03:00 PM">Lunch Hours (1 PM - 3 PM)</option>
-                      <option value="05:00 PM - 07:00 PM">Evening Tea (5 PM - 7 PM)</option>
-                    </select>
+                    <LuxurySelect
+                      label="Time Slot"
+                      icon={Clock}
+                      value={selectedTimeSlot}
+                      options={[
+                        { value: '10:00 AM - 12:00 PM', label: 'Morning (10 AM - 12 PM)' },
+                        { value: '01:00 PM - 03:00 PM', label: 'Lunch Hours (1 PM - 3 PM)' },
+                        { value: '05:00 PM - 07:00 PM', label: 'Evening Tea (5 PM - 7 PM)' },
+                      ]}
+                      onChange={(val) => setValue('timeSlot', val)}
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#FAF7F0]/80 font-mono">
-                      Room Interest
-                    </label>
-                    <select
-                      {...register('roomType')}
-                      className="w-full px-3.5 py-3 rounded-xl glass-card text-xs sm:text-sm focus:outline-none focus:border-[#D4A64A] transition-colors bg-[#0B1220]"
-                    >
-                      <option value="2 BHK Sharing Room">2 BHK Sharing Room</option>
-                      <option value="Single Private Room">Single Private Room</option>
-                      <option value="Daily Stay Special (₹499/day)">Daily Stay (₹499/day)</option>
-                      <option value="1 BHK Private Suite">1 BHK Suite</option>
-                    </select>
+                    <LuxurySelect
+                      label="Room Interest"
+                      icon={Sparkles}
+                      value={selectedRoomType}
+                      options={[
+                        { value: '2 BHK Sharing Room', label: '2 BHK Sharing Room', badge: 'Popular' },
+                        { value: 'Single Private Room', label: 'Single Private Room', badge: 'Private' },
+                        { value: 'Daily Stay Special (₹499/day)', label: 'Daily Stay (₹499/day)', badge: '₹499' },
+                        { value: '1 BHK Private Suite', label: '1 BHK Suite', badge: 'Suite' },
+                      ]}
+                      onChange={(val) => setValue('roomType', val)}
+                    />
                   </div>
                 </div>
 

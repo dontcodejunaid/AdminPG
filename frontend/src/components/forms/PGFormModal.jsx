@@ -45,6 +45,8 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
 
   // Custom highlight input state
   const [newHighlight, setNewHighlight] = useState('');
+  const [isCustomState, setIsCustomState] = useState(false);
+  const [isCustomCity, setIsCustomCity] = useState(false);
   const [isCustomArea, setIsCustomArea] = useState(false);
 
   // Form State
@@ -263,6 +265,9 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             'Washing Machine & 24/7 Hot Water'
           ]
         });
+        setIsCustomState(false);
+        setIsCustomCity(false);
+        setIsCustomArea(false);
       }
     }
   }, [isOpen, pgToEdit]);
@@ -500,6 +505,58 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
         availableBeds
       };
 
+      // Automatically register any custom State, City, or Area into the locations database
+      const trimmedState = (formData.state || '').trim();
+      const trimmedCity = (formData.city || '').trim();
+      const trimmedArea = (formData.area || '').trim();
+
+      if (trimmedState) {
+        const stateExists = (flatLocations.states || []).some(
+          s => s.name?.toLowerCase() === trimmedState.toLowerCase()
+        );
+        if (!stateExists) {
+          try {
+            await api.addState({ name: trimmedState, code: trimmedState.substring(0, 2).toUpperCase() });
+          } catch (e) {
+            console.warn('Auto-add state error:', e);
+          }
+        }
+      }
+
+      if (trimmedState && trimmedCity) {
+        const cityExists = (flatLocations.cities || []).some(
+          c => c.name?.toLowerCase() === trimmedCity.toLowerCase() && (!c.state || c.state.toLowerCase() === trimmedState.toLowerCase())
+        );
+        if (!cityExists) {
+          try {
+            await api.addCity({
+              stateName: trimmedState,
+              cityName: trimmedCity,
+              code: trimmedCity.substring(0, 3).toUpperCase(),
+              areas: trimmedArea ? [trimmedArea] : []
+            });
+          } catch (e) {
+            console.warn('Auto-add city error:', e);
+          }
+        }
+      }
+
+      if (trimmedCity && trimmedArea) {
+        const currentCity = (flatLocations.cities || []).find(
+          c => c.name?.toLowerCase() === trimmedCity.toLowerCase()
+        );
+        const areaExists = currentCity?.areas?.some(
+          a => (typeof a === 'string' ? a : a.name)?.toLowerCase() === trimmedArea.toLowerCase()
+        );
+        if (!areaExists) {
+          try {
+            await api.addArea({ cityName: trimmedCity, areaName: trimmedArea });
+          } catch (e) {
+            console.warn('Auto-add area error:', e);
+          }
+        }
+      }
+
       if (isEditing) {
         await api.updateProperty(pgToEdit.id, payload);
         showToast(`Updated "${formData.name}" successfully!`, 'success');
@@ -671,32 +728,94 @@ export const PGFormModal = ({ isOpen, onClose, pgToEdit = null, onSuccess }) => 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* 1. State */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">State</label>
-                <CustomSelect
-                  value={formData.state}
-                  placeholder="Select State"
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '', area: '' })}
-                  options={flatLocations.states.map(st => ({ value: st.name, label: st.name }))}
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">State</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomState(!isCustomState);
+                      if (!isCustomState) {
+                        setFormData(prev => ({ ...prev, state: '', city: '', area: '' }));
+                      }
+                    }}
+                    className="text-[10px] text-brand-600 dark:text-brand-400 hover:underline cursor-pointer font-medium"
+                  >
+                    {isCustomState ? 'Select from list' : '+ Type custom'}
+                  </button>
+                </div>
+                {isCustomState ? (
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    placeholder="Type custom state name..."
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none font-medium"
+                    autoFocus
+                  />
+                ) : (
+                  <CustomSelect
+                    value={formData.state}
+                    placeholder="Select State"
+                    searchable={true}
+                    searchPlaceholder="Search state..."
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value, city: '', area: '' })}
+                    options={flatLocations.states.map(st => ({ value: st.name, label: st.name }))}
+                  />
+                )}
               </div>
 
+              {/* 2. City */}
               <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">City</label>
-                <CustomSelect
-                  value={formData.city}
-                  placeholder="Select City"
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value, area: '' })}
-                  options={filteredCities.map(ct => ({ value: ct.name, label: ct.name }))}
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">City</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomCity(!isCustomCity);
+                      if (!isCustomCity) {
+                        setFormData(prev => ({ ...prev, city: '', area: '' }));
+                      }
+                    }}
+                    className="text-[10px] text-brand-600 dark:text-brand-400 hover:underline cursor-pointer font-medium"
+                  >
+                    {isCustomCity ? 'Select from list' : '+ Type custom'}
+                  </button>
+                </div>
+                {isCustomCity ? (
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="Type custom city name..."
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-brand-500 focus:outline-none font-medium"
+                    autoFocus
+                  />
+                ) : (
+                  <CustomSelect
+                    value={formData.city}
+                    placeholder="Select City"
+                    searchable={true}
+                    searchPlaceholder="Search city..."
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value, area: '' })}
+                    options={filteredCities.map(ct => ({ value: ct.name, label: ct.name }))}
+                  />
+                )}
               </div>
 
+              {/* 3. Area / Locality */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">Area / Locality</label>
                   <button
                     type="button"
-                    onClick={() => setIsCustomArea(!isCustomArea)}
+                    onClick={() => {
+                      setIsCustomArea(!isCustomArea);
+                      if (!isCustomArea) {
+                        setFormData(prev => ({ ...prev, area: '' }));
+                      }
+                    }}
                     className="text-[10px] text-brand-600 dark:text-brand-400 hover:underline cursor-pointer font-medium"
                   >
                     {isCustomArea ? 'Select from list' : '+ Type custom'}

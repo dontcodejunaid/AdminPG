@@ -434,10 +434,10 @@ export default function CityDetailsPage({ onOpenBooking }) {
                         onChange={(e) => setSelectedRoom(e.target.value)}
                         className="w-full px-3.5 py-3 rounded-xl glass-card text-xs sm:text-sm focus:outline-none focus:border-[#D4A64A] bg-[#0B1220] text-[#FAF7F0]"
                       >
-                        <option value="2 BHK Sharing Deluxe">2 BHK Sharing Deluxe</option>
-                        <option value="Single Executive Suite">Single Executive Room</option>
-                        <option value="1 BHK Private Suite">1 BHK Private Suite</option>
-                        <option value="Daily Stay Pass">Daily Stay Pass</option>
+                        <option value="2 BHK Sharing Deluxe" className="bg-[#10192B] text-[#FAF7F0]">2 BHK Sharing Deluxe</option>
+                        <option value="Single Executive Suite" className="bg-[#10192B] text-[#FAF7F0]">Single Executive Room</option>
+                        <option value="1 BHK Private Suite" className="bg-[#10192B] text-[#FAF7F0]">1 BHK Private Suite</option>
+                        <option value="Daily Stay Pass" className="bg-[#10192B] text-[#FAF7F0]">Daily Stay Pass</option>
                       </select>
                     </div>
                   </div>
